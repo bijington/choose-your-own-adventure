@@ -7,29 +7,37 @@ public enum OpeningStage
     Memory,
     DotNetMemory,
     DependencyInjection,
-    ChooseClass,
-    ClassChosen,
+    ChooseChampion,
+    ChampionChosen,
     CodeReveal,
     Complete
 }
 
-public enum PlayerClass
+public enum Champion
 {
-    MauiWarrior,
-    AsyncWizard,
-    XamlRanger
+    RacingDriver,
+    Charioteer,
+    SpacePilot
+}
+
+public enum GameLoopStage
+{
+    Overview,
+    FirmwareComparison,
+    Running
 }
 
 public sealed class AdventureState
 {
     public OpeningStage OpeningStage { get; private set; } = OpeningStage.Title;
-    public PlayerClass? PlayerClass { get; private set; }
+    public Champion? Champion { get; private set; }
+    public GameLoopStage GameLoopStage { get; private set; } = GameLoopStage.Overview;
 
     public int Health { get; set; } = 5;
     public int Experience { get; set; }
     public string CurrentLocation { get; set; } = "The Beginning";
 
-    public void Advance()
+    public void AdvanceOpening()
     {
         OpeningStage = OpeningStage switch
         {
@@ -37,16 +45,26 @@ public sealed class AdventureState
             OpeningStage.Awakening => OpeningStage.Memory,
             OpeningStage.Memory => OpeningStage.DotNetMemory,
             OpeningStage.DotNetMemory => OpeningStage.DependencyInjection,
-            OpeningStage.DependencyInjection => OpeningStage.ChooseClass,
-            OpeningStage.ClassChosen => OpeningStage.CodeReveal,
+            OpeningStage.DependencyInjection => OpeningStage.ChooseChampion,
+            OpeningStage.ChampionChosen => OpeningStage.CodeReveal,
             OpeningStage.CodeReveal => OpeningStage.Complete,
             _ => OpeningStage
         };
     }
 
-    public void ChooseClass(PlayerClass playerClass)
+    public void ChooseChampion(Champion champion)
     {
-        PlayerClass = playerClass;
-        OpeningStage = OpeningStage.ClassChosen;
+        Champion = champion;
+        OpeningStage = OpeningStage.ChampionChosen;
+    }
+
+    public void AdvanceGameLoop()
+    {
+        GameLoopStage = GameLoopStage switch
+        {
+            GameLoopStage.Overview => GameLoopStage.FirmwareComparison,
+            GameLoopStage.FirmwareComparison => GameLoopStage.Running,
+            _ => GameLoopStage
+        };
     }
 }

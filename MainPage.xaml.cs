@@ -7,10 +7,9 @@ public partial class MainPage : ContentPage
     private readonly IGameSceneManager _gameSceneManager;
     private readonly AdventureState _adventureState;
     private bool _hasStarted;
+    private bool _showingGameLoop;
 
-    public MainPage(
-        IGameSceneManager gameSceneManager,
-        AdventureState adventureState)
+    public MainPage(IGameSceneManager gameSceneManager, AdventureState adventureState)
     {
         InitializeComponent();
         _gameSceneManager = gameSceneManager;
@@ -37,20 +36,33 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (_adventureState.OpeningStage == OpeningStage.ChooseClass)
+        if (_showingGameLoop)
+        {
+            _adventureState.AdvanceGameLoop();
+            return;
+        }
+
+        if (_adventureState.OpeningStage == OpeningStage.ChooseChampion)
         {
             var third = GameView.Width / 3d;
             var chosen = position.Value.X switch
             {
-                var x when x < third => PlayerClass.MauiWarrior,
-                var x when x < third * 2d => PlayerClass.AsyncWizard,
-                _ => PlayerClass.XamlRanger
+                var x when x < third => Champion.RacingDriver,
+                var x when x < third * 2d => Champion.Charioteer,
+                _ => Champion.SpacePilot
             };
 
-            _adventureState.ChooseClass(chosen);
+            _adventureState.ChooseChampion(chosen);
             return;
         }
 
-        _adventureState.Advance();
+        if (_adventureState.OpeningStage == OpeningStage.Complete)
+        {
+            _gameSceneManager.LoadScene<Scenes.GameLoopScene>(GameView);
+            _showingGameLoop = true;
+            return;
+        }
+
+        _adventureState.AdvanceOpening();
     }
 }

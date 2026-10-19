@@ -16,6 +16,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AdventureState>();
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<OpeningScene>();
+        builder.Services.AddTransient<GameLoopScene>();
 
         return builder.Build();
     }
