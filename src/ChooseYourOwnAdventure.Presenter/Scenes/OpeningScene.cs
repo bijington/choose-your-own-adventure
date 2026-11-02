@@ -1,4 +1,5 @@
 using ChooseYourOwnAdventure.GameObjects;
+using ChooseYourOwnAdventure.Live;
 using Microsoft.Maui.Graphics;
 using Orbit.Engine;
 
@@ -7,11 +8,21 @@ namespace ChooseYourOwnAdventure.Scenes;
 public sealed class OpeningScene : GameScene
 {
     private readonly AdventureState _state;
+    private readonly LiveVoteState _liveVoteState;
+    private readonly LiveAudienceOptions _liveAudienceOptions;
+    private readonly QrCodeRenderer _qrCodeRenderer;
     private double _elapsedMilliseconds;
 
-    public OpeningScene(AdventureState state)
+    public OpeningScene(
+        AdventureState state,
+        LiveVoteState liveVoteState,
+        LiveAudienceOptions liveAudienceOptions,
+        QrCodeRenderer qrCodeRenderer)
     {
         _state = state;
+        _liveVoteState = liveVoteState;
+        _liveAudienceOptions = liveAudienceOptions;
+        _qrCodeRenderer = qrCodeRenderer;
         Add(new ChampionGameObject(state));
     }
 
@@ -123,48 +134,68 @@ public sealed class OpeningScene : GameScene
         canvas.Alpha = 1f;
     }
 
-    private static void DrawChampionSelection(ICanvas canvas, RectF dimensions, Champion highlightedChampion)
+    private void DrawChampionSelection(ICanvas canvas, RectF dimensions, Champion highlightedChampion)
     {
+        var votes = _liveVoteState.Snapshot;
+
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Colors.White;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.034f, 26f, 50f);
         canvas.DrawString("CHOOSE YOUR CHAMPION", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.12f, Math.Max(0, dimensions.Width - 80), 70,
+            dimensions.Y + dimensions.Height * 0.08f, Math.Max(0, dimensions.Width - 80), 70,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Color.FromArgb("#94A3B8");
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.015f, 13f, 22f);
-        canvas.DrawString("This choice will shape the world for the rest of the session.", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.21f, Math.Max(0, dimensions.Width - 80), 40,
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 21f);
+        canvas.DrawString("Scan the QR code and vote — the room chooses the theme for the rest of the session.", dimensions.X + 40,
+            dimensions.Y + dimensions.Height * 0.17f, Math.Max(0, dimensions.Width - 80), 40,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
-        var cardTop = dimensions.Y + dimensions.Height * 0.32f;
-        var cardHeight = dimensions.Height * 0.38f;
+        var cardTop = dimensions.Y + dimensions.Height * 0.27f;
+        var cardHeight = dimensions.Height * 0.34f;
         var gap = Math.Max(18f, dimensions.Width * 0.018f);
         var totalWidth = dimensions.Width * 0.86f;
         var cardWidth = (totalWidth - gap * 2) / 3f;
         var startX = dimensions.X + (dimensions.Width - totalWidth) / 2f;
 
         DrawChampionCard(canvas, new RectF(startX, cardTop, cardWidth, cardHeight),
-            "THE DRIVER", "Speed. Precision.", "Questionable braking.", "01",
+            "THE DRIVER", "Speed. Precision.", "Questionable braking.", "01", votes.RacingDriver,
             highlightedChampion == Champion.RacingDriver);
         DrawChampionCard(canvas, new RectF(startX + cardWidth + gap, cardTop, cardWidth, cardHeight),
-            "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", "02",
+            "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", "02", votes.Charioteer,
             highlightedChampion == Champion.Charioteer);
         DrawChampionCard(canvas, new RectF(startX + (cardWidth + gap) * 2, cardTop, cardWidth, cardHeight),
-            "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", "03",
+            "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", "03", votes.SpacePilot,
             highlightedChampion == Champion.SpacePilot);
 
+        var qrSize = Math.Clamp(dimensions.Height * 0.19f, 105f, 170f);
+        var qrRect = new RectF(dimensions.X + dimensions.Width * 0.12f,
+            dimensions.Y + dimensions.Height * 0.66f, qrSize, qrSize);
+        _qrCodeRenderer.Draw(canvas, qrRect);
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Colors.White;
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.016f, 14f, 23f);
+        canvas.DrawString("SCAN TO VOTE", qrRect.Right + 28, qrRect.Y + 8, dimensions.Width * 0.50f, 32,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = Color.FromArgb("#CBD5E1");
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.012f, 11f, 18f);
+        canvas.DrawString(_liveAudienceOptions.JoinUrl, qrRect.Right + 28, qrRect.Y + 42,
+            dimensions.Width * 0.55f, 28, HorizontalAlignment.Left, VerticalAlignment.Center);
+        canvas.DrawString($"LIVE VOTES: {votes.Total}", qrRect.Right + 28, qrRect.Y + 75,
+            dimensions.Width * 0.30f, 28, HorizontalAlignment.Left, VerticalAlignment.Center);
+
         canvas.FontColor = Color.FromArgb("#94A3B8");
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 22f);
-        canvas.DrawString("LEFT STICK / A-D choose   •   A / ENTER / tap confirm", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.77f, Math.Max(0, dimensions.Width - 80), 40,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.DrawString("A / ENTER selects the current audience leader (or the highlighted champion if offline).",
+            qrRect.Right + 28, qrRect.Y + 108, dimensions.Width * 0.58f, 46,
+            HorizontalAlignment.Left, VerticalAlignment.Top);
     }
 
-    private static void DrawChampionCard(ICanvas canvas, RectF rect, string title, string line1, string line2, string number, bool isHighlighted)
+    private static void DrawChampionCard(ICanvas canvas, RectF rect, string title, string line1, string line2,
+        string number, int voteCount, bool isHighlighted)
     {
         canvas.FillColor = isHighlighted ? Color.FromArgb("#172033") : Color.FromArgb("#111827");
         canvas.FillRoundedRectangle(rect, 18);
@@ -174,22 +205,28 @@ public sealed class OpeningScene : GameScene
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Color.FromArgb("#F8D866");
-        canvas.FontSize = Math.Clamp(rect.Width * 0.15f, 26f, 46f);
-        canvas.DrawString(number, rect.X, rect.Y + rect.Height * 0.10f, rect.Width, rect.Height * 0.24f,
+        canvas.FontSize = Math.Clamp(rect.Width * 0.13f, 24f, 42f);
+        canvas.DrawString(number, rect.X, rect.Y + rect.Height * 0.07f, rect.Width, rect.Height * 0.22f,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.FontColor = Colors.White;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.072f, 14f, 23f);
-        canvas.DrawString(title, rect.X + 10, rect.Y + rect.Height * 0.43f, rect.Width - 20, 34,
+        canvas.FontSize = Math.Clamp(rect.Width * 0.070f, 14f, 23f);
+        canvas.DrawString(title, rect.X + 10, rect.Y + rect.Height * 0.37f, rect.Width - 20, 34,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Color.FromArgb("#CBD5E1");
-        canvas.FontSize = Math.Clamp(rect.Width * 0.048f, 12f, 18f);
-        canvas.DrawString(line1, rect.X + 10, rect.Y + rect.Height * 0.60f, rect.Width - 20, 28,
+        canvas.FontSize = Math.Clamp(rect.Width * 0.046f, 12f, 18f);
+        canvas.DrawString(line1, rect.X + 10, rect.Y + rect.Height * 0.53f, rect.Width - 20, 28,
             HorizontalAlignment.Center, VerticalAlignment.Center);
-        canvas.DrawString(line2, rect.X + 10, rect.Y + rect.Height * 0.71f, rect.Width - 20, 28,
+        canvas.DrawString(line2, rect.X + 10, rect.Y + rect.Height * 0.63f, rect.Width - 20, 28,
             HorizontalAlignment.Center, VerticalAlignment.Center);
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = voteCount > 0 ? Color.FromArgb("#F8D866") : Color.FromArgb("#64748B");
+        canvas.FontSize = Math.Clamp(rect.Width * 0.055f, 12f, 19f);
+        canvas.DrawString($"{voteCount} VOTE{(voteCount == 1 ? string.Empty : "S")}", rect.X + 10,
+            rect.Y + rect.Height * 0.78f, rect.Width - 20, 30, HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
     private void DrawChampionChosen(ICanvas canvas, RectF dimensions)

@@ -1,4 +1,5 @@
 using ChooseYourOwnAdventure.Input;
+using ChooseYourOwnAdventure.Live;
 using Orbit.Engine;
 
 namespace ChooseYourOwnAdventure;
@@ -9,6 +10,8 @@ public partial class MainPage : ContentPage
     private readonly AdventureState _adventureState;
     private readonly AdventureInputRouter _inputRouter;
     private readonly OrbitInputBridge _orbitInputBridge;
+    private readonly AudienceVoteClient _audienceVoteClient;
+    private readonly LiveVoteState _liveVoteState;
     private bool _hasStarted;
     private bool _showingGameLoop;
     private bool _showingVehicleControl;
@@ -17,13 +20,17 @@ public partial class MainPage : ContentPage
         IGameSceneManager gameSceneManager,
         AdventureState adventureState,
         AdventureInputRouter inputRouter,
-        OrbitInputBridge orbitInputBridge)
+        OrbitInputBridge orbitInputBridge,
+        AudienceVoteClient audienceVoteClient,
+        LiveVoteState liveVoteState)
     {
         InitializeComponent();
         _gameSceneManager = gameSceneManager;
         _adventureState = adventureState;
         _inputRouter = inputRouter;
         _orbitInputBridge = orbitInputBridge;
+        _audienceVoteClient = audienceVoteClient;
+        _liveVoteState = liveVoteState;
 
         _inputRouter.ActionTriggered += OnAdventureAction;
     }
@@ -40,6 +47,7 @@ public partial class MainPage : ContentPage
         _hasStarted = true;
 
         _ = _orbitInputBridge.StartAsync();
+        _ = _audienceVoteClient.StartAsync();
     }
 
     private void OnGameViewTapped(object? sender, TappedEventArgs e)
@@ -137,7 +145,15 @@ public partial class MainPage : ContentPage
                     _adventureState.HighlightNextChampion();
                     return;
                 case AdventureAction.Primary:
-                    _adventureState.ConfirmHighlightedChampion();
+                    var audienceWinner = _liveVoteState.WinningChampion;
+                    if (audienceWinner is not null)
+                    {
+                        _adventureState.ChooseChampion(audienceWinner.Value);
+                    }
+                    else
+                    {
+                        _adventureState.ConfirmHighlightedChampion();
+                    }
                     return;
                 default:
                     return;

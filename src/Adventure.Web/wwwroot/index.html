@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Choose Your Champion</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100dvh; background: #0b1020; color: #fff; display: grid; place-items: center; }
+    main { width: min(680px, 100%); padding: 28px 20px 40px; }
+    h1 { font-size: clamp(2rem, 8vw, 3.4rem); line-height: .95; margin: 0 0 10px; text-align: center; }
+    .sub { color: #94a3b8; text-align: center; margin-bottom: 28px; }
+    .status { text-align: center; color: #f8d866; min-height: 1.5em; margin: 12px 0 20px; }
+    .grid { display: grid; gap: 14px; }
+    button { width: 100%; min-height: 108px; border: 2px solid #475569; border-radius: 18px; background: #111827; color: #fff; padding: 18px; text-align: left; cursor: pointer; }
+    button:active, button.selected { border-color: #f8d866; background: #172033; }
+    .name { display: block; font-size: 1.25rem; font-weight: 800; }
+    .tag { display: block; color: #cbd5e1; margin-top: 6px; }
+    .votes { display: block; color: #f8d866; margin-top: 10px; font-weight: 700; }
+    footer { color: #64748b; text-align: center; margin-top: 24px; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CHOOSE YOUR CHAMPION</h1>
+    <p class="sub">Your vote shapes the rest of the adventure.</p>
+    <div id="status" class="status">Connecting…</div>
+    <div class="grid">
+      <button type="button" data-champion="RacingDriver"><span class="name">🏎️ THE DRIVER</span><span class="tag">Speed. Precision. Questionable braking.</span><span class="votes" id="driverVotes">0 votes</span></button>
+      <button type="button" data-champion="Charioteer"><span class="name">🛡️ THE CHARIOTEER</span><span class="tag">Glory. Courage. Undefined behaviour.</span><span class="votes" id="chariotVotes">0 votes</span></button>
+      <button type="button" data-champion="SpacePilot"><span class="name">🚀 THE SPACE PILOT</span><span class="tag">Exploration. Thrusters. Naturally, Orbit.</span><span class="votes" id="pilotVotes">0 votes</span></button>
+    </div>
+    <footer id="session"></footer>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@10.0.14/dist/browser/signalr.min.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const sessionId = (params.get('session') || 'ORBIT').toUpperCase();
+    const status = document.getElementById('status');
+    const participantId = localStorage.getItem('orbit-participant') || crypto.randomUUID();
+    localStorage.setItem('orbit-participant', participantId);
+    document.getElementById('session').textContent = `Session: ${sessionId}`;
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl('/adventureHub')
+      .withAutomaticReconnect()
+      .build();
+
+    function setVotes(snapshot) {
+      document.getElementById('driverVotes').textContent = `${snapshot.racingDriver} vote${snapshot.racingDriver === 1 ? '' : 's'}`;
+      document.getElementById('chariotVotes').textContent = `${snapshot.charioteer} vote${snapshot.charioteer === 1 ? '' : 's'}`;
+      document.getElementById('pilotVotes').textContent = `${snapshot.spacePilot} vote${snapshot.spacePilot === 1 ? '' : 's'}`;
+    }
+
+    connection.on('VoteUpdated', setVotes);
+    connection.onreconnecting(() => status.textContent = 'Reconnecting…');
+    connection.onreconnected(async () => {
+      status.textContent = 'Connected — choose your champion';
+      await connection.invoke('JoinSession', sessionId);
+    });
+
+    document.querySelectorAll('button[data-champion]').forEach(button => {
+      button.addEventListener('click', async () => {
+        if (connection.state !== signalR.HubConnectionState.Connected) return;
+        document.querySelectorAll('button').forEach(x => x.classList.remove('selected'));
+        button.classList.add('selected');
+        await connection.invoke('Vote', sessionId, participantId, button.dataset.champion);
+        status.textContent = 'Vote received — you can change it until the presenter continues.';
+      });
+    });
+
+    async function start() {
+      try {
+        await connection.start();
+        await connection.invoke('JoinSession', sessionId);
+        status.textContent = 'Connected — choose your champion';
+      } catch {
+        status.textContent = 'Unable to connect. Retrying…';
+        setTimeout(start, 1500);
+      }
+    }
+
+    start();
+  </script>
+</body>
+</html>

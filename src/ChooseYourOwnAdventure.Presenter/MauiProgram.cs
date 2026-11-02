@@ -1,4 +1,5 @@
 using ChooseYourOwnAdventure.Input;
+using ChooseYourOwnAdventure.Live;
 using ChooseYourOwnAdventure.Scenes;
 using Orbit.Engine;
 using Orbit.Input;
@@ -14,7 +15,7 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseOrbitEngine()
-            .UseOrbitGameController(o => { })
+            .UseOrbitGameController(o => {})
             .UseOrbitKeyboard();
 
         builder.Services.AddSingleton<AdventureState>();
@@ -22,6 +23,10 @@ public static class MauiProgram
         builder.Services.AddSingleton(GameControllerManager.Current);
         builder.Services.AddSingleton(KeyboardManager.Current);
         builder.Services.AddSingleton<OrbitInputBridge>();
+        builder.Services.AddSingleton(new LiveAudienceOptions());
+        builder.Services.AddSingleton<LiveVoteState>();
+        builder.Services.AddSingleton<AudienceVoteClient>();
+        builder.Services.AddSingleton<QrCodeRenderer>();
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<OpeningScene>();
         builder.Services.AddTransient<GameLoopScene>();
