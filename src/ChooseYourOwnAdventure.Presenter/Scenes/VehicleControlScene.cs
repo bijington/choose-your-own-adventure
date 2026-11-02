@@ -13,9 +13,13 @@ public sealed class VehicleControlScene : GameScene
     public VehicleControlScene(AdventureState state, AdventureInputRouter input)
     {
         _state = state;
-        _state.CurrentLocation = state.Champion == Champion.SpacePilot
-            ? "Flight School"
-            : "Behind the Wheel";
+        _state.CurrentLocation = state.Champion switch
+        {
+            Champion.SpacePilot => "Flight School",
+            Champion.Charioteer => "The Grand Arena",
+            _ => "Behind the Wheel"
+        };
+
         _vehicle = new LoopVehicle(state, input);
         Add(_vehicle);
     }
@@ -77,7 +81,7 @@ public sealed class VehicleControlScene : GameScene
         if (_state.Champion == Champion.Charioteer)
         {
             canvas.StrokeColor = Color.FromArgb("#92400E");
-            canvas.StrokeSize = 36;
+            canvas.StrokeSize = 42;
             canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
             canvas.StrokeColor = Color.FromArgb("#F8D866");
             canvas.StrokeSize = 2;
@@ -85,11 +89,19 @@ public sealed class VehicleControlScene : GameScene
             return;
         }
 
-        canvas.StrokeColor = Color.FromArgb("#475569");
-        canvas.StrokeSize = 36;
+        // Wider circuit with visible lane boundaries so steering has an obvious effect.
+        canvas.StrokeColor = Color.FromArgb("#334155");
+        canvas.StrokeSize = 54;
         canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
+
         canvas.StrokeColor = Color.FromArgb("#CBD5E1");
         canvas.StrokeSize = 2;
+        canvas.DrawEllipse(track.X - 24, track.Y - 24, track.Width + 48, track.Height + 48);
+        canvas.DrawEllipse(track.X + 24, track.Y + 24,
+            Math.Max(1, track.Width - 48), Math.Max(1, track.Height - 48));
+
+        canvas.StrokeColor = Color.FromArgb("#64748B");
+        canvas.StrokeSize = 1;
         canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
     }
 
@@ -137,35 +149,69 @@ public sealed class VehicleControlScene : GameScene
         {
             DrawSpaceCode(canvas, panel, vehicle);
         }
+        else if (vehicle.IsCharioteer)
+        {
+            DrawChariotCode(canvas, panel, vehicle);
+        }
         else
         {
-            DrawCourseCode(canvas, panel, vehicle);
+            DrawDriverCode(canvas, panel, vehicle);
         }
     }
 
-    private static void DrawCourseCode(ICanvas canvas, RectF panel, LoopVehicle vehicle)
+    private static void DrawDriverCode(ICanvas canvas, RectF panel, LoopVehicle vehicle)
     {
         var y = panel.Y + 58;
-        DrawCodeSection(canvas, panel, ref y, "INPUT", vehicle.IsAccelerating || vehicle.IsBraking,
+        DrawCodeSection(canvas, panel, ref y, "INPUT",
+            vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsSteering,
         [
-            new("var accelerate = input.IsPressed(Primary);", vehicle.IsAccelerating),
-            new("var brake = input.IsPressed(Secondary);", vehicle.IsBraking)
+            new("var throttle = input.IsPressed(Primary);", vehicle.IsAccelerating),
+            new("var steer = input.Horizontal;", vehicle.IsSteering)
         ]);
 
-        y += 16;
-        DrawCodeSection(canvas, panel, ref y, "UPDATE", vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsMoving,
+        y += 14;
+        DrawCodeSection(canvas, panel, ref y, "UPDATE",
+            vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsSteering || vehicle.IsMoving,
         [
             new("speed += acceleration * elapsed;", vehicle.IsAccelerating),
+            new("lane += steer * steeringRate * elapsed;", vehicle.IsSteering),
             new("position += speed * elapsed;", vehicle.IsMoving)
         ]);
 
-        y += 16;
-        DrawCodeSection(canvas, panel, ref y, "RENDER", vehicle.IsMoving,
+        y += 14;
+        DrawCodeSection(canvas, panel, ref y, "RENDER", vehicle.IsMoving || vehicle.IsSteering,
         [
-            new("DrawVehicle(canvas, position);", vehicle.IsMoving)
+            new("DrawCar(canvas, position, lane);", vehicle.IsMoving || vehicle.IsSteering)
         ]);
 
-        DrawMetric(canvas, panel, $"speed = {vehicle.Speed:0.000}");
+        DrawMetric(canvas, panel,
+            $"speed = {vehicle.Speed:0.000}   lane = {vehicle.LaneOffset:+0.00;-0.00;0.00}");
+    }
+
+    private static void DrawChariotCode(ICanvas canvas, RectF panel, LoopVehicle vehicle)
+    {
+        var y = panel.Y + 58;
+        DrawCodeSection(canvas, panel, ref y, "INPUT", vehicle.IsPulling || vehicle.IsBraking,
+        [
+            new("var pull = input.IsPressed(Primary);", vehicle.IsPulling),
+            new("var brake = input.IsPressed(Secondary);", vehicle.IsBraking)
+        ]);
+
+        y += 14;
+        DrawCodeSection(canvas, panel, ref y, "UPDATE", true,
+        [
+            new("if (pull) speed += force * elapsed;", vehicle.IsPulling),
+            new("else speed -= smallDrag * elapsed;", vehicle.IsCoastingWithMomentum),
+            new("position += speed * elapsed;", vehicle.IsMoving)
+        ]);
+
+        y += 14;
+        DrawCodeSection(canvas, panel, ref y, "RENDER", vehicle.IsMoving,
+        [
+            new("DrawChariot(canvas, position);", vehicle.IsMoving)
+        ]);
+
+        DrawMetric(canvas, panel, $"momentum / speed = {vehicle.Speed:0.000}");
     }
 
     private static void DrawSpaceCode(ICanvas canvas, RectF panel, LoopVehicle vehicle)
@@ -245,19 +291,32 @@ public sealed class VehicleControlScene : GameScene
                         ? "BUTTON RELEASED — gravity is changing velocity every update"
                         : "HOLD A / ENTER FOR THRUST   ·   RELEASE TO FALL   ·   B / SHIFT DOWN THRUST";
         }
+        else if (vehicle.IsCharioteer)
+        {
+            text = vehicle.IsPulling
+                ? "PULLING — the horses add force and build momentum"
+                : vehicle.IsBraking
+                    ? "REINS ON — braking removes momentum"
+                    : vehicle.IsCoastingWithMomentum
+                        ? "BUTTON RELEASED — momentum keeps the chariot moving"
+                        : "HOLD A / ENTER TO BUILD MOMENTUM   ·   HOLD B / SHIFT TO BRAKE";
+        }
         else
         {
-            text = vehicle.IsAccelerating
-                ? "ACCELERATING — INPUT and UPDATE are active"
-                : vehicle.IsBraking
-                    ? "BRAKING — input is changing the game state"
-                    : vehicle.IsMoving
-                        ? "COASTING — UPDATE keeps advancing position"
-                        : "HOLD A / ENTER TO ACCELERATE   ·   HOLD B / SHIFT TO BRAKE";
+            text = vehicle.IsSteering
+                ? "STEERING — LEFT / RIGHT changes lane state while velocity keeps moving the car"
+                : vehicle.IsAccelerating
+                    ? "THROTTLE — speed changes during UPDATE"
+                    : vehicle.IsBraking
+                        ? "BRAKING — input is reducing velocity"
+                        : vehicle.IsMoving
+                            ? "COASTING — UPDATE keeps advancing position"
+                            : "HOLD A / ENTER FOR THROTTLE   ·   LEFT / RIGHT TO STEER   ·   B / SHIFT TO BRAKE";
         }
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsThrusting || vehicle.IsUsingDownThrust
+        canvas.FontColor = vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsThrusting ||
+                           vehicle.IsUsingDownThrust || vehicle.IsSteering
             ? Color.FromArgb("#F8D866")
             : Color.FromArgb("#CBD5E1");
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.012f, 11f, 17f);
@@ -265,15 +324,18 @@ public sealed class VehicleControlScene : GameScene
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
-    private string GetHeading() => _state.Champion == Champion.SpacePilot
-        ? "NOW FLY THE LOOP"
-        : "NOW DRIVE THE LOOP";
+    private string GetHeading() => _state.Champion switch
+    {
+        Champion.SpacePilot => "NOW FLY THE LOOP",
+        Champion.Charioteer => "NOW FEEL THE MOMENTUM",
+        _ => "NOW DRIVE THE LOOP"
+    };
 
     private string GetSubtitle() => _state.Champion switch
     {
-        Champion.Charioteer => "Your champion has the reins. Hold the button and watch input become motion.",
+        Champion.Charioteer => "Build speed, release the input, and notice that state keeps carrying the chariot forward.",
         Champion.SpacePilot => "Hold for thrust. Release the button and gravity takes over on the very next update.",
-        _ => "Your champion is behind the wheel. Hold the button and watch input become motion."
+        _ => "Throttle changes velocity. Left and right change steering. Both become visible through the same game loop."
     };
 
     private readonly record struct CodeLine(string Text, bool IsActive);

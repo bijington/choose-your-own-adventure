@@ -5,16 +5,21 @@ using Orbit.Engine;
 namespace ChooseYourOwnAdventure.GameObjects;
 
 /// <summary>
-/// A deliberately small, themed input demo.
-/// Driver and Charioteer move around a course using acceleration/braking.
-/// Space Pilot uses thrust and gravity so releasing the button changes the motion immediately.
+/// A small set of deliberately different control models used to demonstrate how
+/// input changes game state during Update and becomes visible during Render.
 /// </summary>
 public sealed class LoopVehicle : GameObject
 {
-    private const double Acceleration = 0.22d;
-    private const double Drag = 0.08d;
-    private const double Brake = 0.38d;
-    private const double MaxSpeed = 0.34d;
+    private const double DriverAcceleration = 0.24d;
+    private const double DriverDrag = 0.09d;
+    private const double DriverBrake = 0.42d;
+    private const double DriverMaxSpeed = 0.36d;
+    private const double DriverSteeringRate = 1.45d;
+
+    private const double ChariotPull = 0.16d;
+    private const double ChariotDrag = 0.018d;
+    private const double ChariotBrake = 0.30d;
+    private const double ChariotMaxSpeed = 0.30d;
 
     private const double SpaceThrust = 0.92d;
     private const double SpaceGravity = 0.58d;
@@ -26,6 +31,7 @@ public sealed class LoopVehicle : GameObject
 
     private double _progress;
     private double _speed;
+    private double _laneOffset;
 
     // 0 = bottom of the flight lane, 1 = top.
     private double _altitude = 0.12d;
@@ -37,10 +43,24 @@ public sealed class LoopVehicle : GameObject
         _input = input;
     }
 
+    public bool IsRacingDriver => _state.Champion == Champion.RacingDriver;
+    public bool IsCharioteer => _state.Champion == Champion.Charioteer;
     public bool IsSpacePilot => _state.Champion == Champion.SpacePilot;
+
     public bool IsAccelerating => !IsSpacePilot && _input.IsPressed(AdventureAction.Primary);
     public bool IsBraking => !IsSpacePilot &&
         (_input.IsPressed(AdventureAction.Secondary) || _input.IsPressed(AdventureAction.Down));
+
+    public double SteeringInput => IsRacingDriver
+        ? (_input.IsPressed(AdventureAction.Left) ? -1d : 0d) +
+          (_input.IsPressed(AdventureAction.Right) ? 1d : 0d)
+        : 0d;
+
+    public bool IsSteering => Math.Abs(SteeringInput) > 0.001d;
+    public double LaneOffset => _laneOffset;
+
+    public bool IsPulling => IsCharioteer && IsAccelerating;
+    public bool IsCoastingWithMomentum => IsCharioteer && !IsPulling && !IsBraking && _speed > 0.004d;
 
     public bool IsThrusting => IsSpacePilot && _input.IsPressed(AdventureAction.Primary);
     public bool IsUsingDownThrust => IsSpacePilot &&
@@ -64,29 +84,62 @@ public sealed class LoopVehicle : GameObject
         if (IsSpacePilot)
         {
             UpdateSpacePilot(elapsed);
-            return;
         }
-
-        UpdateCourseVehicle(elapsed);
-    }
-
-    private void UpdateCourseVehicle(double elapsed)
-    {
-        if (IsAccelerating)
+        else if (IsCharioteer)
         {
-            _speed += Acceleration * elapsed;
+            UpdateCharioteer(elapsed);
         }
         else
         {
-            _speed -= Drag * elapsed;
+            UpdateDriver(elapsed);
+        }
+    }
+
+    private void UpdateDriver(double elapsed)
+    {
+        if (IsAccelerating)
+        {
+            _speed += DriverAcceleration * elapsed;
+        }
+        else
+        {
+            _speed -= DriverDrag * elapsed;
         }
 
         if (IsBraking)
         {
-            _speed -= Brake * elapsed;
+            _speed -= DriverBrake * elapsed;
         }
 
-        _speed = Math.Clamp(_speed, 0d, MaxSpeed);
+        _speed = Math.Clamp(_speed, 0d, DriverMaxSpeed);
+
+        // Steering changes lateral position independently from forward velocity.
+        // This makes the two inputs visibly affect different parts of game state.
+        _laneOffset += SteeringInput * DriverSteeringRate * elapsed;
+        _laneOffset = Math.Clamp(_laneOffset, -1d, 1d);
+
+        _progress = (_progress + (_speed * elapsed)) % 1d;
+    }
+
+    private void UpdateCharioteer(double elapsed)
+    {
+        if (IsPulling)
+        {
+            _speed += ChariotPull * elapsed;
+        }
+        else
+        {
+            // Deliberately tiny drag: releasing the input does not stop the chariot.
+            // Its current momentum continues to advance position every update.
+            _speed -= ChariotDrag * elapsed;
+        }
+
+        if (IsBraking)
+        {
+            _speed -= ChariotBrake * elapsed;
+        }
+
+        _speed = Math.Clamp(_speed, 0d, ChariotMaxSpeed);
         _progress = (_progress + (_speed * elapsed)) % 1d;
     }
 
@@ -141,23 +194,37 @@ public sealed class LoopVehicle : GameObject
         var angle = _progress * Math.PI * 2d - Math.PI / 2d;
         var rx = track.Width * 0.5f;
         var ry = track.Height * 0.5f;
-        var cx = (track.X + track.Width / 2f) + (float)Math.Cos(angle) * rx;
-        var cy = (track.Y + track.Height / 2f) + (float)Math.Sin(angle) * ry;
-        var dx = -rx * (float)Math.Sin(angle);
-        var dy = ry * (float)Math.Cos(angle);
+        var centreX = track.X + track.Width / 2f;
+        var centreY = track.Y + track.Height / 2f;
+
+        var cos = (float)Math.Cos(angle);
+        var sin = (float)Math.Sin(angle);
+        var cx = centreX + cos * rx;
+        var cy = centreY + sin * ry;
+
+        if (IsRacingDriver)
+        {
+            // Move across the width of the circuit while still following the oval.
+            var lateralOffset = (float)_laneOffset * 16f;
+            cx += cos * lateralOffset;
+            cy += sin * lateralOffset;
+        }
+
+        var dx = -rx * sin;
+        var dy = ry * cos;
         var headingDegrees = (float)(Math.Atan2(dy, dx) * 180d / Math.PI);
 
         canvas.SaveState();
         canvas.Translate(cx, cy);
         canvas.Rotate(headingDegrees);
 
-        if (_state.Champion == Champion.Charioteer)
+        if (IsCharioteer)
         {
             DrawChariot(canvas);
         }
         else
         {
-            DrawCar(canvas);
+            DrawCar(canvas, (float)SteeringInput);
         }
 
         canvas.RestoreState();
@@ -178,19 +245,30 @@ public sealed class LoopVehicle : GameObject
         canvas.RestoreState();
     }
 
-    private static void DrawCar(ICanvas canvas)
+    private static void DrawCar(ICanvas canvas, float steering)
     {
-        canvas.FillColor = Color.FromArgb("#111827");
-        canvas.FillRoundedRectangle(new RectF(-19, -17, 10, 12), 3);
-        canvas.FillRoundedRectangle(new RectF(-19, 5, 10, 12), 3);
-        canvas.FillRoundedRectangle(new RectF(9, -16, 10, 11), 3);
-        canvas.FillRoundedRectangle(new RectF(9, 5, 10, 11), 3);
+        // Wheels visibly steer while the body continues along the track tangent.
+        DrawWheel(canvas, -14, -13, steering * 18f);
+        DrawWheel(canvas, -14, 7, steering * 18f);
+        DrawWheel(canvas, 10, -13, 0f);
+        DrawWheel(canvas, 10, 7, 0f);
+
         canvas.FillColor = Color.FromArgb("#EF4444");
         canvas.FillRoundedRectangle(new RectF(-22, -9, 42, 18), 6);
         canvas.FillRectangle(-26, -13, 7, 26);
         canvas.FillRectangle(15, -15, 5, 30);
         canvas.FillColor = Color.FromArgb("#F8FAFC");
         canvas.FillRoundedRectangle(new RectF(-5, -6, 13, 12), 5);
+    }
+
+    private static void DrawWheel(ICanvas canvas, float x, float y, float rotation)
+    {
+        canvas.SaveState();
+        canvas.Translate(x + 5, y + 5);
+        canvas.Rotate(rotation);
+        canvas.FillColor = Color.FromArgb("#111827");
+        canvas.FillRoundedRectangle(new RectF(-5, -6, 10, 12), 3);
+        canvas.RestoreState();
     }
 
     private static void DrawChariot(ICanvas canvas)

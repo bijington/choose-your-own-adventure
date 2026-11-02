@@ -170,3 +170,13 @@ This transition is presenter-side only; the SignalR vote lifecycle and web host 
 ## Theme-specific vehicle input
 
 The vehicle-control scene now demonstrates different update models per champion. Driver and Charioteer keep the simple accelerate/brake course model. Space Pilot uses vertical thrust/gravity: hold Primary to apply upward thrust, release it to let gravity change velocity, and use Secondary/Down for downward thrust. The live code panel emphasizes the exact branch that is active.
+
+## Theme-specific control demo
+
+The vehicle-control scene now teaches a different game-programming concept for each audience-selected champion:
+
+- **Racing Driver** — hold Primary for throttle and use Left/Right to steer across the circuit. The live code panel highlights velocity and steering state independently.
+- **Charioteer** — Primary builds momentum, but releasing it applies only light drag, so the chariot keeps moving. Secondary brakes. This makes inertia/state persistence visible.
+- **Space Pilot** — Primary applies upward thrust; releasing it lets gravity change velocity every update. Secondary adds downward thrust.
+
+All three mechanics still pass through the same `AdventureInputRouter → Update() → Render()` pipeline.
