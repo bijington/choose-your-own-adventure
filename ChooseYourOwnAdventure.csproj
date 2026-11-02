@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bijington.Orbit.Engine" Version="0.2.2-preview.1" />
+    <PackageReference Include="Bijington.Orbit.Input" Version="0.2.2-preview.1" />
   </ItemGroup>
 
 </Project>

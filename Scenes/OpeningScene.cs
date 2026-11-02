@@ -30,7 +30,7 @@ public sealed class OpeningScene : GameScene
             DrawCodeRevealShell(canvas, dimensions);
             base.Render(canvas, dimensions);
             DrawCodePanel(canvas, GetCodePanel(dimensions));
-            DrawContinuePrompt(canvas, dimensions, "CONTINUE TO THE LOOPING SPEEDWAY", 0.88f);
+            DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  CONTINUE TO THE GAME LOOP", 0.88f);
             return;
         }
 
@@ -54,7 +54,7 @@ public sealed class OpeningScene : GameScene
                 DrawDialogue(canvas, dimensions, "And, strangely...", "dependency injection.");
                 break;
             case OpeningStage.ChooseChampion:
-                DrawChampionSelection(canvas, dimensions);
+                DrawChampionSelection(canvas, dimensions, _state.HighlightedChampion);
                 break;
             case OpeningStage.ChampionChosen:
                 DrawChampionChosen(canvas, dimensions);
@@ -108,7 +108,7 @@ public sealed class OpeningScene : GameScene
                 HorizontalAlignment.Center, VerticalAlignment.Center);
         }
 
-        DrawContinuePrompt(canvas, dimensions, "TAP TO CONTINUE", 0.72f);
+        DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  CONTINUE", 0.72f);
     }
 
     private void DrawContinuePrompt(ICanvas canvas, RectF dimensions, string text, float yFactor)
@@ -123,7 +123,7 @@ public sealed class OpeningScene : GameScene
         canvas.Alpha = 1f;
     }
 
-    private static void DrawChampionSelection(ICanvas canvas, RectF dimensions)
+    private static void DrawChampionSelection(ICanvas canvas, RectF dimensions, Champion highlightedChampion)
     {
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Colors.White;
@@ -147,26 +147,29 @@ public sealed class OpeningScene : GameScene
         var startX = dimensions.X + (dimensions.Width - totalWidth) / 2f;
 
         DrawChampionCard(canvas, new RectF(startX, cardTop, cardWidth, cardHeight),
-            "THE DRIVER", "Speed. Precision.", "Questionable braking.", "01");
+            "THE DRIVER", "Speed. Precision.", "Questionable braking.", "01",
+            highlightedChampion == Champion.RacingDriver);
         DrawChampionCard(canvas, new RectF(startX + cardWidth + gap, cardTop, cardWidth, cardHeight),
-            "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", "02");
+            "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", "02",
+            highlightedChampion == Champion.Charioteer);
         DrawChampionCard(canvas, new RectF(startX + (cardWidth + gap) * 2, cardTop, cardWidth, cardHeight),
-            "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", "03");
+            "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", "03",
+            highlightedChampion == Champion.SpacePilot);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Color.FromArgb("#94A3B8");
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 22f);
-        canvas.DrawString("Tap a champion to choose", dimensions.X + 40,
+        canvas.DrawString("LEFT STICK / A-D choose   •   A / ENTER / tap confirm", dimensions.X + 40,
             dimensions.Y + dimensions.Height * 0.77f, Math.Max(0, dimensions.Width - 80), 40,
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
-    private static void DrawChampionCard(ICanvas canvas, RectF rect, string title, string line1, string line2, string number)
+    private static void DrawChampionCard(ICanvas canvas, RectF rect, string title, string line1, string line2, string number, bool isHighlighted)
     {
-        canvas.FillColor = Color.FromArgb("#111827");
+        canvas.FillColor = isHighlighted ? Color.FromArgb("#172033") : Color.FromArgb("#111827");
         canvas.FillRoundedRectangle(rect, 18);
-        canvas.StrokeColor = Color.FromArgb("#475569");
-        canvas.StrokeSize = 2;
+        canvas.StrokeColor = isHighlighted ? Color.FromArgb("#F8D866") : Color.FromArgb("#475569");
+        canvas.StrokeSize = isHighlighted ? 4 : 2;
         canvas.DrawRoundedRectangle(rect, 18);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
@@ -205,7 +208,7 @@ public sealed class OpeningScene : GameScene
             dimensions.Y + dimensions.Height * 0.48f, Math.Max(0, dimensions.Width - 80), 50,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
-        DrawContinuePrompt(canvas, dimensions, "REVEAL THE ORBIT CODE", 0.68f);
+        DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  REVEAL THE ORBIT CODE", 0.68f);
     }
 
     private static RectF GetCodePanel(RectF dimensions)

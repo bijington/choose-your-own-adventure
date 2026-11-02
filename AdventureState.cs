@@ -29,8 +29,16 @@ public enum GameLoopStage
 
 public sealed class AdventureState
 {
+    private static readonly Champion[] Champions =
+    [
+        ChooseYourOwnAdventure.Champion.RacingDriver,
+        ChooseYourOwnAdventure.Champion.Charioteer,
+        ChooseYourOwnAdventure.Champion.SpacePilot
+    ];
+
     public OpeningStage OpeningStage { get; private set; } = OpeningStage.Title;
     public Champion? Champion { get; private set; }
+    public Champion HighlightedChampion { get; private set; } = ChooseYourOwnAdventure.Champion.RacingDriver;
     public GameLoopStage GameLoopStage { get; private set; } = GameLoopStage.Overview;
 
     public int Health { get; set; } = 5;
@@ -52,8 +60,20 @@ public sealed class AdventureState
         };
     }
 
+    public void HighlightPreviousChampion() => MoveChampionHighlight(-1);
+
+    public void HighlightNextChampion() => MoveChampionHighlight(1);
+
+    public void HighlightChampion(Champion champion)
+    {
+        HighlightedChampion = champion;
+    }
+
+    public void ConfirmHighlightedChampion() => ChooseChampion(HighlightedChampion);
+
     public void ChooseChampion(Champion champion)
     {
+        HighlightedChampion = champion;
         Champion = champion;
         OpeningStage = OpeningStage.ChampionChosen;
     }
@@ -66,5 +86,12 @@ public sealed class AdventureState
             GameLoopStage.FirmwareComparison => GameLoopStage.Running,
             _ => GameLoopStage
         };
+    }
+
+    private void MoveChampionHighlight(int direction)
+    {
+        var currentIndex = Array.IndexOf(Champions, HighlightedChampion);
+        var nextIndex = (currentIndex + direction + Champions.Length) % Champions.Length;
+        HighlightedChampion = Champions[nextIndex];
     }
 }
