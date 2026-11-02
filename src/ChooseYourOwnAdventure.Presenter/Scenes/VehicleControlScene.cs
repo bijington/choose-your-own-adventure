@@ -13,7 +13,9 @@ public sealed class VehicleControlScene : GameScene
     public VehicleControlScene(AdventureState state, AdventureInputRouter input)
     {
         _state = state;
-        _state.CurrentLocation = "Behind the Wheel";
+        _state.CurrentLocation = state.Champion == Champion.SpacePilot
+            ? "Flight School"
+            : "Behind the Wheel";
         _vehicle = new LoopVehicle(state, input);
         Add(_vehicle);
     }
@@ -23,10 +25,10 @@ public sealed class VehicleControlScene : GameScene
         DrawBackground(canvas, dimensions);
         DrawHeading(canvas, dimensions);
         DrawCodePanel(canvas, dimensions, _vehicle);
-        DrawTrack(canvas, dimensions);
+        DrawCourse(canvas, dimensions);
         DrawInstructions(canvas, dimensions, _vehicle);
 
-        // The actual Orbit GameObject is rendered over the shell/track.
+        // The actual Orbit GameObject is rendered over the shell/course.
         base.Render(canvas, dimensions);
     }
 
@@ -45,7 +47,7 @@ public sealed class VehicleControlScene : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Colors.White;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.031f, 24f, 46f);
-        canvas.DrawString("NOW DRIVE THE LOOP", dimensions.X + 40,
+        canvas.DrawString(GetHeading(), dimensions.X + 40,
             dimensions.Y + dimensions.Height * 0.05f, dimensions.Width - 80, 52,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
@@ -57,43 +59,66 @@ public sealed class VehicleControlScene : GameScene
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
+    private void DrawCourse(ICanvas canvas, RectF dimensions)
+    {
+        if (_state.Champion == Champion.SpacePilot)
+        {
+            DrawFlightLane(canvas, dimensions);
+            return;
+        }
+
+        DrawTrack(canvas, dimensions);
+    }
+
     private void DrawTrack(ICanvas canvas, RectF dimensions)
     {
         var track = VehicleControlLayout.GetTrackBounds(dimensions);
 
-        switch (_state.Champion)
+        if (_state.Champion == Champion.Charioteer)
         {
-            case Champion.Charioteer:
-                canvas.StrokeColor = Color.FromArgb("#92400E");
-                canvas.StrokeSize = 36;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = Color.FromArgb("#F8D866");
-                canvas.StrokeSize = 2;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                break;
-            case Champion.SpacePilot:
-                canvas.StrokeColor = Color.FromArgb("#312E81");
-                canvas.StrokeSize = 38;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = Color.FromArgb("#6366F1");
-                canvas.StrokeSize = 7;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = Color.FromArgb("#22D3EE");
-                canvas.StrokeSize = 2;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                break;
-            default:
-                canvas.StrokeColor = Color.FromArgb("#475569");
-                canvas.StrokeSize = 36;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = Color.FromArgb("#CBD5E1");
-                canvas.StrokeSize = 2;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                break;
+            canvas.StrokeColor = Color.FromArgb("#92400E");
+            canvas.StrokeSize = 36;
+            canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
+            canvas.StrokeColor = Color.FromArgb("#F8D866");
+            canvas.StrokeSize = 2;
+            canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
+            return;
         }
+
+        canvas.StrokeColor = Color.FromArgb("#475569");
+        canvas.StrokeSize = 36;
+        canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
+        canvas.StrokeColor = Color.FromArgb("#CBD5E1");
+        canvas.StrokeSize = 2;
+        canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
     }
 
-    private static void DrawCodePanel(ICanvas canvas, RectF dimensions, LoopVehicle vehicle)
+    private static void DrawFlightLane(ICanvas canvas, RectF dimensions)
+    {
+        var lane = VehicleControlLayout.GetFlightLane(dimensions);
+
+        canvas.FillColor = Color.FromArgb("#0B1026");
+        canvas.FillRoundedRectangle(lane, 24);
+        canvas.StrokeColor = Color.FromArgb("#312E81");
+        canvas.StrokeSize = 3;
+        canvas.DrawRoundedRectangle(lane, 24);
+
+        canvas.StrokeColor = Color.FromArgb("#6366F1");
+        canvas.StrokeSize = 2;
+        for (var i = 1; i < 5; i++)
+        {
+            var y = lane.Bottom - lane.Height * (i / 5f);
+            canvas.DrawLine(lane.X + 16, y, lane.Right - 16, y);
+        }
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Color.FromArgb("#64748B");
+        canvas.FontSize = 12;
+        canvas.DrawString("ALTITUDE", lane.X, lane.Y - 28, lane.Width, 20,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
+    }
+
+    private void DrawCodePanel(ICanvas canvas, RectF dimensions, LoopVehicle vehicle)
     {
         var panel = VehicleControlLayout.GetCodePanel(dimensions);
         canvas.FillColor = Color.FromArgb("#0F172A");
@@ -108,35 +133,73 @@ public sealed class VehicleControlScene : GameScene
         canvas.DrawString("LoopVehicle.cs", panel.X + 22, panel.Y + 14,
             panel.Width - 44, 26, HorizontalAlignment.Left, VerticalAlignment.Center);
 
+        if (vehicle.IsSpacePilot)
+        {
+            DrawSpaceCode(canvas, panel, vehicle);
+        }
+        else
+        {
+            DrawCourseCode(canvas, panel, vehicle);
+        }
+    }
+
+    private static void DrawCourseCode(ICanvas canvas, RectF panel, LoopVehicle vehicle)
+    {
         var y = panel.Y + 58;
         DrawCodeSection(canvas, panel, ref y, "INPUT", vehicle.IsAccelerating || vehicle.IsBraking,
         [
-            "var accelerate = input.IsPressed(Primary);",
-            "var brake = input.IsPressed(Secondary);"
+            new("var accelerate = input.IsPressed(Primary);", vehicle.IsAccelerating),
+            new("var brake = input.IsPressed(Secondary);", vehicle.IsBraking)
         ]);
 
         y += 16;
         DrawCodeSection(canvas, panel, ref y, "UPDATE", vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsMoving,
         [
-            "speed += acceleration * elapsed;",
-            "position += speed * elapsed;"
+            new("speed += acceleration * elapsed;", vehicle.IsAccelerating),
+            new("position += speed * elapsed;", vehicle.IsMoving)
         ]);
 
         y += 16;
         DrawCodeSection(canvas, panel, ref y, "RENDER", vehicle.IsMoving,
         [
-            "DrawVehicle(canvas, position);"
+            new("DrawVehicle(canvas, position);", vehicle.IsMoving)
         ]);
 
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Color.FromArgb("#F8D866");
-        canvas.FontSize = Math.Clamp(panel.Width * 0.035f, 12f, 17f);
-        canvas.DrawString($"speed = {vehicle.Speed:0.000}", panel.X + 22, panel.Bottom - 42,
-            panel.Width - 44, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
+        DrawMetric(canvas, panel, $"speed = {vehicle.Speed:0.000}");
+    }
+
+    private static void DrawSpaceCode(ICanvas canvas, RectF panel, LoopVehicle vehicle)
+    {
+        var y = panel.Y + 58;
+
+        DrawCodeSection(canvas, panel, ref y, "INPUT", vehicle.IsThrusting || vehicle.IsUsingDownThrust,
+        [
+            new("var thrust = input.IsPressed(Primary);", vehicle.IsThrusting),
+            new("var down = input.IsPressed(Secondary);", vehicle.IsUsingDownThrust)
+        ]);
+
+        y += 14;
+        DrawCodeSection(canvas, panel, ref y, "UPDATE", true,
+        [
+            new("if (thrust)", vehicle.IsThrusting),
+            new("    velocityY -= thrustPower * elapsed;", vehicle.IsThrusting),
+            new("else", !vehicle.IsThrusting),
+            new("    velocityY += gravity * elapsed;", !vehicle.IsThrusting),
+            new("positionY += velocityY * elapsed;", vehicle.IsMoving)
+        ]);
+
+        y += 14;
+        DrawCodeSection(canvas, panel, ref y, "RENDER", vehicle.IsMoving || vehicle.IsThrusting,
+        [
+            new("DrawShip(canvas, positionY);", vehicle.IsMoving || vehicle.IsThrusting)
+        ]);
+
+        DrawMetric(canvas, panel,
+            $"altitude = {vehicle.Altitude:0.00}   velocityY = {vehicle.VerticalVelocity:+0.00;-0.00;0.00}");
     }
 
     private static void DrawCodeSection(ICanvas canvas, RectF panel, ref float y,
-        string title, bool active, IReadOnlyList<string> lines)
+        string title, bool active, IReadOnlyList<CodeLine> lines)
     {
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = active ? Color.FromArgb("#F8D866") : Color.FromArgb("#64748B");
@@ -147,41 +210,71 @@ public sealed class VehicleControlScene : GameScene
 
         foreach (var line in lines)
         {
-            canvas.Font = active
+            canvas.Font = line.IsActive
                 ? Microsoft.Maui.Graphics.Font.DefaultBold
                 : Microsoft.Maui.Graphics.Font.Default;
-            canvas.FontColor = active ? Colors.White : Color.FromArgb("#94A3B8");
+            canvas.FontColor = line.IsActive ? Colors.White : Color.FromArgb("#94A3B8");
             canvas.FontSize = Math.Clamp(panel.Width * 0.027f, 10f, 14f);
-            canvas.DrawString(line, panel.X + 30, y, panel.Width - 52, 24,
+            canvas.DrawString(line.Text, panel.X + 30, y, panel.Width - 52, 24,
                 HorizontalAlignment.Left, VerticalAlignment.Center);
-            y += 27;
+            y += 25;
         }
     }
 
-    private static void DrawInstructions(ICanvas canvas, RectF dimensions, LoopVehicle vehicle)
+    private static void DrawMetric(ICanvas canvas, RectF panel, string text)
+    {
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Color.FromArgb("#F8D866");
+        canvas.FontSize = Math.Clamp(panel.Width * 0.031f, 11f, 15f);
+        canvas.DrawString(text, panel.X + 22, panel.Bottom - 42,
+            panel.Width - 44, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
+    }
+
+    private void DrawInstructions(ICanvas canvas, RectF dimensions, LoopVehicle vehicle)
     {
         var track = VehicleControlLayout.GetTrackBounds(dimensions);
-        var text = vehicle.IsAccelerating
-            ? "ACCELERATING — INPUT and UPDATE are active"
-            : vehicle.IsBraking
-                ? "BRAKING — input is changing the game state"
-                : vehicle.IsMoving
-                    ? "COASTING — UPDATE keeps advancing position"
-                    : "HOLD A / ENTER TO ACCELERATE   ·   HOLD B / SHIFT TO BRAKE";
+        string text;
+
+        if (vehicle.IsSpacePilot)
+        {
+            text = vehicle.IsThrusting
+                ? "THRUST ON — velocity changes upward while the button is held"
+                : vehicle.IsUsingDownThrust
+                    ? "DOWN THRUST — applying force with the secondary input"
+                    : vehicle.IsFalling
+                        ? "BUTTON RELEASED — gravity is changing velocity every update"
+                        : "HOLD A / ENTER FOR THRUST   ·   RELEASE TO FALL   ·   B / SHIFT DOWN THRUST";
+        }
+        else
+        {
+            text = vehicle.IsAccelerating
+                ? "ACCELERATING — INPUT and UPDATE are active"
+                : vehicle.IsBraking
+                    ? "BRAKING — input is changing the game state"
+                    : vehicle.IsMoving
+                        ? "COASTING — UPDATE keeps advancing position"
+                        : "HOLD A / ENTER TO ACCELERATE   ·   HOLD B / SHIFT TO BRAKE";
+        }
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = vehicle.IsAccelerating || vehicle.IsBraking
+        canvas.FontColor = vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsThrusting || vehicle.IsUsingDownThrust
             ? Color.FromArgb("#F8D866")
             : Color.FromArgb("#CBD5E1");
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.012f, 11f, 17f);
-        canvas.DrawString(text, track.X - 10, track.Bottom + 42, track.Width + 20, 32,
+        canvas.DrawString(text, track.X - 10, track.Bottom + 56, track.Width + 20, 42,
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
+
+    private string GetHeading() => _state.Champion == Champion.SpacePilot
+        ? "NOW FLY THE LOOP"
+        : "NOW DRIVE THE LOOP";
 
     private string GetSubtitle() => _state.Champion switch
     {
         Champion.Charioteer => "Your champion has the reins. Hold the button and watch input become motion.",
-        Champion.SpacePilot => "Thrusters online. Hold the button and watch input become motion.",
+        Champion.SpacePilot => "Hold for thrust. Release the button and gravity takes over on the very next update.",
         _ => "Your champion is behind the wheel. Hold the button and watch input become motion."
     };
+
+    private readonly record struct CodeLine(string Text, bool IsActive);
 }

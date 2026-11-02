@@ -166,3 +166,7 @@ dotnet build -t:Run -f net10.0-maccatalyst src/ChooseYourOwnAdventure.Presenter/
 The winning champion now transitions directly into the Orbit code reveal. After the audience winner is accepted, the champion is shown centre-stage. Press A/Enter once more and the same `ChampionGameObject` animates into the right-hand code panel while the real Orbit code panel fades in on the left.
 
 This transition is presenter-side only; the SignalR vote lifecycle and web host are unchanged.
+
+## Theme-specific vehicle input
+
+The vehicle-control scene now demonstrates different update models per champion. Driver and Charioteer keep the simple accelerate/brake course model. Space Pilot uses vertical thrust/gravity: hold Primary to apply upward thrust, release it to let gravity change velocity, and use Secondary/Down for downward thrust. The live code panel emphasizes the exact branch that is active.

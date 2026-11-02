@@ -5,9 +5,9 @@ using Orbit.Engine;
 namespace ChooseYourOwnAdventure.GameObjects;
 
 /// <summary>
-/// A deliberately simple controllable vehicle. Holding Primary accelerates;
-/// holding Secondary/Down brakes. The vehicle stays on the themed course so
-/// the talk can focus on Input -> Update -> Render rather than driving physics.
+/// A deliberately small, themed input demo.
+/// Driver and Charioteer move around a course using acceleration/braking.
+/// Space Pilot uses thrust and gravity so releasing the button changes the motion immediately.
 /// </summary>
 public sealed class LoopVehicle : GameObject
 {
@@ -16,10 +16,20 @@ public sealed class LoopVehicle : GameObject
     private const double Brake = 0.38d;
     private const double MaxSpeed = 0.34d;
 
+    private const double SpaceThrust = 0.92d;
+    private const double SpaceGravity = 0.58d;
+    private const double SpaceDownThrust = 0.80d;
+    private const double SpaceMaxVelocity = 0.72d;
+
     private readonly AdventureState _state;
     private readonly AdventureInputRouter _input;
+
     private double _progress;
     private double _speed;
+
+    // 0 = bottom of the flight lane, 1 = top.
+    private double _altitude = 0.12d;
+    private double _verticalVelocity;
 
     public LoopVehicle(AdventureState state, AdventureInputRouter input)
     {
@@ -27,10 +37,23 @@ public sealed class LoopVehicle : GameObject
         _input = input;
     }
 
-    public bool IsAccelerating => _input.IsPressed(AdventureAction.Primary);
-    public bool IsBraking => _input.IsPressed(AdventureAction.Secondary) || _input.IsPressed(AdventureAction.Down);
-    public bool IsMoving => _speed > 0.0005d;
+    public bool IsSpacePilot => _state.Champion == Champion.SpacePilot;
+    public bool IsAccelerating => !IsSpacePilot && _input.IsPressed(AdventureAction.Primary);
+    public bool IsBraking => !IsSpacePilot &&
+        (_input.IsPressed(AdventureAction.Secondary) || _input.IsPressed(AdventureAction.Down));
+
+    public bool IsThrusting => IsSpacePilot && _input.IsPressed(AdventureAction.Primary);
+    public bool IsUsingDownThrust => IsSpacePilot &&
+        (_input.IsPressed(AdventureAction.Secondary) || _input.IsPressed(AdventureAction.Down));
+    public bool IsFalling => IsSpacePilot && !IsThrusting && _verticalVelocity > 0.0005d;
+
+    public bool IsMoving => IsSpacePilot
+        ? Math.Abs(_verticalVelocity) > 0.0005d
+        : _speed > 0.0005d;
+
     public double Speed => _speed;
+    public double Altitude => _altitude;
+    public double VerticalVelocity => _verticalVelocity;
 
     public override void Update(double millisecondsSinceLastUpdate)
     {
@@ -38,6 +61,17 @@ public sealed class LoopVehicle : GameObject
 
         var elapsed = millisecondsSinceLastUpdate / 1000d;
 
+        if (IsSpacePilot)
+        {
+            UpdateSpacePilot(elapsed);
+            return;
+        }
+
+        UpdateCourseVehicle(elapsed);
+    }
+
+    private void UpdateCourseVehicle(double elapsed)
+    {
         if (IsAccelerating)
         {
             _speed += Acceleration * elapsed;
@@ -56,10 +90,53 @@ public sealed class LoopVehicle : GameObject
         _progress = (_progress + (_speed * elapsed)) % 1d;
     }
 
+    private void UpdateSpacePilot(double elapsed)
+    {
+        // Screen Y grows downward, so negative velocity means "up".
+        if (IsThrusting)
+        {
+            _verticalVelocity -= SpaceThrust * elapsed;
+        }
+        else
+        {
+            _verticalVelocity += SpaceGravity * elapsed;
+        }
+
+        if (IsUsingDownThrust)
+        {
+            _verticalVelocity += SpaceDownThrust * elapsed;
+        }
+
+        _verticalVelocity = Math.Clamp(_verticalVelocity, -SpaceMaxVelocity, SpaceMaxVelocity);
+        _altitude -= _verticalVelocity * elapsed;
+
+        if (_altitude <= 0d)
+        {
+            _altitude = 0d;
+            _verticalVelocity = Math.Min(0d, _verticalVelocity);
+        }
+        else if (_altitude >= 1d)
+        {
+            _altitude = 1d;
+            _verticalVelocity = Math.Max(0d, _verticalVelocity);
+        }
+    }
+
     public override void Render(ICanvas canvas, RectF dimensions)
     {
         base.Render(canvas, dimensions);
 
+        if (IsSpacePilot)
+        {
+            RenderSpacePilot(canvas, dimensions);
+            return;
+        }
+
+        RenderCourseVehicle(canvas, dimensions);
+    }
+
+    private void RenderCourseVehicle(ICanvas canvas, RectF dimensions)
+    {
         var track = VehicleControlLayout.GetTrackBounds(dimensions);
         var angle = _progress * Math.PI * 2d - Math.PI / 2d;
         var rx = track.Width * 0.5f;
@@ -74,19 +151,30 @@ public sealed class LoopVehicle : GameObject
         canvas.Translate(cx, cy);
         canvas.Rotate(headingDegrees);
 
-        switch (_state.Champion)
+        if (_state.Champion == Champion.Charioteer)
         {
-            case Champion.Charioteer:
-                DrawChariot(canvas);
-                break;
-            case Champion.SpacePilot:
-                DrawShip(canvas);
-                break;
-            default:
-                DrawCar(canvas);
-                break;
+            DrawChariot(canvas);
+        }
+        else
+        {
+            DrawCar(canvas);
         }
 
+        canvas.RestoreState();
+    }
+
+    private void RenderSpacePilot(ICanvas canvas, RectF dimensions)
+    {
+        var lane = VehicleControlLayout.GetFlightLane(dimensions);
+        var x = lane.X + lane.Width / 2f;
+        var bottom = lane.Bottom - 34f;
+        var top = lane.Y + 34f;
+        var y = bottom - (float)_altitude * (bottom - top);
+
+        canvas.SaveState();
+        canvas.Translate(x, y);
+        canvas.Rotate(-90f);
+        DrawShip(canvas, IsThrusting);
         canvas.RestoreState();
     }
 
@@ -123,11 +211,24 @@ public sealed class LoopVehicle : GameObject
         canvas.FillEllipse(29, 9, 8, 8);
     }
 
-    private static void DrawShip(ICanvas canvas)
+    private static void DrawShip(ICanvas canvas, bool thrusting)
     {
-        canvas.FillColor = Color.FromArgb("#F97316");
-        canvas.FillRectangle(-29, -7, 11, 5);
-        canvas.FillRectangle(-29, 2, 11, 5);
+        if (thrusting)
+        {
+            canvas.FillColor = Color.FromArgb("#FBBF24");
+            canvas.FillRectangle(-37, -6, 18, 4);
+            canvas.FillRectangle(-37, 2, 18, 4);
+            canvas.FillColor = Color.FromArgb("#F97316");
+            canvas.FillRectangle(-31, -8, 12, 5);
+            canvas.FillRectangle(-31, 3, 12, 5);
+        }
+        else
+        {
+            canvas.FillColor = Color.FromArgb("#F97316");
+            canvas.FillRectangle(-27, -6, 8, 4);
+            canvas.FillRectangle(-27, 2, 8, 4);
+        }
+
         canvas.FillColor = Color.FromArgb("#6366F1");
         var body = new PathF();
         body.MoveTo(30, 0);
@@ -136,6 +237,7 @@ public sealed class LoopVehicle : GameObject
         body.LineTo(-16, 14);
         body.Close();
         canvas.FillPath(body);
+
         canvas.FillColor = Color.FromArgb("#818CF8");
         var wings = new PathF();
         wings.MoveTo(3, 0);
@@ -144,6 +246,7 @@ public sealed class LoopVehicle : GameObject
         wings.LineTo(-17, 24);
         wings.Close();
         canvas.FillPath(wings);
+
         canvas.FillColor = Color.FromArgb("#22D3EE");
         canvas.FillEllipse(2, -6, 12, 12);
     }
@@ -171,5 +274,15 @@ public static class VehicleControlLayout
         var rightTop = dimensions.Y + dimensions.Height * 0.24f;
         var rightHeight = dimensions.Height * 0.48f;
         return new RectF(rightX + rightWidth * 0.06f, rightTop, rightWidth * 0.88f, rightHeight);
+    }
+
+    public static RectF GetFlightLane(RectF dimensions)
+    {
+        var track = GetTrackBounds(dimensions);
+        return new RectF(
+            track.X + track.Width * 0.28f,
+            track.Y - track.Height * 0.12f,
+            track.Width * 0.44f,
+            track.Height * 1.24f);
     }
 }
