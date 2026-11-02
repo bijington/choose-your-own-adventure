@@ -15,6 +15,8 @@ public sealed class AudienceVoteClient : IAsyncDisposable
         _voteState = voteState;
     }
 
+    public bool IsConnected => _connection?.State == HubConnectionState.Connected;
+
     public Task StartAsync()
     {
         if (Interlocked.Exchange(ref _started, 1) == 1)
@@ -33,6 +35,28 @@ public sealed class AudienceVoteClient : IAsyncDisposable
         // Never block the presentation while a network connection is established.
         _ = ConnectUntilAvailableAsync();
         return Task.CompletedTask;
+    }
+
+    public Task OpenVotingAsync() => InvokePresenterCommandAsync("OpenVoting");
+    public Task CloseVotingAsync() => InvokePresenterCommandAsync("CloseVoting");
+    public Task RevealWinnerAsync() => InvokePresenterCommandAsync("RevealWinner");
+    public Task ResetVotingAsync() => InvokePresenterCommandAsync("ResetVoting");
+
+    private async Task InvokePresenterCommandAsync(string methodName)
+    {
+        if (_connection?.State != HubConnectionState.Connected)
+        {
+            return;
+        }
+
+        try
+        {
+            await _connection.InvokeAsync(methodName, _options.SessionId, _options.PresenterKey);
+        }
+        catch
+        {
+            // Presenter controls should never crash the talk because the network dropped.
+        }
     }
 
     private async Task ConnectUntilAvailableAsync()

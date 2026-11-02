@@ -12,6 +12,16 @@ public sealed class OpeningScene : GameScene
     private readonly LiveAudienceOptions _liveAudienceOptions;
     private readonly QrCodeRenderer _qrCodeRenderer;
     private double _elapsedMilliseconds;
+    private bool _votePhaseInitialized;
+    private VotePhase _displayedVotePhase;
+    private double _votePhaseElapsedMilliseconds;
+    private float _displayedDriverVotes;
+    private float _displayedCharioteerVotes;
+    private float _displayedSpacePilotVotes;
+
+    private const double LockInDurationMilliseconds = 3000d;
+    private const double RevealSuspenseMilliseconds = 1100d;
+    private const double RevealFadeMilliseconds = 900d;
 
     public OpeningScene(
         AdventureState state,
@@ -30,6 +40,23 @@ public sealed class OpeningScene : GameScene
     {
         base.Update(millisecondsSinceLastUpdate);
         _elapsedMilliseconds += millisecondsSinceLastUpdate;
+
+        var votes = _liveVoteState.Snapshot;
+        if (!_votePhaseInitialized || votes.Phase != _displayedVotePhase)
+        {
+            _displayedVotePhase = votes.Phase;
+            _votePhaseElapsedMilliseconds = 0d;
+            _votePhaseInitialized = true;
+        }
+        else
+        {
+            _votePhaseElapsedMilliseconds += millisecondsSinceLastUpdate;
+        }
+
+        var smoothing = (float)(1d - Math.Exp(-millisecondsSinceLastUpdate / 180d));
+        _displayedDriverVotes += (votes.RacingDriver - _displayedDriverVotes) * smoothing;
+        _displayedCharioteerVotes += (votes.Charioteer - _displayedCharioteerVotes) * smoothing;
+        _displayedSpacePilotVotes += (votes.SpacePilot - _displayedSpacePilotVotes) * smoothing;
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
@@ -137,6 +164,12 @@ public sealed class OpeningScene : GameScene
     private void DrawChampionSelection(ICanvas canvas, RectF dimensions, Champion highlightedChampion)
     {
         var votes = _liveVoteState.Snapshot;
+        var revealProgress = votes.Phase == VotePhase.Revealed
+            ? Math.Clamp((_votePhaseElapsedMilliseconds - RevealSuspenseMilliseconds) / RevealFadeMilliseconds, 0d, 1d)
+            : 0d;
+        var revealWinner = revealProgress > 0d ? votes.RevealedChampion : null;
+        var hasReveal = votes.Phase == VotePhase.Revealed && revealProgress > 0d;
+        var displayedTotal = Math.Max(0.001f, _displayedDriverVotes + _displayedCharioteerVotes + _displayedSpacePilotVotes);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Colors.White;
@@ -148,7 +181,7 @@ public sealed class OpeningScene : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Color.FromArgb("#94A3B8");
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 21f);
-        canvas.DrawString("Scan the QR code and vote — the room chooses the theme for the rest of the session.", dimensions.X + 40,
+        canvas.DrawString(GetVotingSubtitle(votes), dimensions.X + 40,
             dimensions.Y + dimensions.Height * 0.17f, Math.Max(0, dimensions.Width - 80), 40,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
@@ -160,14 +193,14 @@ public sealed class OpeningScene : GameScene
         var startX = dimensions.X + (dimensions.Width - totalWidth) / 2f;
 
         DrawChampionCard(canvas, new RectF(startX, cardTop, cardWidth, cardHeight),
-            "THE DRIVER", "Speed. Precision.", "Questionable braking.", "01", votes.RacingDriver,
-            highlightedChampion == Champion.RacingDriver);
+            "THE DRIVER", "Speed. Precision.", "Questionable braking.", "01", votes.RacingDriver, _displayedDriverVotes / displayedTotal,
+            highlightedChampion == Champion.RacingDriver, revealWinner == Champion.RacingDriver, hasReveal, (float)revealProgress);
         DrawChampionCard(canvas, new RectF(startX + cardWidth + gap, cardTop, cardWidth, cardHeight),
-            "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", "02", votes.Charioteer,
-            highlightedChampion == Champion.Charioteer);
+            "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", "02", votes.Charioteer, _displayedCharioteerVotes / displayedTotal,
+            highlightedChampion == Champion.Charioteer, revealWinner == Champion.Charioteer, hasReveal, (float)revealProgress);
         DrawChampionCard(canvas, new RectF(startX + (cardWidth + gap) * 2, cardTop, cardWidth, cardHeight),
-            "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", "03", votes.SpacePilot,
-            highlightedChampion == Champion.SpacePilot);
+            "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", "03", votes.SpacePilot, _displayedSpacePilotVotes / displayedTotal,
+            highlightedChampion == Champion.SpacePilot, revealWinner == Champion.SpacePilot, hasReveal, (float)revealProgress);
 
         var qrSize = Math.Clamp(dimensions.Height * 0.19f, 105f, 170f);
         var qrRect = new RectF(dimensions.X + dimensions.Width * 0.12f,
@@ -175,9 +208,9 @@ public sealed class OpeningScene : GameScene
         _qrCodeRenderer.Draw(canvas, qrRect);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Colors.White;
+        canvas.FontColor = votes.Phase == VotePhase.Open ? Color.FromArgb("#F8D866") : Colors.White;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.016f, 14f, 23f);
-        canvas.DrawString("SCAN TO VOTE", qrRect.Right + 28, qrRect.Y + 8, dimensions.Width * 0.50f, 32,
+        canvas.DrawString(GetVotingStatus(votes), qrRect.Right + 28, qrRect.Y + 8, dimensions.Width * 0.50f, 32,
             HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
@@ -189,18 +222,43 @@ public sealed class OpeningScene : GameScene
             dimensions.Width * 0.30f, 28, HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.FontColor = Color.FromArgb("#94A3B8");
-        canvas.DrawString("A / ENTER selects the current audience leader (or the highlighted champion if offline).",
-            qrRect.Right + 28, qrRect.Y + 108, dimensions.Width * 0.58f, 46,
+        canvas.DrawString(GetPresenterPrompt(votes, _votePhaseElapsedMilliseconds),
+            qrRect.Right + 28, qrRect.Y + 108, dimensions.Width * 0.58f, 52,
             HorizontalAlignment.Left, VerticalAlignment.Top);
+
+        if (votes.Phase == VotePhase.Closed && _votePhaseElapsedMilliseconds < LockInDurationMilliseconds)
+        {
+            DrawLockInCountdown(canvas, dimensions);
+        }
+
+        if (votes.Phase == VotePhase.Revealed && _votePhaseElapsedMilliseconds < RevealSuspenseMilliseconds)
+        {
+            DrawRevealSuspense(canvas, dimensions);
+        }
+        else if (votes.Phase == VotePhase.Revealed && votes.RevealedChampion is null)
+        {
+            DrawTieBanner(canvas, dimensions);
+        }
     }
 
-    private static void DrawChampionCard(ICanvas canvas, RectF rect, string title, string line1, string line2,
-        string number, int voteCount, bool isHighlighted)
+    private void DrawChampionCard(ICanvas canvas, RectF rect, string title, string line1, string line2,
+        string number, int voteCount, float voteShare, bool isHighlighted, bool isWinner, bool hasReveal, float revealProgress)
     {
-        canvas.FillColor = isHighlighted ? Color.FromArgb("#172033") : Color.FromArgb("#111827");
+        if (hasReveal && !isWinner)
+        {
+            canvas.Alpha = 1f - (0.65f * revealProgress);
+        }
+
+        canvas.FillColor = isWinner
+            ? Color.FromArgb("#2A2411")
+            : isHighlighted ? Color.FromArgb("#172033") : Color.FromArgb("#111827");
         canvas.FillRoundedRectangle(rect, 18);
-        canvas.StrokeColor = isHighlighted ? Color.FromArgb("#F8D866") : Color.FromArgb("#475569");
-        canvas.StrokeSize = isHighlighted ? 4 : 2;
+
+        var winnerPulse = (Math.Sin(_elapsedMilliseconds / 180d) + 1d) / 2d;
+        canvas.StrokeColor = isWinner
+            ? Color.FromArgb("#F8D866")
+            : isHighlighted ? Color.FromArgb("#F8D866") : Color.FromArgb("#475569");
+        canvas.StrokeSize = isWinner ? (float)(4d + winnerPulse * 4d) : isHighlighted ? 4 : 2;
         canvas.DrawRoundedRectangle(rect, 18);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
@@ -222,11 +280,117 @@ public sealed class OpeningScene : GameScene
         canvas.DrawString(line2, rect.X + 10, rect.Y + rect.Height * 0.63f, rect.Width - 20, 28,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
+        var barRect = new RectF(rect.X + rect.Width * 0.10f, rect.Y + rect.Height * 0.73f, rect.Width * 0.80f, 8f);
+        canvas.FillColor = Color.FromArgb("#253047");
+        canvas.FillRoundedRectangle(barRect, 4);
+        if (voteShare > 0f)
+        {
+            var animatedWidth = Math.Clamp(barRect.Width * voteShare, 2f, barRect.Width);
+            canvas.FillColor = Color.FromArgb("#F8D866");
+            canvas.FillRoundedRectangle(new RectF(barRect.X, barRect.Y, animatedWidth, barRect.Height), 4);
+        }
+
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = voteCount > 0 ? Color.FromArgb("#F8D866") : Color.FromArgb("#64748B");
         canvas.FontSize = Math.Clamp(rect.Width * 0.055f, 12f, 19f);
         canvas.DrawString($"{voteCount} VOTE{(voteCount == 1 ? string.Empty : "S")}", rect.X + 10,
-            rect.Y + rect.Height * 0.78f, rect.Width - 20, 30, HorizontalAlignment.Center, VerticalAlignment.Center);
+            rect.Y + rect.Height * 0.80f, rect.Width - 20, 30, HorizontalAlignment.Center, VerticalAlignment.Center);
+
+        if (isWinner)
+        {
+            canvas.FontColor = Color.FromArgb("#F8D866");
+            canvas.FontSize = Math.Clamp(rect.Width * 0.045f, 11f, 17f);
+            canvas.DrawString("★ AUDIENCE CHAMPION ★", rect.X + 10,
+                rect.Bottom - 28, rect.Width - 20, 20, HorizontalAlignment.Center, VerticalAlignment.Center);
+        }
+
+        canvas.Alpha = 1f;
+    }
+
+    private static string GetVotingSubtitle(VoteSnapshot votes) => votes.Phase switch
+    {
+        VotePhase.Ready => "Scan the QR code now. Voting opens when the presenter starts the round.",
+        VotePhase.Open => "Voting is OPEN — choose carefully. This decision themes the rest of the session.",
+        VotePhase.Closed => "Votes are locked. Hold that thought…",
+        VotePhase.Revealed when votes.RevealedChampion is null => "It is a tie! The room must decide again.",
+        VotePhase.Revealed => "The audience has chosen.",
+        _ => string.Empty
+    };
+
+    private static string GetVotingStatus(VoteSnapshot votes) => votes.Phase switch
+    {
+        VotePhase.Ready => "SCAN TO JOIN",
+        VotePhase.Open => "● VOTING OPEN",
+        VotePhase.Closed => "LOCKING IN…",
+        VotePhase.Revealed when votes.RevealedChampion is null => "TIE!",
+        VotePhase.Revealed => "WINNER REVEALED",
+        _ => "SCAN TO VOTE"
+    };
+
+    private static string GetPresenterPrompt(VoteSnapshot votes, double phaseElapsedMilliseconds) => votes.Phase switch
+    {
+        VotePhase.Ready => "A / ENTER  ·  OPEN VOTING   •   B / ESC  ·  RESET",
+        VotePhase.Open => "A / ENTER  ·  CLOSE VOTING   •   B / ESC  ·  RESET",
+        VotePhase.Closed when phaseElapsedMilliseconds < LockInDurationMilliseconds => "LOCKING VOTES…",
+        VotePhase.Closed => "A / ENTER  ·  REVEAL WINNER   •   B / ESC  ·  RESET",
+        VotePhase.Revealed when phaseElapsedMilliseconds < RevealSuspenseMilliseconds => "AND THE AUDIENCE CHOSE…",
+        VotePhase.Revealed when votes.RevealedChampion is null => "A / ENTER  ·  REOPEN VOTING   •   B / ESC  ·  RESET",
+        VotePhase.Revealed => "A / ENTER  ·  CONTINUE WITH THE WINNER   •   B / ESC  ·  RESET",
+        _ => string.Empty
+    };
+
+    private void DrawLockInCountdown(ICanvas canvas, RectF dimensions)
+    {
+        var secondsRemaining = Math.Max(1, 3 - (int)(_votePhaseElapsedMilliseconds / 1000d));
+        var pulse = (float)((Math.Sin(_elapsedMilliseconds / 120d) + 1d) / 2d);
+        var box = new RectF(dimensions.X + dimensions.Width * 0.39f,
+            dimensions.Y + dimensions.Height * 0.30f, dimensions.Width * 0.22f, dimensions.Height * 0.25f);
+
+        canvas.FillColor = Color.FromRgba(11, 16, 32, 230);
+        canvas.FillRoundedRectangle(box, 24);
+        canvas.StrokeColor = Color.FromArgb("#F8D866");
+        canvas.StrokeSize = 3f + pulse * 3f;
+        canvas.DrawRoundedRectangle(box, 24);
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Color.FromArgb("#F8D866");
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.075f, 54f, 104f);
+        canvas.DrawString(secondsRemaining.ToString(), box, HorizontalAlignment.Center, VerticalAlignment.Center);
+
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.015f, 13f, 21f);
+        canvas.DrawString("LOCKING IN", box.X, box.Bottom - 48, box.Width, 28,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
+    }
+
+    private void DrawRevealSuspense(ICanvas canvas, RectF dimensions)
+    {
+        var progress = Math.Clamp(_votePhaseElapsedMilliseconds / RevealSuspenseMilliseconds, 0d, 1d);
+        canvas.Alpha = (float)(0.72d + progress * 0.20d);
+        canvas.FillColor = Color.FromArgb("#0B1020");
+        var banner = new RectF(dimensions.X + dimensions.Width * 0.18f,
+            dimensions.Y + dimensions.Height * 0.31f, dimensions.Width * 0.64f, dimensions.Height * 0.18f);
+        canvas.FillRoundedRectangle(banner, 24);
+        canvas.StrokeColor = Color.FromArgb("#F8D866");
+        canvas.StrokeSize = 3;
+        canvas.DrawRoundedRectangle(banner, 24);
+        canvas.Alpha = 1f;
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Colors.White;
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.028f, 24f, 42f);
+        canvas.DrawString("AND THE AUDIENCE CHOSE…", banner, HorizontalAlignment.Center, VerticalAlignment.Center);
+    }
+
+    private static void DrawTieBanner(ICanvas canvas, RectF dimensions)
+    {
+        canvas.FillColor = Color.FromArgb("#7C2D12");
+        var banner = new RectF(dimensions.X + dimensions.Width * 0.34f,
+            dimensions.Y + dimensions.Height * 0.21f, dimensions.Width * 0.32f, 42);
+        canvas.FillRoundedRectangle(banner, 14);
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Colors.White;
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 20f);
+        canvas.DrawString("TIE — ONE MORE ROUND!", banner, HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
     private void DrawChampionChosen(ICanvas canvas, RectF dimensions)

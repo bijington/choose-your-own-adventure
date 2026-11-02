@@ -15,6 +15,7 @@ public partial class MainPage : ContentPage
     private bool _hasStarted;
     private bool _showingGameLoop;
     private bool _showingVehicleControl;
+    private static readonly TimeSpan VoteLockInDuration = TimeSpan.FromSeconds(3);
 
     public MainPage(
         IGameSceneManager gameSceneManager,
@@ -96,7 +97,7 @@ public partial class MainPage : ContentPage
         _inputRouter.Trigger(AdventureAction.Primary);
     }
 
-    private void OnAdventureAction(object? sender, AdventureAction action)
+    private async void OnAdventureAction(object? sender, AdventureAction action)
     {
         if (_showingVehicleControl)
         {
@@ -136,6 +137,12 @@ public partial class MainPage : ContentPage
 
         if (_adventureState.OpeningStage == OpeningStage.ChooseChampion)
         {
+            if ((action == AdventureAction.Back || action == AdventureAction.Secondary) && _audienceVoteClient.IsConnected)
+            {
+                await _audienceVoteClient.ResetVotingAsync();
+                return;
+            }
+
             switch (action)
             {
                 case AdventureAction.Left:
@@ -145,15 +152,46 @@ public partial class MainPage : ContentPage
                     _adventureState.HighlightNextChampion();
                     return;
                 case AdventureAction.Primary:
-                    var audienceWinner = _liveVoteState.WinningChampion;
-                    if (audienceWinner is not null)
-                    {
-                        _adventureState.ChooseChampion(audienceWinner.Value);
-                    }
-                    else
+                    if (!_audienceVoteClient.IsConnected)
                     {
                         _adventureState.ConfirmHighlightedChampion();
+                        return;
                     }
+
+                    var vote = _liveVoteState.Snapshot;
+                    switch (vote.Phase)
+                    {
+                        case VotePhase.Ready:
+                            await _audienceVoteClient.OpenVotingAsync();
+                            return;
+                        case VotePhase.Open:
+                            await _audienceVoteClient.CloseVotingAsync();
+                            return;
+                        case VotePhase.Closed:
+                            // Give the presenter screen time to run the lock-in countdown
+                            // before allowing the winner reveal. Repeated button presses during
+                            // the countdown are intentionally ignored.
+                            if (_liveVoteState.PhaseElapsed < VoteLockInDuration)
+                            {
+                                return;
+                            }
+
+                            await _audienceVoteClient.RevealWinnerAsync();
+                            return;
+                        case VotePhase.Revealed:
+                            if (vote.RevealedChampion is { } winner)
+                            {
+                                _adventureState.ChooseChampion(winner);
+                            }
+                            else
+                            {
+                                // A tie/no-vote reveal is a useful live moment: reopen voting
+                                // rather than secretly applying a tie-break rule.
+                                await _audienceVoteClient.OpenVotingAsync();
+                            }
+                            return;
+                    }
+
                     return;
                 default:
                     return;

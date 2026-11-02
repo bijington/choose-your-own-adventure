@@ -112,3 +112,51 @@ Add presenter-only controls for:
 - reveal winner
 
 That gives the talk a deliberate dramatic beat before we reuse the same SignalR session for multiplayer race controls.
+
+## Live champion voting lifecycle
+
+The presenter now controls the audience vote from the `CHOOSE YOUR CHAMPION` screen:
+
+- **A / Enter** while ready: open voting.
+- **A / Enter** while voting is open: close voting and lock the result.
+- **A / Enter** while closed: reveal the winner.
+- **A / Enter** after the reveal: accept the winning champion and continue the adventure.
+- **B / Escape**: reset the voting round for rehearsal or recovery.
+
+If the result is tied, no hidden tie-break rule is applied. The presenter screen and audience devices show the tie, and **A / Enter** reopens voting for another round.
+
+The audience page follows the same lifecycle: vote buttons are disabled until voting opens, locked when voting closes, and the winning champion is highlighted when the presenter reveals the result.
+
+### Presenter control key
+
+The vote lifecycle commands are protected by a presenter key so an audience browser cannot close or reveal the vote from developer tools.
+
+Local development defaults to `orbit-local-presenter` on both apps. For Azure, set the web app setting/environment variable:
+
+```text
+Presenter__Key=<your-secret-presenter-key>
+```
+
+and set the same value in `LiveAudienceOptions.PresenterKey` for the presenter build. Do not expose the presenter key in the audience web page.
+
+## Voting show moment
+
+The presenter vote flow now includes presentation-side polish without adding extra server states:
+
+- live vote bars ease toward the latest SignalR totals while voting is open;
+- closing voting starts a three-second **LOCKING IN** countdown;
+- the reveal begins with an **AND THE AUDIENCE CHOSE…** suspense beat;
+- losing cards fade away before the winning champion gets the pulsing gold treatment;
+- the reveal remains presenter-controlled, and repeated reveal presses are ignored until the lock-in countdown completes.
+
+The server still only knows `Ready`, `Open`, `Closed`, and `Revealed`, so the theatrical timing stays local to the presenter and cannot add load or timing dependencies to the audience site.
+
+## Apple UIScene lifecycle
+
+The iOS and Mac Catalyst heads include an explicit `SceneDelegate` and `UIApplicationSceneManifest` for current Apple SDKs. After changing these files, clean generated outputs before rebuilding:
+
+```bash
+rm -rf src/ChooseYourOwnAdventure.Presenter/bin src/ChooseYourOwnAdventure.Presenter/obj
+dotnet restore
+dotnet build -t:Run -f net10.0-maccatalyst src/ChooseYourOwnAdventure.Presenter/ChooseYourOwnAdventure.csproj
+```

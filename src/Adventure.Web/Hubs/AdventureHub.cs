@@ -7,10 +7,12 @@ namespace Adventure.Web.Hubs;
 public sealed class AdventureHub : Hub
 {
     private readonly VoteStore _voteStore;
+    private readonly string _presenterKey;
 
-    public AdventureHub(VoteStore voteStore)
+    public AdventureHub(VoteStore voteStore, IConfiguration configuration)
     {
         _voteStore = voteStore;
+        _presenterKey = configuration["Presenter:Key"] ?? "orbit-local-presenter";
     }
 
     public async Task JoinSession(string sessionId)
@@ -33,6 +35,32 @@ public sealed class AdventureHub : Hub
         await Clients.Group(normalized).SendAsync("VoteUpdated", snapshot);
     }
 
+    public Task OpenVoting(string sessionId, string presenterKey) =>
+        PresenterBroadcast(sessionId, presenterKey, _voteStore.OpenVoting);
+
+    public Task CloseVoting(string sessionId, string presenterKey) =>
+        PresenterBroadcast(sessionId, presenterKey, _voteStore.CloseVoting);
+
+    public Task RevealWinner(string sessionId, string presenterKey) =>
+        PresenterBroadcast(sessionId, presenterKey, _voteStore.RevealWinner);
+
+    public Task ResetVoting(string sessionId, string presenterKey) =>
+        PresenterBroadcast(sessionId, presenterKey, _voteStore.Reset);
+
+    private async Task PresenterBroadcast(
+        string sessionId,
+        string presenterKey,
+        Func<string, VoteSnapshot> action)
+    {
+        if (!string.Equals(presenterKey, _presenterKey, StringComparison.Ordinal))
+        {
+            throw new HubException("Presenter control denied.");
+        }
+
+        var normalized = Normalize(sessionId);
+        var snapshot = action(normalized);
+        await Clients.Group(normalized).SendAsync("VoteUpdated", snapshot);
+    }
 
     private static string Normalize(string sessionId) =>
         string.IsNullOrWhiteSpace(sessionId) ? "ORBIT" : sessionId.Trim().ToUpperInvariant();

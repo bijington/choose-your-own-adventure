@@ -11,11 +11,14 @@
     body { margin: 0; min-height: 100dvh; background: #0b1020; color: #fff; display: grid; place-items: center; }
     main { width: min(680px, 100%); padding: 28px 20px 40px; }
     h1 { font-size: clamp(2rem, 8vw, 3.4rem); line-height: .95; margin: 0 0 10px; text-align: center; }
-    .sub { color: #94a3b8; text-align: center; margin-bottom: 28px; }
-    .status { text-align: center; color: #f8d866; min-height: 1.5em; margin: 12px 0 20px; }
+    .sub { color: #94a3b8; text-align: center; margin-bottom: 20px; }
+    .status { text-align: center; color: #f8d866; min-height: 3em; margin: 8px 0 20px; font-weight: 700; }
     .grid { display: grid; gap: 14px; }
-    button { width: 100%; min-height: 108px; border: 2px solid #475569; border-radius: 18px; background: #111827; color: #fff; padding: 18px; text-align: left; cursor: pointer; }
-    button:active, button.selected { border-color: #f8d866; background: #172033; }
+    button { width: 100%; min-height: 108px; border: 2px solid #475569; border-radius: 18px; background: #111827; color: #fff; padding: 18px; text-align: left; cursor: pointer; transition: opacity .18s ease, border-color .18s ease, background .18s ease, transform .18s ease; }
+    button:disabled { cursor: not-allowed; opacity: .45; }
+    button:not(:disabled):active, button.selected { border-color: #f8d866; background: #172033; }
+    button.winner { border-color: #f8d866; background: #2a2411; transform: scale(1.015); }
+    button.loser { opacity: .30; }
     .name { display: block; font-size: 1.25rem; font-weight: 800; }
     .tag { display: block; color: #cbd5e1; margin-top: 6px; }
     .votes { display: block; color: #f8d866; margin-top: 10px; font-weight: 700; }
@@ -39,35 +42,79 @@
     const params = new URLSearchParams(location.search);
     const sessionId = (params.get('session') || 'ORBIT').toUpperCase();
     const status = document.getElementById('status');
+    const buttons = [...document.querySelectorAll('button[data-champion]')];
     const participantId = localStorage.getItem('orbit-participant') || crypto.randomUUID();
     localStorage.setItem('orbit-participant', participantId);
     document.getElementById('session').textContent = `Session: ${sessionId}`;
+
+    let latestSnapshot = null;
+    let selectedChampion = localStorage.getItem(`orbit-vote-${sessionId}`);
 
     const connection = new signalR.HubConnectionBuilder()
       .withUrl('/adventureHub')
       .withAutomaticReconnect()
       .build();
 
-    function setVotes(snapshot) {
+    function phaseName(phase) {
+      if (typeof phase === 'string') return phase;
+      return ['Ready', 'Open', 'Closed', 'Revealed'][phase] || 'Ready';
+    }
+
+    function championName(value) {
+      if (value == null) return null;
+      if (typeof value === 'string') return value;
+      return ['RacingDriver', 'Charioteer', 'SpacePilot'][value] || null;
+    }
+
+    function applySnapshot(snapshot) {
+      latestSnapshot = snapshot;
       document.getElementById('driverVotes').textContent = `${snapshot.racingDriver} vote${snapshot.racingDriver === 1 ? '' : 's'}`;
       document.getElementById('chariotVotes').textContent = `${snapshot.charioteer} vote${snapshot.charioteer === 1 ? '' : 's'}`;
       document.getElementById('pilotVotes').textContent = `${snapshot.spacePilot} vote${snapshot.spacePilot === 1 ? '' : 's'}`;
+
+      const phase = phaseName(snapshot.phase);
+      const revealed = championName(snapshot.revealedChampion);
+
+      buttons.forEach(button => {
+        button.disabled = phase !== 'Open';
+        button.classList.toggle('selected', button.dataset.champion === selectedChampion && phase !== 'Revealed');
+        button.classList.toggle('winner', phase === 'Revealed' && revealed === button.dataset.champion);
+        button.classList.toggle('loser', phase === 'Revealed' && revealed && revealed !== button.dataset.champion);
+      });
+
+      if (phase === 'Ready') {
+        status.textContent = 'You’re in! Waiting for the presenter to open voting…';
+      } else if (phase === 'Open') {
+        status.textContent = selectedChampion
+          ? 'Voting is open — your vote is in, but you can still change it.'
+          : 'Voting is open — choose your champion!';
+      } else if (phase === 'Closed') {
+        status.textContent = 'Voting is closed. The result is locked…';
+      } else if (phase === 'Revealed' && revealed) {
+        status.textContent = revealed === selectedChampion
+          ? '🎉 Your champion won!'
+          : 'The audience has chosen. Adventure awaits!';
+      } else if (phase === 'Revealed') {
+        status.textContent = 'It’s a tie! Waiting for one more round…';
+      }
     }
 
-    connection.on('VoteUpdated', setVotes);
+    connection.on('VoteUpdated', applySnapshot);
     connection.onreconnecting(() => status.textContent = 'Reconnecting…');
     connection.onreconnected(async () => {
-      status.textContent = 'Connected — choose your champion';
       await connection.invoke('JoinSession', sessionId);
     });
 
-    document.querySelectorAll('button[data-champion]').forEach(button => {
+    buttons.forEach(button => {
       button.addEventListener('click', async () => {
         if (connection.state !== signalR.HubConnectionState.Connected) return;
-        document.querySelectorAll('button').forEach(x => x.classList.remove('selected'));
-        button.classList.add('selected');
-        await connection.invoke('Vote', sessionId, participantId, button.dataset.champion);
-        status.textContent = 'Vote received — you can change it until the presenter continues.';
+        if (!latestSnapshot || phaseName(latestSnapshot.phase) !== 'Open') return;
+
+        selectedChampion = button.dataset.champion;
+        localStorage.setItem(`orbit-vote-${sessionId}`, selectedChampion);
+        buttons.forEach(x => x.classList.toggle('selected', x === button));
+        await connection.invoke('Vote', sessionId, participantId, selectedChampion);
+        status.textContent = 'Vote received — you can change it while voting remains open.';
       });
     });
 
@@ -75,7 +122,6 @@
       try {
         await connection.start();
         await connection.invoke('JoinSession', sessionId);
-        status.textContent = 'Connected — choose your champion';
       } catch {
         status.textContent = 'Unable to connect. Retrying…';
         setTimeout(start, 1500);
