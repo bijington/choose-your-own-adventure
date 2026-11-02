@@ -5,12 +5,23 @@ namespace Adventure.Web.Services;
 
 public sealed class VoteStore
 {
+    private const double AverageTapsPerPlayerToFinish = 24d;
+
     private sealed class SessionVotes
     {
         public object Gate { get; } = new();
         public Dictionary<string, Champion> VotesByParticipant { get; } = new();
         public VotePhase Phase { get; set; } = VotePhase.Ready;
         public Champion? RevealedChampion { get; set; }
+
+        public RacePhase RacePhase { get; set; } = RacePhase.Ready;
+        public Dictionary<Champion, double> RaceProgress { get; } = new()
+        {
+            [Champion.RacingDriver] = 0d,
+            [Champion.Charioteer] = 0d,
+            [Champion.SpacePilot] = 0d
+        };
+        public Champion? RaceWinner { get; set; }
     }
 
     private readonly ConcurrentDictionary<string, SessionVotes> _sessions =
@@ -37,6 +48,7 @@ public sealed class VoteStore
         {
             session.Phase = VotePhase.Open;
             session.RevealedChampion = null;
+            ResetRaceUnsafe(session);
             return Snapshot(sessionId, session);
         }
     }
@@ -78,6 +90,7 @@ public sealed class VoteStore
             session.VotesByParticipant.Clear();
             session.Phase = VotePhase.Ready;
             session.RevealedChampion = null;
+            ResetRaceUnsafe(session);
             return Snapshot(sessionId, session);
         }
     }
@@ -88,6 +101,63 @@ public sealed class VoteStore
         lock (session.Gate)
         {
             return Snapshot(sessionId, session);
+        }
+    }
+
+    public RaceSnapshot StartRace(string sessionId)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate)
+        {
+            ResetRaceUnsafe(session);
+            session.RacePhase = RacePhase.Racing;
+            return RaceSnapshotFor(sessionId, session);
+        }
+    }
+
+    public RaceSnapshot Boost(string sessionId, string participantId, int taps)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate)
+        {
+            if (session.RacePhase != RacePhase.Racing ||
+                !session.VotesByParticipant.TryGetValue(participantId, out var champion))
+            {
+                return RaceSnapshotFor(sessionId, session);
+            }
+
+            var teamSize = Math.Max(1, session.VotesByParticipant.Values.Count(x => x == champion));
+            var acceptedTaps = Math.Clamp(taps, 1, 20);
+            var boostPerTap = 1d / (teamSize * AverageTapsPerPlayerToFinish);
+            var progress = Math.Clamp(session.RaceProgress[champion] + boostPerTap * acceptedTaps, 0d, 1d);
+            session.RaceProgress[champion] = progress;
+
+            if (progress >= 1d && session.RaceWinner is null)
+            {
+                session.RaceWinner = champion;
+                session.RacePhase = RacePhase.Finished;
+            }
+
+            return RaceSnapshotFor(sessionId, session);
+        }
+    }
+
+    public RaceSnapshot ResetRace(string sessionId)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate)
+        {
+            ResetRaceUnsafe(session);
+            return RaceSnapshotFor(sessionId, session);
+        }
+    }
+
+    public RaceSnapshot GetRaceSnapshot(string sessionId)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate)
+        {
+            return RaceSnapshotFor(sessionId, session);
         }
     }
 
@@ -108,14 +178,21 @@ public sealed class VoteStore
             .ThenBy(x => x.Champion)
             .ToArray();
 
-        // A tie deliberately produces no reveal. The presenter can reopen voting
-        // or reset, which makes a tie a fun live moment rather than a hidden rule.
         if (counts.Length > 1 && counts[0].Count == counts[1].Count)
         {
             return null;
         }
 
         return counts[0].Champion;
+    }
+
+    private static void ResetRaceUnsafe(SessionVotes session)
+    {
+        session.RacePhase = RacePhase.Ready;
+        session.RaceWinner = null;
+        session.RaceProgress[Champion.RacingDriver] = 0d;
+        session.RaceProgress[Champion.Charioteer] = 0d;
+        session.RaceProgress[Champion.SpacePilot] = 0d;
     }
 
     private static string Normalize(string sessionId) =>
@@ -129,4 +206,16 @@ public sealed class VoteStore
             session.VotesByParticipant.Values.Count(x => x == Champion.SpacePilot),
             session.Phase,
             session.RevealedChampion);
+
+    private static RaceSnapshot RaceSnapshotFor(string sessionId, SessionVotes session) =>
+        new(
+            Normalize(sessionId),
+            session.RaceProgress[Champion.RacingDriver],
+            session.RaceProgress[Champion.Charioteer],
+            session.RaceProgress[Champion.SpacePilot],
+            session.VotesByParticipant.Values.Count(x => x == Champion.RacingDriver),
+            session.VotesByParticipant.Values.Count(x => x == Champion.Charioteer),
+            session.VotesByParticipant.Values.Count(x => x == Champion.SpacePilot),
+            session.RacePhase,
+            session.RaceWinner);
 }

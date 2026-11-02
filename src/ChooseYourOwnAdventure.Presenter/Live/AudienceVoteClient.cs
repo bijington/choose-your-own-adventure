@@ -6,13 +6,15 @@ public sealed class AudienceVoteClient : IAsyncDisposable
 {
     private readonly LiveAudienceOptions _options;
     private readonly LiveVoteState _voteState;
+    private readonly LiveRaceState _raceState;
     private HubConnection? _connection;
     private int _started;
 
-    public AudienceVoteClient(LiveAudienceOptions options, LiveVoteState voteState)
+    public AudienceVoteClient(LiveAudienceOptions options, LiveVoteState voteState, LiveRaceState raceState)
     {
         _options = options;
         _voteState = voteState;
+        _raceState = raceState;
     }
 
     public bool IsConnected => _connection?.State == HubConnectionState.Connected;
@@ -30,6 +32,7 @@ public sealed class AudienceVoteClient : IAsyncDisposable
             .Build();
 
         _connection.On<VoteSnapshot>("VoteUpdated", _voteState.Update);
+        _connection.On<RaceSnapshot>("RaceUpdated", _raceState.Update);
         _connection.Reconnected += async _ => await JoinSessionAsync();
 
         // Never block the presentation while a network connection is established.
@@ -41,6 +44,8 @@ public sealed class AudienceVoteClient : IAsyncDisposable
     public Task CloseVotingAsync() => InvokePresenterCommandAsync("CloseVoting");
     public Task RevealWinnerAsync() => InvokePresenterCommandAsync("RevealWinner");
     public Task ResetVotingAsync() => InvokePresenterCommandAsync("ResetVoting");
+    public Task StartRaceAsync() => InvokePresenterCommandAsync("StartRace");
+    public Task ResetRaceAsync() => InvokePresenterCommandAsync("ResetRace");
 
     private async Task InvokePresenterCommandAsync(string methodName)
     {

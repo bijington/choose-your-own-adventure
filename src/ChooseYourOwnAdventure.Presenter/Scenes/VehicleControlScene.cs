@@ -31,6 +31,7 @@ public sealed class VehicleControlScene : GameScene
         DrawCodePanel(canvas, dimensions, _vehicle);
         DrawCourse(canvas, dimensions);
         DrawInstructions(canvas, dimensions, _vehicle);
+        DrawNextPrompt(canvas, dimensions);
 
         // The actual Orbit GameObject is rendered over the shell/course.
         base.Render(canvas, dimensions);
@@ -321,6 +322,22 @@ public sealed class VehicleControlScene : GameScene
             : Color.FromArgb("#CBD5E1");
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.012f, 11f, 17f);
         canvas.DrawString(text, track.X - 10, track.Bottom + 56, track.Width + 20, 42,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
+    }
+
+    private static void DrawNextPrompt(ICanvas canvas, RectF dimensions)
+    {
+        var width = Math.Clamp(dimensions.Width * 0.19f, 190f, 300f);
+        var bounds = new RectF(dimensions.Right - width - 44, dimensions.Bottom - 58, width, 34);
+        canvas.FillColor = Color.FromArgb("#172033");
+        canvas.FillRoundedRectangle(bounds, 12);
+        canvas.StrokeColor = Color.FromArgb("#F8D866");
+        canvas.StrokeSize = 1.5f;
+        canvas.DrawRoundedRectangle(bounds, 12);
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Color.FromArgb("#F8D866");
+        canvas.FontSize = 12;
+        canvas.DrawString("W / STICK UP  ·  AUDIENCE RACE →", bounds.X + 10, bounds.Y, bounds.Width - 20, bounds.Height,
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 

@@ -180,3 +180,35 @@ The vehicle-control scene now teaches a different game-programming concept for e
 - **Space Pilot** — Primary applies upward thrust; releasing it lets gravity change velocity every update. Secondary adds downward thrust.
 
 All three mechanics still pass through the same `AdventureInputRouter → Update() → Render()` pipeline.
+
+
+## Audience champion race
+
+The opening vote now also assigns every browser to a race team. The participant id is stored in browser local storage and the server keeps the authoritative `participant -> champion` mapping from the original vote.
+
+After the individual vehicle-control demo, use **W / stick up** (or tap the bottom-right `AUDIENCE RACE` control) to open the race scene. Then:
+
+- **A / Enter** starts the audience race.
+- The existing audience voting page automatically switches to a large **BOOST** button.
+- Every tap boosts the champion that participant originally voted for.
+- **B / Escape** resets the race for rehearsal.
+- After a finish, **A / Enter** starts another race.
+
+All three champions are rendered together in Orbit. Race progress is server-authoritative and broadcast with SignalR. Browser taps are batched every 100ms so frantic audience tapping does not create one network call per physical tap.
+
+To keep the race competitive when the opening vote creates uneven teams, each tap is normalised by that champion's team size. In practical terms, each team needs roughly the same *average taps per person* to finish, rather than the largest voting bloc automatically winning.
+
+The race is intentionally tied to the opening vote: changing the DOM or button label in the browser cannot switch teams because the server looks up the participant's stored champion before applying a boost.
+
+
+## Local SignalR browser client
+
+The audience web app serves the SignalR JavaScript client locally from `wwwroot/js/signalr/dist/browser/signalr.min.js`; the audience page no longer loads SignalR from a CDN at runtime.
+
+`src/Adventure.Web/libman.json` pins `@microsoft/signalr` to `10.0.11`, and `Microsoft.Web.LibraryManager.Build` restores that file during the web project build. This means an internet connection is only needed when restoring/building dependencies, not while the deployed conference site is running.
+
+If you deliberately update the SignalR JavaScript client later, update the version in `libman.json` and rebuild the web project.
+
+### Local SignalR browser client
+
+`Adventure.Web/libman.json` restores `dist/browser/signalr.min.js` beneath `wwwroot/js/signalr/`, so the browser path is `/js/signalr/dist/browser/signalr.min.js`. The web app serves this file locally; audience devices do not depend on a CDN at runtime.

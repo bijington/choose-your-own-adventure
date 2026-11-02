@@ -12,9 +12,11 @@ public partial class MainPage : ContentPage
     private readonly OrbitInputBridge _orbitInputBridge;
     private readonly AudienceVoteClient _audienceVoteClient;
     private readonly LiveVoteState _liveVoteState;
+    private readonly LiveRaceState _liveRaceState;
     private bool _hasStarted;
     private bool _showingGameLoop;
     private bool _showingVehicleControl;
+    private bool _showingAudienceRace;
     private static readonly TimeSpan VoteLockInDuration = TimeSpan.FromSeconds(3);
 
     public MainPage(
@@ -23,7 +25,8 @@ public partial class MainPage : ContentPage
         AdventureInputRouter inputRouter,
         OrbitInputBridge orbitInputBridge,
         AudienceVoteClient audienceVoteClient,
-        LiveVoteState liveVoteState)
+        LiveVoteState liveVoteState,
+        LiveRaceState liveRaceState)
     {
         InitializeComponent();
         _gameSceneManager = gameSceneManager;
@@ -32,6 +35,7 @@ public partial class MainPage : ContentPage
         _orbitInputBridge = orbitInputBridge;
         _audienceVoteClient = audienceVoteClient;
         _liveVoteState = liveVoteState;
+        _liveRaceState = liveRaceState;
 
         _inputRouter.ActionTriggered += OnAdventureAction;
     }
@@ -59,9 +63,26 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        if (_showingAudienceRace)
+        {
+            _inputRouter.Trigger(AdventureAction.Primary);
+            return;
+        }
+
         if (_showingVehicleControl)
         {
-            _ = _inputRouter.PulseAsync(AdventureAction.Primary, TimeSpan.FromMilliseconds(400));
+            var isNextArea = position.Value.X >= GameView.Width * 0.75d
+                && position.Value.Y >= GameView.Height * 0.86d;
+
+            if (isNextArea)
+            {
+                ShowAudienceRace();
+            }
+            else
+            {
+                _ = _inputRouter.PulseAsync(AdventureAction.Primary, TimeSpan.FromMilliseconds(400));
+            }
+
             return;
         }
 
@@ -99,8 +120,34 @@ public partial class MainPage : ContentPage
 
     private async void OnAdventureAction(object? sender, AdventureAction action)
     {
+        if (_showingAudienceRace)
+        {
+            if (action == AdventureAction.Primary)
+            {
+                var race = _liveRaceState.Snapshot;
+                if (race.Phase is RacePhase.Ready or RacePhase.Finished)
+                {
+                    await _audienceVoteClient.StartRaceAsync();
+                }
+                return;
+            }
+
+            if (action is AdventureAction.Secondary or AdventureAction.Back)
+            {
+                await _audienceVoteClient.ResetRaceAsync();
+            }
+
+            return;
+        }
+
         if (_showingVehicleControl)
         {
+            // Up/W is deliberately reserved as the presenter navigation command on this demo scene.
+            // Left/right/primary/secondary remain available to drive the themed vehicle.
+            if (action == AdventureAction.Up)
+            {
+                ShowAudienceRace();
+            }
             return;
         }
 
@@ -213,4 +260,13 @@ public partial class MainPage : ContentPage
 
         _adventureState.AdvanceOpening();
     }
+    private void ShowAudienceRace()
+    {
+        _gameSceneManager.LoadScene<Scenes.AudienceRaceScene>(GameView);
+        _gameSceneManager.Start();
+        _showingVehicleControl = false;
+        _showingGameLoop = false;
+        _showingAudienceRace = true;
+    }
+
 }

@@ -25,12 +25,14 @@ public static class MauiProgram
         builder.Services.AddSingleton<OrbitInputBridge>();
         builder.Services.AddSingleton(new LiveAudienceOptions());
         builder.Services.AddSingleton<LiveVoteState>();
+        builder.Services.AddSingleton<LiveRaceState>();
         builder.Services.AddSingleton<AudienceVoteClient>();
         builder.Services.AddSingleton<QrCodeRenderer>();
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<OpeningScene>();
         builder.Services.AddTransient<GameLoopScene>();
         builder.Services.AddTransient<VehicleControlScene>();
+        builder.Services.AddTransient<AudienceRaceScene>();
 
         return builder.Build();
     }
