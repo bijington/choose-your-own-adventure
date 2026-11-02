@@ -11,6 +11,7 @@ public partial class MainPage : ContentPage
     private readonly OrbitInputBridge _orbitInputBridge;
     private bool _hasStarted;
     private bool _showingGameLoop;
+    private bool _showingVehicleControl;
 
     public MainPage(
         IGameSceneManager gameSceneManager,
@@ -38,7 +39,6 @@ public partial class MainPage : ContentPage
         _gameSceneManager.Start();
         _hasStarted = true;
 
-        // Input discovery should never block presentation startup.
         _ = _orbitInputBridge.StartAsync();
     }
 
@@ -50,7 +50,27 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (!_showingGameLoop && _adventureState.OpeningStage == OpeningStage.ChooseChampion)
+        if (_showingVehicleControl)
+        {
+            _ = _inputRouter.PulseAsync(AdventureAction.Primary, TimeSpan.FromMilliseconds(400));
+            return;
+        }
+
+        if (_showingGameLoop)
+        {
+            // Keep touch equivalent to the keyboard/controller flow. The bottom-right
+            // NEXT control advances the presentation; tapping elsewhere advances the
+            // champion around the conceptual loop.
+            var isNextArea = position.Value.X >= GameView.Width * 0.75d
+                && position.Value.Y >= GameView.Height * 0.88d;
+
+            _inputRouter.Trigger(isNextArea
+                ? AdventureAction.Right
+                : AdventureAction.Primary);
+            return;
+        }
+
+        if (_adventureState.OpeningStage == OpeningStage.ChooseChampion)
         {
             var third = GameView.Width / 3d;
             var chosen = position.Value.X switch
@@ -70,11 +90,37 @@ public partial class MainPage : ContentPage
 
     private void OnAdventureAction(object? sender, AdventureAction action)
     {
+        if (_showingVehicleControl)
+        {
+            return;
+        }
+
         if (_showingGameLoop)
         {
             if (action == AdventureAction.Primary)
             {
-                _adventureState.AdvanceGameLoop();
+                _adventureState.AdvanceLoopStation();
+                return;
+            }
+
+            if (action == AdventureAction.Left)
+            {
+                _adventureState.PreviousLoopStation();
+                return;
+            }
+
+            if (action == AdventureAction.Right)
+            {
+                if (_adventureState.GameLoopStage == GameLoopStage.Overview)
+                {
+                    _adventureState.ShowFirmwareComparison();
+                    return;
+                }
+
+                _gameSceneManager.LoadScene<Scenes.VehicleControlScene>(GameView);
+                _gameSceneManager.Start();
+                _showingGameLoop = false;
+                _showingVehicleControl = true;
             }
 
             return;

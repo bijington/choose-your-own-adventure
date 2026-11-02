@@ -25,6 +25,7 @@ public static class MauiProgram
         builder.Services.AddTransient<MainPage>();
         builder.Services.AddTransient<OpeningScene>();
         builder.Services.AddTransient<GameLoopScene>();
+        builder.Services.AddTransient<VehicleControlScene>();
 
         return builder.Build();
     }

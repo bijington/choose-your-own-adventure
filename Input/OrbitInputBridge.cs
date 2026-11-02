@@ -44,11 +44,11 @@ public sealed class OrbitInputBridge : IDisposable
 
         _started = true;
         _keyboardManager.KeyDown += OnKeyDown;
+        _keyboardManager.KeyUp += OnKeyUp;
 
         _pollingTask = StartControllerInputAsync(_cancellationTokenSource.Token);
         return Task.CompletedTask;
     }
-
 
     private async Task StartControllerInputAsync(CancellationToken cancellationToken)
     {
@@ -63,7 +63,6 @@ public sealed class OrbitInputBridge : IDisposable
         }
         catch (OperationCanceledException)
         {
-            // Expected when shutting down.
         }
         catch (Exception)
         {
@@ -74,34 +73,62 @@ public sealed class OrbitInputBridge : IDisposable
 
     private void OnKeyDown(object? sender, KeyboardKeyChangeEventArgs key)
     {
-        // Comparing names rather than individual enum members keeps this adapter
-        // useful across keyboard layouts while Orbit.Input does the platform work.
+        var action = MapKey(key.Key);
+        if (action is not null)
+        {
+            SetPressed(action.Value, true);
+        }
+    }
+
+    private void OnKeyUp(object? sender, KeyboardKeyChangeEventArgs key)
+    {
+        var action = MapKey(key.Key);
+        if (action is not null)
+        {
+            SetPressed(action.Value, false);
+        }
+    }
+
+    private static AdventureAction? MapKey(KeyboardKey key)
+    {
         var name = key.ToString();
 
         if (Matches(name, "KeyA", "ArrowLeft", "LeftArrow", "Left"))
         {
-            Trigger(AdventureAction.Left);
+            return AdventureAction.Left;
         }
-        else if (Matches(name, "KeyD", "ArrowRight", "RightArrow", "Right"))
+
+        if (Matches(name, "KeyD", "ArrowRight", "RightArrow", "Right"))
         {
-            Trigger(AdventureAction.Right);
+            return AdventureAction.Right;
         }
-        else if (Matches(name, "KeyW", "ArrowUp", "UpArrow", "Up"))
+
+        if (Matches(name, "KeyW", "ArrowUp", "UpArrow", "Up"))
         {
-            Trigger(AdventureAction.Up);
+            return AdventureAction.Up;
         }
-        else if (Matches(name, "KeyS", "ArrowDown", "DownArrow", "Down"))
+
+        if (Matches(name, "KeyS", "ArrowDown", "DownArrow", "Down"))
         {
-            Trigger(AdventureAction.Down);
+            return AdventureAction.Down;
         }
-        else if (Matches(name, "Enter", "Return", "Space", "Spacebar"))
+
+        if (Matches(name, "Enter", "Return", "Space", "Spacebar"))
         {
-            Trigger(AdventureAction.Primary);
+            return AdventureAction.Primary;
         }
-        else if (Matches(name, "Escape", "Backspace"))
+
+        if (Matches(name, "ShiftLeft", "ShiftRight"))
         {
-            Trigger(AdventureAction.Back);
+            return AdventureAction.Secondary;
         }
+
+        if (Matches(name, "Escape", "Backspace"))
+        {
+            return AdventureAction.Back;
+        }
+
+        return null;
     }
 
     private async Task PollControllerAsync(CancellationToken cancellationToken)
@@ -125,25 +152,24 @@ public sealed class OrbitInputBridge : IDisposable
         }
         catch (OperationCanceledException)
         {
-            // Expected when the page/app shuts down.
         }
     }
 
     private void PollButtons(object controller)
     {
         var southPressed = ReadButton(controller, "ButtonSouth", "South");
-        if (southPressed && !_southWasPressed)
+        if (southPressed != _southWasPressed)
         {
-            Trigger(AdventureAction.Primary);
+            SetPressed(AdventureAction.Primary, southPressed);
+            _southWasPressed = southPressed;
         }
-        _southWasPressed = southPressed;
 
         var eastPressed = ReadButton(controller, "ButtonEast", "East");
-        if (eastPressed && !_eastWasPressed)
+        if (eastPressed != _eastWasPressed)
         {
-            Trigger(AdventureAction.Back);
+            SetPressed(AdventureAction.Secondary, eastPressed);
+            _eastWasPressed = eastPressed;
         }
-        _eastWasPressed = eastPressed;
     }
 
     private void PollLeftStick(object controller)
@@ -156,11 +182,12 @@ public sealed class OrbitInputBridge : IDisposable
             _ => 0
         };
 
-        if (horizontalDirection != 0 && horizontalDirection != _horizontalDirection)
+        if (horizontalDirection != _horizontalDirection)
         {
-            Trigger(horizontalDirection < 0 ? AdventureAction.Left : AdventureAction.Right);
+            SetPressed(AdventureAction.Left, horizontalDirection < 0);
+            SetPressed(AdventureAction.Right, horizontalDirection > 0);
+            _horizontalDirection = horizontalDirection;
         }
-        _horizontalDirection = horizontalDirection;
 
         var y = ReadAxis(controller, "LeftStick", "YAxis");
         var verticalDirection = y switch
@@ -170,20 +197,49 @@ public sealed class OrbitInputBridge : IDisposable
             _ => 0
         };
 
-        if (verticalDirection != 0 && verticalDirection != _verticalDirection)
+        if (verticalDirection != _verticalDirection)
         {
-            Trigger(verticalDirection < 0 ? AdventureAction.Up : AdventureAction.Down);
+            SetPressed(AdventureAction.Up, verticalDirection < 0);
+            SetPressed(AdventureAction.Down, verticalDirection > 0);
+            _verticalDirection = verticalDirection;
         }
-        _verticalDirection = verticalDirection;
     }
 
-    private void Trigger(AdventureAction action)
+    private void SetPressed(AdventureAction action, bool isPressed)
     {
-        MainThread.BeginInvokeOnMainThread(() => _router.Trigger(action));
+        MainThread.BeginInvokeOnMainThread(() => _router.SetPressed(action, isPressed));
     }
 
     private void ResetControllerEdges()
     {
+        if (_southWasPressed)
+        {
+            SetPressed(AdventureAction.Primary, false);
+        }
+
+        if (_eastWasPressed)
+        {
+            SetPressed(AdventureAction.Secondary, false);
+        }
+
+        if (_horizontalDirection < 0)
+        {
+            SetPressed(AdventureAction.Left, false);
+        }
+        else if (_horizontalDirection > 0)
+        {
+            SetPressed(AdventureAction.Right, false);
+        }
+
+        if (_verticalDirection < 0)
+        {
+            SetPressed(AdventureAction.Up, false);
+        }
+        else if (_verticalDirection > 0)
+        {
+            SetPressed(AdventureAction.Down, false);
+        }
+
         _southWasPressed = false;
         _eastWasPressed = false;
         _horizontalDirection = 0;
@@ -192,10 +248,6 @@ public sealed class OrbitInputBridge : IDisposable
 
     private static object? FindConnectedController(object manager)
     {
-        // The README documents discovery and the GameController surface but does not
-        // name the manager member that exposes discovered controllers. Keep that tiny
-        // package-version detail isolated here while the rest of the app remains strongly
-        // typed against Orbit.Input.
         foreach (var property in manager.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
             if (!property.CanRead || property.GetIndexParameters().Length != 0)
@@ -262,7 +314,6 @@ public sealed class OrbitInputBridge : IDisposable
                 }
                 catch
                 {
-                    // Try the next documented alias.
                 }
             }
         }
@@ -284,7 +335,6 @@ public sealed class OrbitInputBridge : IDisposable
             }
             catch
             {
-                return 0d;
             }
         }
 
@@ -292,9 +342,7 @@ public sealed class OrbitInputBridge : IDisposable
     }
 
     private static object? GetPropertyValue(object target, string propertyName) =>
-        target.GetType()
-            .GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase)
-            ?.GetValue(target);
+        target.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)?.GetValue(target);
 
     private static bool Matches(string value, params string[] candidates) =>
         candidates.Any(candidate => string.Equals(value, candidate, StringComparison.OrdinalIgnoreCase));
@@ -302,6 +350,7 @@ public sealed class OrbitInputBridge : IDisposable
     public void Dispose()
     {
         _keyboardManager.KeyDown -= OnKeyDown;
+        _keyboardManager.KeyUp -= OnKeyUp;
         _cancellationTokenSource.Cancel();
         _cancellationTokenSource.Dispose();
     }

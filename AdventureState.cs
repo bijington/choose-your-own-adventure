@@ -20,11 +20,18 @@ public enum Champion
     SpacePilot
 }
 
+public enum LoopStation
+{
+    Input = 0,
+    Update = 1,
+    Render = 2,
+    Wait = 3
+}
+
 public enum GameLoopStage
 {
     Overview,
-    FirmwareComparison,
-    Running
+    FirmwareComparison
 }
 
 public sealed class AdventureState
@@ -40,6 +47,7 @@ public sealed class AdventureState
     public Champion? Champion { get; private set; }
     public Champion HighlightedChampion { get; private set; } = ChooseYourOwnAdventure.Champion.RacingDriver;
     public GameLoopStage GameLoopStage { get; private set; } = GameLoopStage.Overview;
+    public LoopStation GameLoopStation { get; private set; } = LoopStation.Input;
 
     public int Health { get; set; } = 5;
     public int Experience { get; set; }
@@ -61,14 +69,8 @@ public sealed class AdventureState
     }
 
     public void HighlightPreviousChampion() => MoveChampionHighlight(-1);
-
     public void HighlightNextChampion() => MoveChampionHighlight(1);
-
-    public void HighlightChampion(Champion champion)
-    {
-        HighlightedChampion = champion;
-    }
-
+    public void HighlightChampion(Champion champion) => HighlightedChampion = champion;
     public void ConfirmHighlightedChampion() => ChooseChampion(HighlightedChampion);
 
     public void ChooseChampion(Champion champion)
@@ -78,15 +80,14 @@ public sealed class AdventureState
         OpeningStage = OpeningStage.ChampionChosen;
     }
 
-    public void AdvanceGameLoop()
-    {
-        GameLoopStage = GameLoopStage switch
-        {
-            GameLoopStage.Overview => GameLoopStage.FirmwareComparison,
-            GameLoopStage.FirmwareComparison => GameLoopStage.Running,
-            _ => GameLoopStage
-        };
-    }
+    public void AdvanceLoopStation() =>
+        GameLoopStation = (LoopStation)(((int)GameLoopStation + 1) % 4);
+
+    public void PreviousLoopStation() =>
+        GameLoopStation = (LoopStation)(((int)GameLoopStation + 3) % 4);
+
+    public void ShowFirmwareComparison() =>
+        GameLoopStage = GameLoopStage.FirmwareComparison;
 
     private void MoveChampionHighlight(int direction)
     {
