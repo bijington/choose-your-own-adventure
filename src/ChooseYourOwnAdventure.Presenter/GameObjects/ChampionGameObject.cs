@@ -16,14 +16,43 @@ public sealed class ChampionGameObject : GameObject
     {
         base.Render(canvas, dimensions);
 
-        if (_state.OpeningStage is not (OpeningStage.CodeReveal or OpeningStage.Complete))
+        if (_state.OpeningStage is not (OpeningStage.ChampionChosen or OpeningStage.ChampionTransition or OpeningStage.CodeReveal or OpeningStage.Complete))
         {
             return;
         }
 
-        var rect = GetSpritePanel(dimensions);
+        var rect = GetRenderPanel(dimensions);
         DrawPanel(canvas, rect);
         DrawChampion(canvas, rect, _state.Champion);
+    }
+
+    private RectF GetRenderPanel(RectF dimensions)
+    {
+        var finalRect = GetSpritePanel(dimensions);
+        if (_state.OpeningStage is OpeningStage.CodeReveal or OpeningStage.Complete)
+        {
+            return finalRect;
+        }
+
+        var startRect = GetChampionStagePanel(dimensions);
+        if (_state.OpeningStage == OpeningStage.ChampionChosen)
+        {
+            return startRect;
+        }
+
+        var t = EaseInOut(_state.CodeRevealTransitionProgress);
+        return Lerp(startRect, finalRect, t);
+    }
+
+    private static RectF GetChampionStagePanel(RectF dimensions)
+    {
+        var width = Math.Clamp(dimensions.Width * 0.36f, 330f, 520f);
+        var height = Math.Clamp(dimensions.Height * 0.50f, 300f, 500f);
+        return new RectF(
+            dimensions.X + (dimensions.Width - width) / 2f,
+            dimensions.Y + dimensions.Height * 0.28f,
+            width,
+            height);
     }
 
     private static RectF GetSpritePanel(RectF dimensions)
@@ -36,6 +65,18 @@ public sealed class ChampionGameObject : GameObject
         var left = new RectF(dimensions.X + margin, contentTop, panelWidth, contentHeight);
 
         return new RectF(left.Right + gap, contentTop, panelWidth, contentHeight);
+    }
+
+    private static RectF Lerp(RectF from, RectF to, float t) => new(
+        from.X + (to.X - from.X) * t,
+        from.Y + (to.Y - from.Y) * t,
+        from.Width + (to.Width - from.Width) * t,
+        from.Height + (to.Height - from.Height) * t);
+
+    private static float EaseInOut(float value)
+    {
+        value = Math.Clamp(value, 0f, 1f);
+        return value * value * (3f - 2f * value);
     }
 
     private static void DrawPanel(ICanvas canvas, RectF rect)

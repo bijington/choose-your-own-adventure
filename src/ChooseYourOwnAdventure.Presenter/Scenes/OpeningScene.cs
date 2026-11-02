@@ -22,6 +22,7 @@ public sealed class OpeningScene : GameScene
     private const double LockInDurationMilliseconds = 3000d;
     private const double RevealSuspenseMilliseconds = 1100d;
     private const double RevealFadeMilliseconds = 900d;
+    private const double CodeRevealTransitionMilliseconds = 1400d;
 
     public OpeningScene(
         AdventureState state,
@@ -57,11 +58,30 @@ public sealed class OpeningScene : GameScene
         _displayedDriverVotes += (votes.RacingDriver - _displayedDriverVotes) * smoothing;
         _displayedCharioteerVotes += (votes.Charioteer - _displayedCharioteerVotes) * smoothing;
         _displayedSpacePilotVotes += (votes.SpacePilot - _displayedSpacePilotVotes) * smoothing;
+
+        if (_state.OpeningStage == OpeningStage.ChampionTransition)
+        {
+            var progress = _state.CodeRevealTransitionProgress
+                + (float)(millisecondsSinceLastUpdate / CodeRevealTransitionMilliseconds);
+            _state.SetCodeRevealTransitionProgress(progress);
+
+            if (progress >= 1f)
+            {
+                _state.CompleteCodeRevealTransition();
+            }
+        }
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
     {
         DrawBackground(canvas, dimensions);
+
+        if (_state.OpeningStage == OpeningStage.ChampionTransition)
+        {
+            DrawCodeRevealTransition(canvas, dimensions, _state.CodeRevealTransitionProgress);
+            base.Render(canvas, dimensions);
+            return;
+        }
 
         if (_state.OpeningStage is OpeningStage.CodeReveal or OpeningStage.Complete)
         {
@@ -399,17 +419,46 @@ public sealed class OpeningScene : GameScene
         canvas.FontColor = Color.FromArgb("#F8D866");
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.04f, 28f, 56f);
         canvas.DrawString(GetChampionName(_state.Champion), dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.35f, Math.Max(0, dimensions.Width - 80), 70,
+            dimensions.Y + dimensions.Height * 0.09f, Math.Max(0, dimensions.Width - 80), 70,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Colors.White;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.019f, 16f, 28f);
         canvas.DrawString(GetThemeTagline(_state.Champion), dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.48f, Math.Max(0, dimensions.Width - 80), 50,
+            dimensions.Y + dimensions.Height * 0.18f, Math.Max(0, dimensions.Width - 80), 50,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
-        DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  REVEAL THE ORBIT CODE", 0.68f);
+        DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  REVEAL THE ORBIT CODE", 0.88f);
+    }
+
+    private void DrawCodeRevealTransition(ICanvas canvas, RectF dimensions, float progress)
+    {
+        var eased = EaseInOut(progress);
+
+        canvas.Alpha = Math.Clamp((eased - 0.18f) / 0.52f, 0f, 1f);
+        DrawCodeRevealShell(canvas, dimensions);
+
+        var codePanel = GetCodePanel(dimensions);
+        var slide = (1f - eased) * Math.Min(90f, dimensions.Width * 0.08f);
+        codePanel = new RectF(codePanel.X - slide, codePanel.Y, codePanel.Width, codePanel.Height);
+        DrawCodePanel(canvas, codePanel);
+        canvas.Alpha = 1f;
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Color.FromArgb("#F8D866");
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.015f, 13f, 21f);
+        canvas.Alpha = Math.Clamp(1f - eased * 1.6f, 0f, 1f);
+        canvas.DrawString("THE CHAMPION BECOMES A GAMEOBJECT…", dimensions.X + 40,
+            dimensions.Y + dimensions.Height * 0.87f, Math.Max(0, dimensions.Width - 80), 36,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.Alpha = 1f;
+    }
+
+    private static float EaseInOut(float value)
+    {
+        value = Math.Clamp(value, 0f, 1f);
+        return value * value * (3f - 2f * value);
     }
 
     private static RectF GetCodePanel(RectF dimensions)

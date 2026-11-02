@@ -160,3 +160,9 @@ rm -rf src/ChooseYourOwnAdventure.Presenter/bin src/ChooseYourOwnAdventure.Prese
 dotnet restore
 dotnet build -t:Run -f net10.0-maccatalyst src/ChooseYourOwnAdventure.Presenter/ChooseYourOwnAdventure.csproj
 ```
+
+## Latest presenter transition
+
+The winning champion now transitions directly into the Orbit code reveal. After the audience winner is accepted, the champion is shown centre-stage. Press A/Enter once more and the same `ChampionGameObject` animates into the right-hand code panel while the real Orbit code panel fades in on the left.
+
+This transition is presenter-side only; the SignalR vote lifecycle and web host are unchanged.

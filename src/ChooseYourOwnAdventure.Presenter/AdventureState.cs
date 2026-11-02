@@ -9,6 +9,7 @@ public enum OpeningStage
     DependencyInjection,
     ChooseChampion,
     ChampionChosen,
+    ChampionTransition,
     CodeReveal,
     Complete
 }
@@ -48,6 +49,7 @@ public sealed class AdventureState
     public Champion HighlightedChampion { get; private set; } = ChooseYourOwnAdventure.Champion.RacingDriver;
     public GameLoopStage GameLoopStage { get; private set; } = GameLoopStage.Overview;
     public LoopStation GameLoopStation { get; private set; } = LoopStation.Input;
+    public float CodeRevealTransitionProgress { get; private set; }
 
     public int Health { get; set; } = 5;
     public int Experience { get; set; }
@@ -62,10 +64,22 @@ public sealed class AdventureState
             OpeningStage.Memory => OpeningStage.DotNetMemory,
             OpeningStage.DotNetMemory => OpeningStage.DependencyInjection,
             OpeningStage.DependencyInjection => OpeningStage.ChooseChampion,
-            OpeningStage.ChampionChosen => OpeningStage.CodeReveal,
+            OpeningStage.ChampionChosen => OpeningStage.ChampionTransition,
             OpeningStage.CodeReveal => OpeningStage.Complete,
             _ => OpeningStage
         };
+    }
+
+
+    public void SetCodeRevealTransitionProgress(float progress)
+    {
+        CodeRevealTransitionProgress = Math.Clamp(progress, 0f, 1f);
+    }
+
+    public void CompleteCodeRevealTransition()
+    {
+        CodeRevealTransitionProgress = 1f;
+        OpeningStage = OpeningStage.CodeReveal;
     }
 
     public void HighlightPreviousChampion() => MoveChampionHighlight(-1);
@@ -77,6 +91,7 @@ public sealed class AdventureState
     {
         HighlightedChampion = champion;
         Champion = champion;
+        CodeRevealTransitionProgress = 0f;
         OpeningStage = OpeningStage.ChampionChosen;
     }
 
