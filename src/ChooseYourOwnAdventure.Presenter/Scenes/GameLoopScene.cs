@@ -136,11 +136,45 @@ public sealed class GameLoopScene : GameScene
 
     private static void DrawFirmwareComparison(ICanvas canvas, RectF dimensions)
     {
-        DrawInfoPanel(canvas, dimensions,
+        DrawCodeComparisonPanel(canvas, dimensions,
             "FIRMWARE SUPERLOOP",
             "while (true)\n{\n    ReadInputs();\n    UpdateState();\n    WriteOutputs();\n    Delay();\n}",
             "GAME LOOP",
             "while (running)\n{\n    Input();\n    Update();\n    Render();\n    Wait();\n}");
+    }
+
+    private static void DrawCodeComparisonPanel(ICanvas canvas, RectF dimensions,
+        string leftTitle, string leftBody, string rightTitle, string rightBody)
+    {
+        var top = dimensions.Y + dimensions.Height * 0.735f;
+        var width = dimensions.Width * 0.40f;
+        var height = dimensions.Height * 0.18f;
+        var gap = dimensions.Width * 0.04f;
+        var left = new RectF((dimensions.X + dimensions.Width / 2f) - gap / 2f - width, top, width, height);
+        var right = new RectF((dimensions.X + dimensions.Width / 2f) + gap / 2f, top, width, height);
+        DrawCodeCard(canvas, left, leftTitle, leftBody);
+        DrawCodeCard(canvas, right, rightTitle, rightBody);
+    }
+
+    private static void DrawCodeCard(ICanvas canvas, RectF rect, string title, string code)
+    {
+        canvas.FillColor = Color.FromArgb("#0F172A");
+        canvas.FillRoundedRectangle(rect, 14);
+        canvas.StrokeColor = Color.FromArgb("#334155");
+        canvas.StrokeSize = 2;
+        canvas.DrawRoundedRectangle(rect, 14);
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Color.FromArgb("#F8D866");
+        canvas.FontSize = Math.Clamp(rect.Width * 0.036f, 12f, 18f);
+        canvas.DrawString(title, rect.X + 16, rect.Y + 12, rect.Width - 32, 24,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+
+        canvas.Font = CodeFonts.Regular;
+        canvas.FontColor = Color.FromArgb("#E2E8F0");
+        canvas.FontSize = Math.Clamp(rect.Width * 0.027f, 10f, 14f);
+        canvas.DrawString(code, rect.X + 16, rect.Y + 40, rect.Width - 32, rect.Height - 52,
+            HorizontalAlignment.Left, VerticalAlignment.Top);
     }
 
     private static void DrawInfoPanel(ICanvas canvas, RectF dimensions,

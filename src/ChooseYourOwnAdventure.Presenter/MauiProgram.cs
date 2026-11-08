@@ -16,7 +16,11 @@ public static class MauiProgram
             .UseMauiApp<App>()
             .UseOrbitEngine()
             .UseOrbitGameController(o => {})
-            .UseOrbitKeyboard();
+            .UseOrbitKeyboard()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("CascadiaCode-VariableFont_wght.ttf", "CascadiaCode");
+            });
 
         builder.Services.AddSingleton<AdventureState>();
         builder.Services.AddSingleton<AdventureInputRouter>();

@@ -140,7 +140,7 @@ public sealed class VehicleControlScene : GameScene
         canvas.StrokeSize = 2;
         canvas.DrawRoundedRectangle(panel, 18);
 
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.Font = CodeFonts.SemiBold;
         canvas.FontColor = Color.FromArgb("#94A3B8");
         canvas.FontSize = Math.Clamp(panel.Width * 0.042f, 13f, 19f);
         canvas.DrawString("LoopVehicle.cs", panel.X + 22, panel.Y + 14,
@@ -248,7 +248,7 @@ public sealed class VehicleControlScene : GameScene
     private static void DrawCodeSection(ICanvas canvas, RectF panel, ref float y,
         string title, bool active, IReadOnlyList<CodeLine> lines)
     {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.Font = CodeFonts.SemiBold;
         canvas.FontColor = active ? Color.FromArgb("#F8D866") : Color.FromArgb("#64748B");
         canvas.FontSize = Math.Clamp(panel.Width * 0.035f, 12f, 17f);
         canvas.DrawString(title, panel.X + 22, y, panel.Width - 44, 24,
@@ -258,8 +258,8 @@ public sealed class VehicleControlScene : GameScene
         foreach (var line in lines)
         {
             canvas.Font = line.IsActive
-                ? Microsoft.Maui.Graphics.Font.DefaultBold
-                : Microsoft.Maui.Graphics.Font.Default;
+                ? CodeFonts.Bold
+                : CodeFonts.Regular;
             canvas.FontColor = line.IsActive ? Colors.White : Color.FromArgb("#94A3B8");
             canvas.FontSize = Math.Clamp(panel.Width * 0.027f, 10f, 14f);
             canvas.DrawString(line.Text, panel.X + 30, y, panel.Width - 52, 24,
@@ -270,7 +270,7 @@ public sealed class VehicleControlScene : GameScene
 
     private static void DrawMetric(ICanvas canvas, RectF panel, string text)
     {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.Font = CodeFonts.SemiBold;
         canvas.FontColor = Color.FromArgb("#F8D866");
         canvas.FontSize = Math.Clamp(panel.Width * 0.031f, 11f, 15f);
         canvas.DrawString(text, panel.X + 22, panel.Bottom - 42,

@@ -212,3 +212,12 @@ If you deliberately update the SignalR JavaScript client later, update the versi
 ### Local SignalR browser client
 
 `Adventure.Web/libman.json` restores `dist/browser/signalr.min.js` beneath `wwwroot/js/signalr/`, so the browser path is `/js/signalr/dist/browser/signalr.min.js`. The web app serves this file locally; audience devices do not depend on a CDN at runtime.
+
+## Code font
+
+The presenter app is configured to use Cascadia Code for rendered code samples.
+Copy `CascadiaCode-VariableFont_wght.ttf` into:
+
+`src/ChooseYourOwnAdventure.Presenter/Resources/Fonts/CascadiaCode-VariableFont_wght.ttf`
+
+It is registered under the `CascadiaCode` alias in `MauiProgram.cs`. The `CodeFonts` helper provides regular, semibold and bold weights for the MAUI Graphics code panels.

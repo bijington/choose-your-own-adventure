@@ -490,7 +490,7 @@ public sealed class OpeningScene : GameScene
 
     private void DrawCodePanel(ICanvas canvas, RectF rect)
     {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.Font = CodeFonts.SemiBold;
         canvas.FontColor = Color.FromArgb("#94A3B8");
         canvas.FontSize = Math.Clamp(rect.Width * 0.042f, 13f, 20f);
         canvas.DrawString("OpeningScene.cs", rect.X + 24, rect.Y + 14, rect.Width - 48, 26,
@@ -513,7 +513,7 @@ public sealed class OpeningScene : GameScene
             "}"
         ];
 
-        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.Font = CodeFonts.Regular;
         canvas.FontColor = Color.FromArgb("#E2E8F0");
         canvas.FontSize = Math.Clamp(rect.Width * 0.027f, 10f, 15f);
         var lineHeight = Math.Clamp(rect.Height * 0.044f, 18f, 25f);
@@ -525,7 +525,7 @@ public sealed class OpeningScene : GameScene
             y += lineHeight;
         }
 
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.Font = CodeFonts.SemiBold;
         canvas.FontColor = Color.FromArgb("#F8D866");
         canvas.FontSize = Math.Clamp(rect.Width * 0.031f, 11f, 16f);
         canvas.DrawString($"Selected: {GetChampionName(_state.Champion)}", rect.X + 24,
