@@ -74,7 +74,7 @@ public sealed class AudienceRaceScene : GameScene
         var subtitle = snapshot.Phase switch
         {
             RacePhase.Racing => "Every audience tap moves the champion they voted for. TAP! TAP! TAP!",
-            RacePhase.Finished when snapshot.Winner is { } winner => $"{DisplayName(winner)} WINS!",
+            RacePhase.Finished when snapshot.Winner is { } winner => $"{DisplayName(winner)} WINS!  ·  A / ENTER FOR RECAP",
             _ => "A / ENTER starts the race · B / ESC resets · teams are remembered from the opening vote"
         };
 

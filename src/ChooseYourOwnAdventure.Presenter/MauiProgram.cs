@@ -1,6 +1,6 @@
 using ChooseYourOwnAdventure.Input;
 using ChooseYourOwnAdventure.Live;
-using ChooseYourOwnAdventure.Scenes;
+using ChooseYourOwnAdventure.Presentation;
 using Orbit.Engine;
 using Orbit.Input;
 
@@ -33,10 +33,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AudienceVoteClient>();
         builder.Services.AddSingleton<QrCodeRenderer>();
         builder.Services.AddTransient<MainPage>();
-        builder.Services.AddTransient<OpeningScene>();
-        builder.Services.AddTransient<GameLoopScene>();
-        builder.Services.AddTransient<VehicleControlScene>();
-        builder.Services.AddTransient<AudienceRaceScene>();
+        builder.Services.AddChooseYourOwnAdventurePresentation();
 
         return builder.Build();
     }

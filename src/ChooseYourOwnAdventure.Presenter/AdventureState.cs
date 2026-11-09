@@ -55,6 +55,25 @@ public sealed class AdventureState
     public int Experience { get; set; }
     public string CurrentLocation { get; set; } = "The Beginning";
 
+
+    public void PrepareChampionVote()
+    {
+        OpeningStage = OpeningStage.ChooseChampion;
+        CodeRevealTransitionProgress = 0f;
+    }
+
+    public void PrepareChampionReveal()
+    {
+        OpeningStage = OpeningStage.ChampionChosen;
+        CodeRevealTransitionProgress = 0f;
+    }
+
+    public void ResetGameLoop()
+    {
+        GameLoopStage = GameLoopStage.Overview;
+        GameLoopStation = LoopStation.Input;
+    }
+
     public void AdvanceOpening()
     {
         OpeningStage = OpeningStage switch

@@ -337,7 +337,7 @@ public sealed class VehicleControlScene : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Color.FromArgb("#F8D866");
         canvas.FontSize = 12;
-        canvas.DrawString("W / STICK UP  ·  AUDIENCE RACE →", bounds.X + 10, bounds.Y, bounds.Width - 20, bounds.Height,
+        canvas.DrawString("W / STICK UP  ·  WHAT IF THE INPUT SOURCE CHANGES? →", bounds.X + 10, bounds.Y, bounds.Width - 20, bounds.Height,
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 

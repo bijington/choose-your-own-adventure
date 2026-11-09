@@ -221,3 +221,48 @@ Copy `CascadiaCode-VariableFont_wght.ttf` into:
 `src/ChooseYourOwnAdventure.Presenter/Resources/Fonts/CascadiaCode-VariableFont_wght.ttf`
 
 It is registered under the `CascadiaCode` alias in `MauiProgram.cs`. The `CodeFonts` helper provides regular, semibold and bold weights for the MAUI Graphics code panels.
+
+## Presenter slide architecture
+
+The presenter now uses one `GameScene` per major presentation beat. `MainPage` owns the ordered `PresentationSlide` state and loads the appropriate scene.
+
+Current order:
+
+1. `TitleScene` — why choose-your-own-adventure / games inspired the talk
+2. `OrbitOverviewScene` — what Orbit is
+3. `InstallOrbitScene` — NuGet + `UseOrbitEngine()`
+4. `GameSceneViewIntroScene` — give Orbit somewhere to render
+5. `LoadGameSceneIntroScene` — load/start a scene
+6. `OpeningScene` — champion voting only in the presentation flow
+7. `AddGameObjectScene` — real Orbit `GameObject` code
+8. `ChampionRevealScene` — the chosen champion appears
+9. `InputPackageScene` — introduce `Bijington.Orbit.Input`
+10. `GameLoopScene` — Input → Update → Render → Wait, plus the firmware comparison
+11. `VehicleControlScene` — drive the chosen theme with live code highlighting
+12. `SignalRTransitionScene` — what if the input source changes?
+13. `SignalRArchitectureScene` — reveal how the opening vote worked
+14. `AudienceRaceScene` — all three audience teams race
+15. `RecapScene` — Orbit + Orbit.Input + SignalR
+
+### Presenter controls
+
+- `A` / Enter: advance ordinary slides.
+- `B` / Escape: go back on ordinary slides (or reset where a live interaction owns Back).
+- Champion vote: retains the existing Open → Close → Reveal → Continue lifecycle.
+- Game loop: A advances around loop nodes; Right/D reveals firmware then proceeds to driving.
+- Vehicle control: Up/W moves to the SignalR transition; normal controls continue to drive the vehicle.
+- Audience race: A starts; after the race has finished A advances to recap; B/Escape resets the race.
+
+## Central presentation registration
+
+The presenter slide deck is now declared in one place:
+
+`src/ChooseYourOwnAdventure.Presenter/Presentation/PresentationDeck.cs`
+
+`AddChooseYourOwnAdventurePresentation()` registers all slide scenes and the presentation navigator with dependency injection. The ordered slide definitions are also the source of truth for normal next/previous navigation.
+
+`MainPage` resolves `IPresentationNavigator` and only handles interactions that are special to a slide (voting, game-loop stepping, vehicle controls, and the audience race). It no longer contains the slide order or concrete scene-loading switch.
+
+## Title artwork
+
+The presenter title scene uses `Resources/Images/choose_your_own_adventure_title.png`, embedded into the presenter assembly as `ChooseYourOwnAdventure.TitleScreen.png`. `TitleScene` renders it aspect-fit and overlays the animated start prompt.
