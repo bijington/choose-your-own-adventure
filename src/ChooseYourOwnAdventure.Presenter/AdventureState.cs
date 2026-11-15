@@ -56,6 +56,17 @@ public sealed class AdventureState
     public string CurrentLocation { get; set; } = "The Beginning";
 
 
+    public Champion? LocalVoteWinner { get; private set; }
+    public DateTimeOffset LocalVoteRevealedAt { get; private set; }
+
+    public void RevealLocalVote()
+    {
+        LocalVoteWinner = HighlightedChampion;
+        LocalVoteRevealedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void ResetLocalVote() => LocalVoteWinner = null;
+
     public void PrepareChampionVote()
     {
         OpeningStage = OpeningStage.ChooseChampion;

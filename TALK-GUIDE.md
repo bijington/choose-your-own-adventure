@@ -291,11 +291,11 @@ gameSceneManager.Start();
 
 ### On screen
 
-Three champion cards plus QR code:
+Voting instructions, QR code and live status on the left page. Three stacked champion cards on the right show their destination pages:
 
-- **The Driver** — Speed. Precision. Questionable braking.
-- **The Charioteer** — Glory. Courage. Undefined behaviour.
-- **The Space Pilot** — Exploration. Thrusters. Naturally, Orbit.
+- **The Driver** — page 28 — Speed. Precision. Questionable braking.
+- **The Charioteer** — page 58 — Glory. Courage. Undefined behaviour.
+- **The Space Pilot** — page 88 — Exploration. Thrusters. Naturally, Orbit.
 
 ### Purpose
 
@@ -318,7 +318,7 @@ When SignalR is connected, primary (`A / Enter`) advances the vote lifecycle:
 4. **Closed** → reveal winner
 5. **Revealed** → accept winner and continue
 
-`B / Esc` resets voting.
+`B / Shift` resets voting. Escape or a left-page tap goes back.
 
 If the result is tied, primary reopens voting.
 
@@ -337,55 +337,17 @@ winning champion
 
 ### Transition
 
-Once the winner is accepted, advance into the dedicated branching-page beat.
+Celebrate the enlarged winner on the selection spread, then continue directly to Add GameObject.
 
 > “In a proper choose-your-own-adventure book, this is the point where the book tells us where to go next…”
 
 ---
 
-## 7. Turn to Page… — `BranchResultScene` — page 27 / 57 / 87
-
-### On screen
-
-The vote result is repeated clearly, followed by a deliberately non-linear instruction:
-
-```text
-THE AUDIENCE HAS CHOSEN…
-
-THE SPACE PILOT
-
-To continue your adventure…
-TURN TO PAGE 88
-```
-
-The branch page depends on the champion:
-
-- Driver → **page 28**
-- Charioteer → **page 58**
-- Space Pilot → **page 88**
-
-This is an intentional choose-your-own-adventure gag rather than a literal slide number sequence.
-
-All normal slide footers use a simple book-style `— X —` page marker at the bottom-right rather than a bordered badge.
-
-### Talking points
-
-- Let the room see that their vote has changed the “book”.
-- Keep this beat short; it is primarily a visual joke and a thematic payoff.
-- Suggested line:
-  > “Apparently you have chosen wisely. Turn to page 88.”
-
-### Action
-
-Press `A / Enter` to “turn the page”.
-
-### Transition
-
-> “And on that page, we need to turn our chosen champion into something Orbit can actually render.”
+The final result stays on this spread: the losing cards fade out while the winning card enlarges on the right page. Its final vote count and “TURN TO PAGE” destination stay visible. Once the reveal finishes, press A/Enter or tap the right page to continue directly to Add GameObject. Left-page taps or Escape return to Load a Game Scene; B/Shift resets voting. A tie retains all choices and can reopen voting.
 
 ---
 
-## 8. Add a `GameObject` — `AddGameObjectScene` — branch page 28 / 58 / 88
+## 7. Add a `GameObject` — `AddGameObjectScene` — branch page 28 / 58 / 88
 
 ### On screen
 
@@ -432,7 +394,7 @@ Add(new ChampionGameObject(state));
 
 ---
 
-## 9. Our Main Character — `ChampionRevealScene` — branch page + 1
+## 8. Our Main Character — `ChampionRevealScene` — branch page + 1
 
 ### Page numbers
 
@@ -460,7 +422,7 @@ The chosen champion rendered by the actual `ChampionGameObject`.
 
 ---
 
-## 10. How Does It Move? — `InputPackageScene` — page 30 / 60 / 90
+## 9. How Does It Move? — `InputPackageScene` — page 30 / 60 / 90
 
 ### On screen
 
@@ -495,7 +457,7 @@ and a small controller-state example.
 
 ---
 
-## 11. Game Loop — `GameLoopScene` — page 31 / 61 / 91
+## 10. Game Loop — `GameLoopScene` — page 31 / 61 / 91
 
 ### On screen
 
@@ -594,7 +556,7 @@ Suggested line:
 
 ---
 
-## 12. Now Drive It — `VehicleControlScene` — page 32 / 62 / 92
+## 11. Now Drive It — `VehicleControlScene` — page 32 / 62 / 92
 
 ### Purpose
 
@@ -655,7 +617,7 @@ Current code uses `Up / W` to leave the interactive vehicle scene and move to th
 
 ---
 
-## 13. What If the Input Source Changes? — `SignalRTransitionScene` — page 33 / 63 / 93
+## 12. What If the Input Source Changes? — `SignalRTransitionScene` — page 33 / 63 / 93
 
 ### On screen
 
@@ -678,7 +640,7 @@ Conceptual transition from local controller intent to remote/audience intent.
 
 ---
 
-## 14. SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 34 / 64 / 94
+## 13. SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 34 / 64 / 94
 
 ### On screen
 
@@ -725,7 +687,7 @@ Mention batching briefly:
 
 ---
 
-## 15. Audience Grand Prix — `AudienceRaceScene` — page 35 / 65 / 95
+## 14. Audience Grand Prix — `AudienceRaceScene` — page 35 / 65 / 95
 
 ### On screen
 
@@ -771,7 +733,7 @@ After the race finishes, press `A / Enter`.
 
 ---
 
-## 16. The Podium — `PodiumScene` — page 36 / 66 / 96
+## 15. The Podium — `PodiumScene` — page 36 / 66 / 96
 
 ### On screen
 
@@ -798,7 +760,7 @@ Celebrate the audience before switching back into recap mode.
 
 ---
 
-## 17. Adventure Complete — `RecapScene` — page 37 / 67 / 97
+## 16. Adventure Complete — `RecapScene` — page 37 / 67 / 97
 
 ### On screen
 
@@ -848,11 +810,10 @@ Suggested final line:
 
 # Page-number map
 
-Before branching, the page is the slide's explicit sequential value (1–6). From `BranchResult` (slide 7), add the selected champion's enum value: Driver 20, Charioteer 50, Space Pilot 80. The branch result points to `AddGameObject` (slide 8), so its “TURN TO PAGE” exactly matches the next footer.
+Before branching, pages are 1–6. Add GameObject keeps its explicit value 8; page 7 is retired with the separate result scene. From Add GameObject onward, add Driver 20, Charioteer 50 or Space Pilot 80. The winning card points to page 28, 58 or 88, matching the next footer.
 
 | Beat | Driver | Charioteer | Space Pilot |
 | --- | ---: | ---: | ---: |
-| Branch result | 27 | 57 | 87 |
 | Add GameObject | 28 | 58 | 88 |
 | Champion reveal | 29 | 59 | 89 |
 | Input | 30 | 60 | 90 |
@@ -962,3 +923,12 @@ When changing the presentation, update this guide at the same time as:
 
 If a scene becomes interactive in a special way, add its controls to both **Input cheat sheet** and its scene section above.
 
+
+
+# Open-book presentation prototype
+
+Each major beat is now a two-page spread. Headings and explanation occupy the left/right page headers; code samples, diagrams and the champion illustration sit on facing leaves. Voting instructions and QR code occupy the left page, with champion cards and destination numbers stacked on the right. The game-loop diagram and audience race can span both pages. Existing branch numbers refer to the spread, so “TURN TO PAGE 88” still matches its following footer.
+
+Normal navigation plays a 680 ms paper-turn animation; Back reverses it. Wait for the leaf to settle before the next action. Tap anywhere on the left page to turn back on ordinary spreads; the right page continues. Tap anywhere on the cover to start. The voting lifecycle, stepping between loop stations, firmware reveal and local vehicle inputs stay within their current spread and do not animate a page turn.
+
+Orbit runs one `BookScene`, which hosts the current scene and captures outgoing and incoming images during navigation so the turning leaf carries the next page’s content. The scene manager lifetime remains unchanged. `PresentationDeck` still defines the content order, and `IPresentationNavigator` owns next/previous/branch navigation.

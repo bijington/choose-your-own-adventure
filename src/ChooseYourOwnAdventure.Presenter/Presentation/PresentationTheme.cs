@@ -38,41 +38,44 @@ public static class PresentationTheme
             24f,
             HorizontalAlignment.Right,
             VerticalAlignment.Center);
+
     }
 
     public static int GetPageNumber(PresentationSlide slide, Champion? champion = null)
-        => (int)slide + (slide >= PresentationSlide.BranchResult ? (int)(champion ?? 0) : 0);
+        => (int)slide + (slide >= PresentationSlide.AddGameObject ? (int)(champion ?? 0) : 0);
 
     public static void DrawParchment(ICanvas canvas, RectF dimensions)
     {
-        canvas.FillColor = Parchment;
+        // Leather cover, layered paper edges, and two facing leaves.
+        canvas.FillColor = Color.FromArgb("#38251C");
         canvas.FillRectangle(dimensions);
-
-        // Warm inner page, surrounded by a subtle darker edge.
-        var inset = 24f;
-        var inner = new RectF(
-            dimensions.X + inset,
-            dimensions.Y + inset,
-            Math.Max(0, dimensions.Width - inset * 2),
-            Math.Max(0, dimensions.Height - inset * 2));
-
-        canvas.FillColor = ParchmentLight;
-        canvas.FillRoundedRectangle(inner, 14f);
-        canvas.StrokeColor = Rule;
-        canvas.StrokeSize = 2f;
-        canvas.DrawRoundedRectangle(inner, 14f);
-
-        // Quiet book-page rules in the corners give the parchment some texture
-        // without compromising projector readability.
-        canvas.Alpha = 0.18f;
-        canvas.StrokeColor = Rule;
-        canvas.StrokeSize = 1f;
-        var step = Math.Max(72f, dimensions.Width / 18f);
-        for (var x = inner.X + step; x < inner.Right - step; x += step)
+        for (var i = 0; i < 4; i++)
         {
-            canvas.DrawLine(x, inner.Y + 8, x + 16, inner.Y + 8);
-            canvas.DrawLine(x, inner.Bottom - 8, x + 16, inner.Bottom - 8);
+            canvas.FillColor = i % 2 == 0 ? Color.FromArgb("#CDBB94") : Parchment;
+            canvas.FillRoundedRectangle(new RectF(dimensions.X + 18 + i * 3,
+                dimensions.Y + 22 - i * 2, Math.Max(0, dimensions.Width - 36 - i * 6),
+                Math.Max(0, dimensions.Height - 38 - i * 2)), 5);
         }
-        canvas.Alpha = 1f;
+
+        var centre = dimensions.X + dimensions.Width / 2;
+        var top = dimensions.Y + 18;
+        var height = Math.Max(0, dimensions.Height - 48);
+        canvas.FillColor = ParchmentLight;
+        canvas.FillRectangle(dimensions.X + 30, top, Math.Max(0, dimensions.Width / 2 - 30), height);
+        canvas.FillColor = Color.FromArgb("#FCF1D7");
+        canvas.FillRectangle(centre, top, Math.Max(0, dimensions.Width / 2 - 30), height);
+
+        canvas.SaveState();
+        for (var i = 0; i < 28; i++)
+        {
+            canvas.Alpha = .16f * (1 - i / 28f) * (1 - i / 28f);
+            canvas.FillColor = Ink;
+            canvas.FillRectangle(centre - i - 1, top, 1, height);
+            canvas.FillRectangle(centre + i, top, 1, height);
+        }
+        canvas.RestoreState();
+        canvas.StrokeColor = Color.FromArgb("#B99A68");
+        canvas.StrokeSize = 1;
+        canvas.DrawLine(centre, top, centre, top + height);
     }
 }

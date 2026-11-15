@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using ChooseYourOwnAdventure.Presentation;
 using Orbit.Engine;
 
 namespace ChooseYourOwnAdventure.GameObjects;
@@ -6,10 +7,12 @@ namespace ChooseYourOwnAdventure.GameObjects;
 public sealed class ChampionGameObject : GameObject
 {
     private readonly AdventureState _state;
+    private readonly bool _onBookPage;
 
-    public ChampionGameObject(AdventureState state)
+    public ChampionGameObject(AdventureState state, bool onBookPage = false)
     {
         _state = state;
+        _onBookPage = onBookPage;
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
@@ -28,6 +31,8 @@ public sealed class ChampionGameObject : GameObject
 
     private RectF GetRenderPanel(RectF dimensions)
     {
+        if (_onBookPage) return BookLayout.RightPage(dimensions);
+
         var finalRect = GetSpritePanel(dimensions);
         if (_state.OpeningStage is OpeningStage.CodeReveal or OpeningStage.Complete)
         {

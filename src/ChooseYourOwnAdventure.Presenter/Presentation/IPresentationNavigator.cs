@@ -5,6 +5,7 @@ namespace ChooseYourOwnAdventure.Presentation;
 public interface IPresentationNavigator
 {
     PresentationSlide Current { get; }
+    bool IsTurning { get; }
 
     void Start(GameSceneView gameSceneView);
 

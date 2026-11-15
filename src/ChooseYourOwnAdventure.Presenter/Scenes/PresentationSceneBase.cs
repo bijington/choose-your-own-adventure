@@ -21,28 +21,25 @@ public abstract class PresentationSceneBase : GameScene
 
     protected static void DrawTitle(ICanvas canvas, RectF dimensions, string title, string? subtitle = null)
     {
+        var left = BookLayout.LeftPage(dimensions);
+        var right = BookLayout.RightPage(dimensions);
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.036f, 28f, 54f);
-        canvas.DrawString(title, dimensions.X + 52, dimensions.Y + dimensions.Height * 0.035f,
-            dimensions.Width - 104, 90, HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        var ruleY = dimensions.Y + dimensions.Height * 0.125f;
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.025f, 24f, 38f);
+        canvas.DrawString(title, left.X, dimensions.Y + dimensions.Height * .045f,
+            left.Width, dimensions.Height * .14f, HorizontalAlignment.Left, VerticalAlignment.Center);
         canvas.StrokeColor = Accent;
-        canvas.StrokeSize = 3;
-        canvas.DrawLine(dimensions.X + dimensions.Width * 0.14f, ruleY,
-            dimensions.Right - dimensions.Width * 0.14f, ruleY);
+        canvas.StrokeSize = 2;
+        var ruleY = dimensions.Y + dimensions.Height * .205f;
+        canvas.DrawLine(left.X, ruleY, left.Right, ruleY);
+        canvas.DrawLine(right.X, ruleY, right.Right, ruleY);
 
-        if (string.IsNullOrWhiteSpace(subtitle))
-        {
-            return;
-        }
-
+        if (string.IsNullOrWhiteSpace(subtitle)) return;
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Muted;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.015f, 13f, 22f);
-        canvas.DrawString(subtitle, dimensions.X + 70, dimensions.Y + dimensions.Height * 0.145f,
-            dimensions.Width - 140, 44, HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.FontSize = Math.Clamp(dimensions.Width * .015f, 14f, 22f);
+        canvas.DrawString(subtitle, right.X, dimensions.Y + dimensions.Height * .06f,
+            right.Width, dimensions.Height * .13f, HorizontalAlignment.Left, VerticalAlignment.Center);
     }
 
     protected static void DrawCodeCard(ICanvas canvas, RectF rect, string title, string code)
@@ -79,8 +76,8 @@ public abstract class PresentationSceneBase : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Muted;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.012f, 11f, 17f);
-        canvas.DrawString(prompt, dimensions.X + 50, dimensions.Bottom - 56,
-            dimensions.Width - 100, 24, HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.DrawString(prompt, BookLayout.LeftPage(dimensions).X, dimensions.Bottom - 90,
+            BookLayout.LeftPage(dimensions).Width, 52, HorizontalAlignment.Left, VerticalAlignment.Center);
     }
 
 

@@ -11,7 +11,7 @@ public sealed class ChampionRevealScene : PresentationSceneBase
     public ChampionRevealScene(AdventureState state)
     {
         _state = state;
-        Add(new ChampionGameObject(state));
+        Add(new ChampionGameObject(state, onBookPage: true));
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
@@ -21,17 +21,15 @@ public sealed class ChampionRevealScene : PresentationSceneBase
             "That object is being rendered by the real Orbit GameObject we just added.");
 
         var pageNumber = PresentationTheme.GetPageNumber(PresentationSlide.ChampionReveal, _state.Champion);
-        DrawPill(canvas, new RectF(dimensions.X + dimensions.Width * 0.40f, dimensions.Y + dimensions.Height * 0.18f, dimensions.Width * 0.20f, 42f),
-            $"PAGE {pageNumber}", true);
+        var left = BookLayout.LeftPage(dimensions);
+        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = Ink;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .019f, 18f, 28f);
+        canvas.DrawString("Our first GameObject.\n\nThe scene decides where it belongs.\n\nThe object decides how it renders.\n\nNow… how do we make it move?", left.X, left.Y + 20, left.Width, left.Height,
+            HorizontalAlignment.Left, VerticalAlignment.Top);
 
         base.Render(canvas, dimensions);
 
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Accent;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.021f, 18f, 30f);
-        canvas.DrawString("Now we have a character… how do we make it move?", dimensions.X + 60,
-            dimensions.Bottom - 130, dimensions.Width - 120, 42,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
         DrawPrompt(canvas, dimensions);
         DrawPageNumber(canvas, dimensions, pageNumber);
     }

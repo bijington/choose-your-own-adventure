@@ -7,6 +7,7 @@ namespace ChooseYourOwnAdventure;
 
 public partial class MainPage : ContentPage
 {
+    private static readonly TimeSpan VoteRevealDuration = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan VoteLockInDuration = TimeSpan.FromSeconds(3);
 
     private readonly IPresentationNavigator _presentationNavigator;
@@ -57,23 +58,27 @@ public partial class MainPage : ContentPage
 
     private void OnGameViewTapped(object? sender, TappedEventArgs e)
     {
+        if (_presentationNavigator.IsTurning) return;
+
         var position = e.GetPosition(GameView);
         if (position is null)
         {
             return;
         }
 
+        if (_presentationNavigator.Current == PresentationSlide.ChooseChampion
+            && position.Value.X < GameView.Width / 2d)
+        {
+            _presentationNavigator.Previous();
+            return;
+        }
+
         if (_presentationNavigator.Current == PresentationSlide.ChooseChampion && _adventureState.OpeningStage == OpeningStage.ChooseChampion)
         {
-            var third = GameView.Width / 3d;
-            var chosen = position.Value.X switch
-            {
-                var x when x < third => Champion.RacingDriver,
-                var x when x < third * 2d => Champion.Charioteer,
-                _ => Champion.SpacePilot
-            };
-
-            _adventureState.HighlightChampion(chosen);
+            var chosen = ChampionSelectionLayout.HitTest(
+                new Microsoft.Maui.Graphics.RectF(0, 0, (float)GameView.Width, (float)GameView.Height),
+                new Microsoft.Maui.Graphics.PointF((float)position.Value.X, (float)position.Value.Y));
+            if (chosen is { } champion) _adventureState.HighlightChampion(champion);
             _inputRouter.Trigger(AdventureAction.Primary);
             return;
         }
@@ -102,11 +107,23 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        // Each facing page is a navigation target on ordinary spreads.
+        // The cover and interactive spreads retain their own touch controls.
+        if (_presentationNavigator.Current is not (PresentationSlide.Title
+                or PresentationSlide.ChooseChampion or PresentationSlide.AudienceRace)
+            && position.Value.X < GameView.Width / 2d)
+        {
+            _presentationNavigator.Previous();
+            return;
+        }
+
         _inputRouter.Trigger(AdventureAction.Primary);
     }
 
     private async void OnAdventureAction(object? sender, AdventureAction action)
     {
+        if (_presentationNavigator.IsTurning) return;
+
         switch (_presentationNavigator.Current)
         {
             case PresentationSlide.ChooseChampion:
@@ -145,9 +162,15 @@ public partial class MainPage : ContentPage
 
     private async Task HandleChampionVoteAsync(AdventureAction action)
     {
-        if ((action is AdventureAction.Back or AdventureAction.Secondary) && _audienceVoteClient.IsConnected)
+        if (action == AdventureAction.Back)
         {
-            await _audienceVoteClient.ResetVotingAsync();
+            _presentationNavigator.Previous();
+            return;
+        }
+        if (action == AdventureAction.Secondary)
+        {
+            _adventureState.ResetLocalVote();
+            if (_audienceVoteClient.IsConnected) await _audienceVoteClient.ResetVotingAsync();
             return;
         }
 
@@ -170,8 +193,15 @@ public partial class MainPage : ContentPage
 
         if (!_audienceVoteClient.IsConnected)
         {
-            _adventureState.ConfirmHighlightedChampion();
-            _presentationNavigator.GoTo(PresentationSlide.BranchResult);
+            if (_adventureState.LocalVoteWinner is not { } localWinner)
+            {
+                _adventureState.RevealLocalVote();
+            }
+            else if (DateTimeOffset.UtcNow - _adventureState.LocalVoteRevealedAt >= VoteRevealDuration)
+            {
+                _adventureState.ChooseChampion(localWinner);
+                _presentationNavigator.GoTo(PresentationSlide.AddGameObject);
+            }
             return;
         }
 
@@ -191,8 +221,9 @@ public partial class MainPage : ContentPage
                 }
                 break;
             case VotePhase.Revealed when vote.RevealedChampion is { } winner:
+                if (_liveVoteState.PhaseElapsed < VoteRevealDuration) break;
                 _adventureState.ChooseChampion(winner);
-                _presentationNavigator.GoTo(PresentationSlide.BranchResult);
+                _presentationNavigator.GoTo(PresentationSlide.AddGameObject);
                 break;
             case VotePhase.Revealed:
                 await _audienceVoteClient.OpenVotingAsync();

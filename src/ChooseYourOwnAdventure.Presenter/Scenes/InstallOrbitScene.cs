@@ -11,13 +11,17 @@ public sealed class InstallOrbitScene : PresentationSceneBase
         DrawTitle(canvas, dimensions, "INSTALL & REGISTER ORBIT",
             "It is still a normal .NET MAUI app — Orbit arrives as NuGet packages and builder extensions.");
 
-        var margin = dimensions.Width * 0.10f;
-        var width = dimensions.Width - margin * 2;
-        var first = new RectF(dimensions.X + margin, dimensions.Y + dimensions.Height * 0.26f, width, 150);
-        DrawCodeCard(canvas, first, "TERMINAL", "dotnet add package Bijington.Orbit.Engine");
-
-        var second = new RectF(dimensions.X + margin, first.Bottom + 36, width, 285);
-        DrawCodeCard(canvas, second, "MauiProgram.cs",
+        var left = BookLayout.LeftPage(dimensions);
+        var right = BookLayout.RightPage(dimensions);
+        DrawCodeCard(canvas, new RectF(left.X, left.Y, left.Width, left.Height * .34f),
+            "TERMINAL", "dotnet add package Bijington.Orbit.Engine");
+        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = Ink;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .018f, 16f, 26f);
+        canvas.DrawString("First, add Orbit to your MAUI app.\n\nThen register the engine when you build the application.",
+            left.X + 12, left.Y + left.Height * .44f, left.Width - 24, left.Height * .46f,
+            HorizontalAlignment.Left, VerticalAlignment.Top);
+        DrawCodeCard(canvas, right, "MauiProgram.cs",
             "builder\n    .UseMauiApp<App>()\n    .UseOrbitEngine();");
 
         DrawPrompt(canvas, dimensions);

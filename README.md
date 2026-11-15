@@ -123,7 +123,7 @@ The presenter now controls the audience vote from the `CHOOSE YOUR CHAMPION` scr
 - **A / Enter** while voting is open: close voting and lock the result.
 - **A / Enter** while closed: reveal the winner.
 - **A / Enter** after the reveal: accept the winning champion and continue the adventure.
-- **B / Escape**: reset the voting round for rehearsal or recovery.
+- **B / Shift**: reset the voting round for rehearsal or recovery.
 
 If the result is tied, no hidden tie-break rule is applied. The presenter screen and audience devices show the tie, and **A / Enter** reopens voting for another round.
 
@@ -224,17 +224,16 @@ Current order:
 4. `GameSceneViewIntroScene`
 5. `LoadGameSceneIntroScene`
 6. `OpeningScene`
-7. `BranchResultScene`
-8. `AddGameObjectScene`
-9. `ChampionRevealScene`
-10. `InputPackageScene`
-11. `GameLoopScene`
-12. `VehicleControlScene`
-13. `SignalRTransitionScene`
-14. `SignalRArchitectureScene`
-15. `AudienceRaceScene`
-16. `PodiumScene`
-17. `RecapScene`
+7. `AddGameObjectScene`
+8. `ChampionRevealScene`
+9. `InputPackageScene`
+10. `GameLoopScene`
+11. `VehicleControlScene`
+12. `SignalRTransitionScene`
+13. `SignalRArchitectureScene`
+14. `AudienceRaceScene`
+15. `PodiumScene`
+16. `RecapScene`
 
 ### Presenter controls
 
@@ -273,7 +272,7 @@ Code samples now use the same parchment visual language as the rest of the deck.
 
 ## Branch page numbers
 
-`PresentationSlide` has explicit values 1–17. From `BranchResult` onward, `PresentationTheme.GetPageNumber` adds the selected champion value: Driver 20, Charioteer 50, Space Pilot 80. The branch result points to the following `AddGameObject` page (28, 58 or 88). Presenter and web `Champion` enums and the browser numeric mapping must stay synchronized.
+`PresentationSlide` keeps its existing explicit page values (page 7 is retired). From `AddGameObject` onward, `PresentationTheme.GetPageNumber` adds the selected champion value: Driver 20, Charioteer 50, Space Pilot 80. The enlarged winner on the voting spread points directly to `AddGameObject` (28, 58 or 88). Presenter and web `Champion` enums and the browser numeric mapping must stay synchronized.
 
 Vehicle artwork lives in `ChampionVehicleGameObject`, shared by `LoopVehicle`, `AudienceRaceVehicle` and podium `StaticChampionVehicleGameObject`s.
 
@@ -282,3 +281,15 @@ Vehicle artwork lives in `ChampionVehicleGameObject`, shared by `LoopVehicle`, `
 Run `dotnet run --project tests/Adventure.Rehearsal` for vote/race state checks and a 600-participant concurrency simulation. With the local web host running, append `-- http://localhost:5187` for live SignalR checks with three independent identities. See [rehearsal instructions](tests/Adventure.Rehearsal/README.md).
 
 Before a conference, still rehearse keyboard/controller input, all three branches, real phones, projector readability, mobile reconnects and the deployed Azure host. Local concurrency checks do not measure Azure capacity or venue networking.
+
+## Open-book prototype
+
+The presenter now renders facing paper pages with a spine, layered edges and a short page-turn animation between major scenes. Explanations and code use the two leaves; the loop and race can span the book. The title stays as the cover, and existing branch page numbers identify spreads.
+
+`BookScene` is the single scene loaded by Orbit's scene manager. It forwards update/render to the current presentation scene. Navigation captures the outgoing and incoming spreads into temporary bitmaps, then folds the outgoing right page across the spine over 680 ms. The reverse of the leaf shows the incoming left-page content; backwards navigation reverses the pages. The animation clock starts after capture finishes, and there is only one live update loop. Temporary images and content scopes are disposed when replaced. Input cannot skip through several spreads during a turn; local interactive beats do not turn a page.
+
+On ordinary spreads, tap anywhere on the left page to turn back, or the right page to continue. Tap anywhere on the cover to start; existing keyboard/controller and special-scene controls still apply. Controller and SignalR discovery remain asynchronous.
+
+Champion selection uses the left page for voting instructions, QR code and live status. Three stacked cards on the right show the Driver, Charioteer and Space Pilot, with their derived destination pages (28, 58 and 88). Touch selection uses the same card bounds as rendering; voting lifecycle controls are unchanged.
+
+The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue goes directly to Add GameObject; there is no separate result scene. On the vote spread, left-page taps and Escape go back; B/Shift resets voting. Offline selection uses the same reveal before continuing.

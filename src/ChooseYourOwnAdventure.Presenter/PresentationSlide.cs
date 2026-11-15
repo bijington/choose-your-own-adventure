@@ -8,7 +8,7 @@ public enum PresentationSlide
     GameSceneView = 4,
     LoadGameScene = 5,
     ChooseChampion = 6,
-    BranchResult = 7,
+    // Page 7 is retired; keep the established champion destinations.
     AddGameObject = 8,
     ChampionReveal = 9,
     InputPackage = 10,

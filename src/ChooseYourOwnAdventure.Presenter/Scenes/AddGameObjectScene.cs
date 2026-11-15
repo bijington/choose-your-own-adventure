@@ -20,11 +20,11 @@ public sealed class AddGameObjectScene : PresentationSceneBase
 
         var pageNumber = PresentationTheme.GetPageNumber(PresentationSlide.AddGameObject, _state.Champion);
 
-        var margin = dimensions.Width * 0.07f;
-        var gap = dimensions.Width * 0.035f;
+        var margin = dimensions.Width * 0.065f;
+        var gap = dimensions.Width * 0.08f;
         var width = (dimensions.Width - margin * 2 - gap) / 2f;
-        var top = dimensions.Y + dimensions.Height * 0.24f;
-        var height = dimensions.Height * 0.55f;
+        var top = dimensions.Y + dimensions.Height * 0.25f;
+        var height = dimensions.Height * 0.58f;
 
         DrawCodeCard(canvas, new RectF(dimensions.X + margin, top, width, height),
             "ChampionGameObject.cs",
@@ -43,7 +43,7 @@ public sealed class ChampionGameObject
 
         DrawCodeCard(canvas, new RectF(dimensions.X + margin + width + gap, top, width, height),
             "GameScene",
-            "Add(new ChampionGameObject(state));");
+            "Add(new ChampionGameObject(\n    state));");
 
         DrawPrompt(canvas, dimensions, "A / ENTER  ·  ADD OUR CHAMPION");
         DrawPageNumber(canvas, dimensions, pageNumber);

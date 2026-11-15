@@ -15,7 +15,6 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<OpeningScene>(
             PresentationSlide.ChooseChampion,
             state => state.PrepareChampionVote()),
-        PresentationSlideDefinition.Create<BranchResultScene>(PresentationSlide.BranchResult),
         PresentationSlideDefinition.Create<AddGameObjectScene>(PresentationSlide.AddGameObject),
         PresentationSlideDefinition.Create<ChampionRevealScene>(
             PresentationSlide.ChampionReveal,
@@ -35,6 +34,8 @@ public static class PresentationDeck
     public static IServiceCollection AddChooseYourOwnAdventurePresentation(
         this IServiceCollection services)
     {
+        services.AddSingleton<BookScene>();
+
         foreach (var definition in Slides)
         {
             services.AddTransient(definition.SceneType);

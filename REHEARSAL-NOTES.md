@@ -22,3 +22,14 @@ Run the repeatable checks using [these instructions](tests/Adventure.Rehearsal/R
 - Deployment URL and matching presenter key. No Azure resource was selected or deployed in this rehearsal. Keep the local defaults until the deployment destination is known.
 
 Existing Mac Catalyst project settings and asynchronous startup ordering were preserved. No commits were created; pre-existing uncommitted work remains in the checkout.
+
+## Open-book prototype follow-up
+
+The presenter now hosts its content in one `BookScene` with an outgoing bitmap for page turns. The Mac Catalyst build passes with zero warnings/errors. Desktop checks confirmed forward turns, reverse turns using the lower-left corner, facing-page code and illustrations, offline champion branching, loop-marker updates, and touch thrust/gravity after navigation. Existing vote/race state checks still pass. The app was left open on the Orbit overview spread for review.
+
+The turn is a stylised paper fold with the incoming page printed on its reverse, rather than a curved 3D page simulation. Book layouts and transitions have been checked on Mac Catalyst; Android/iOS and projector dimensions still need rehearsal.
+
+
+The transition outline has been removed, and the old stationary page remains under the incoming leaf to avoid duplicated new text. The turn clock starts after image capture. Champion selection now places instructions/QR/status on the left and three destination-labelled cards on the right. Desktop checks confirmed the revised card layout and that tapping the middle card selects the Charioteer/page-58 branch.
+
+The standalone branch-result scene has been removed. The selection spread fades away losing cards and grows the winner to fill the right page, then continues directly to Add GameObject. Existing destination pages are preserved by retiring page 7. Desktop checks confirmed an offline Charioteer reveal, direct continuation to page 58, returning to the final selection result, and left-page back navigation from the voting spread to Load a Game Scene. Escape now goes back from voting; B/Shift resets the round. Final Mac Catalyst build has zero warnings/errors, and the vote/race rehearsal checks pass.

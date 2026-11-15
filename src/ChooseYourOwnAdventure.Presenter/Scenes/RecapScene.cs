@@ -22,17 +22,13 @@ public sealed class RecapScene : PresentationSceneBase
         DrawTitle(canvas, dimensions, "ADVENTURE COMPLETE",
             "One MAUI app. A game loop. An entire room playing together.");
 
-        var margin = dimensions.Width * 0.07f;
-        var gap = dimensions.Width * 0.025f;
-        var width = (dimensions.Width - margin * 2 - gap * 2) / 3f;
-        var top = dimensions.Y + dimensions.Height * 0.28f;
-        var height = dimensions.Height * 0.38f;
-
-        DrawSummary(canvas, new RectF(dimensions.X + margin, top, width, height),
-            "ORBIT", "Scenes\nGameObjects\nUpdate + Render");
-        DrawSummary(canvas, new RectF(dimensions.X + margin + width + gap, top, width, height),
-            "ORBIT.INPUT", "Controller\nKeyboard\nPlayer intent");
-        DrawSummary(canvas, new RectF(dimensions.X + margin + (width + gap) * 2, top, width, height),
+        var left = BookLayout.LeftPage(dimensions);
+        var right = BookLayout.RightPage(dimensions);
+        DrawSummary(canvas, new RectF(left.X, left.Y, left.Width, left.Height * .46f),
+            "ORBIT", "Scenes · GameObjects\nUpdate + Render");
+        DrawSummary(canvas, new RectF(left.X, left.Y + left.Height * .52f, left.Width, left.Height * .46f),
+            "ORBIT.INPUT", "Controller · Keyboard\nPlayer intent");
+        DrawSummary(canvas, new RectF(right.X, right.Y, right.Width, right.Height * .62f),
             "SIGNALR", "Audience input\nShared state\nReal-time multiplayer");
 
         var winner = _raceState.Snapshot.Winner;
@@ -40,14 +36,14 @@ public sealed class RecapScene : PresentationSceneBase
         canvas.FontColor = Accent;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.023f, 19f, 34f);
         canvas.DrawString(winner is null ? "THANK YOU" : $"RACE WINNER: {FormatWinner(winner.Value)}",
-            dimensions.X + 60, dimensions.Y + dimensions.Height * 0.73f, dimensions.Width - 120, 48,
+            right.X, right.Y + right.Height * .72f, right.Width, 96,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Muted;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.016f, 14f, 23f);
         canvas.DrawString("Input affects state. Update evolves state. Render displays state.",
-            dimensions.X + 60, dimensions.Y + dimensions.Height * 0.82f, dimensions.Width - 120, 38,
+            left.X, dimensions.Bottom - 108, left.Width, 64,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.Recap, _state.Champion));

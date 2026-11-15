@@ -38,12 +38,16 @@ public sealed class OpeningScene : GameScene
         Add(new ChampionGameObject(state));
     }
 
+    private VoteSnapshot CurrentVotes => _state.LocalVoteWinner is { } local
+        ? new VoteSnapshot(_liveAudienceOptions.SessionId, 0, 0, 0, VotePhase.Revealed, local)
+        : _liveVoteState.Snapshot;
+
     public override void Update(double millisecondsSinceLastUpdate)
     {
         base.Update(millisecondsSinceLastUpdate);
         _elapsedMilliseconds += millisecondsSinceLastUpdate;
 
-        var votes = _liveVoteState.Snapshot;
+        var votes = CurrentVotes;
         if (!_votePhaseInitialized || votes.Phase != _displayedVotePhase)
         {
             _displayedVotePhase = votes.Phase;
@@ -179,7 +183,7 @@ public sealed class OpeningScene : GameScene
 
     private void DrawChampionSelection(ICanvas canvas, RectF dimensions, Champion highlightedChampion)
     {
-        var votes = _liveVoteState.Snapshot;
+        var votes = CurrentVotes;
         var revealProgress = votes.Phase == VotePhase.Revealed
             ? Math.Clamp((_votePhaseElapsedMilliseconds - RevealSuspenseMilliseconds) / RevealFadeMilliseconds, 0d, 1d)
             : 0d;
@@ -187,59 +191,68 @@ public sealed class OpeningScene : GameScene
         var hasReveal = votes.Phase == VotePhase.Revealed && revealProgress > 0d;
         var displayedTotal = Math.Max(0.001f, _displayedDriverVotes + _displayedCharioteerVotes + _displayedSpacePilotVotes);
 
+        var left = BookLayout.LeftPage(dimensions);
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.034f, 26f, 50f);
-        canvas.DrawString("CHOOSE YOUR CHAMPION", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.08f, Math.Max(0, dimensions.Width - 80), 70,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.FontSize = Math.Clamp(dimensions.Width * .025f, 24f, 38f);
+        canvas.DrawString("CHOOSE YOUR CHAMPION", left.X, dimensions.Y + dimensions.Height * .055f,
+            left.Width, dimensions.Height * .12f, HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = PresentationTheme.MutedInk;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 21f);
-        canvas.DrawString(GetVotingSubtitle(votes), dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.17f, Math.Max(0, dimensions.Width - 80), 40,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.FontColor = PresentationTheme.Ink;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .017f, 16f, 25f);
+        canvas.DrawString("Scan the code and choose a champion on your phone.\n\nThe winning choice shapes our adventure.\nYour vote also chooses your team for the audience race.",
+            left.X, dimensions.Y + dimensions.Height * .22f, left.Width, dimensions.Height * .25f,
+            HorizontalAlignment.Left, VerticalAlignment.Top);
 
-        var cardTop = dimensions.Y + dimensions.Height * 0.27f;
-        var cardHeight = dimensions.Height * 0.34f;
-        var gap = Math.Max(18f, dimensions.Width * 0.018f);
-        var totalWidth = dimensions.Width * 0.86f;
-        var cardWidth = (totalWidth - gap * 2) / 3f;
-        var startX = dimensions.X + (dimensions.Width - totalWidth) / 2f;
+        canvas.FontColor = PresentationTheme.AccentRed;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .014f, 13f, 21f);
+        canvas.DrawString(GetVotingSubtitle(votes), left.X, dimensions.Y + dimensions.Height * .465f,
+            left.Width, dimensions.Height * .075f, HorizontalAlignment.Left, VerticalAlignment.Center);
 
-        DrawChampionCard(canvas, new RectF(startX, cardTop, cardWidth, cardHeight),
-            "THE DRIVER", "Speed. Precision.", "Questionable braking.", "01", votes.RacingDriver, _displayedDriverVotes / displayedTotal,
-            highlightedChampion == Champion.RacingDriver, revealWinner == Champion.RacingDriver, hasReveal, (float)revealProgress);
-        DrawChampionCard(canvas, new RectF(startX + cardWidth + gap, cardTop, cardWidth, cardHeight),
-            "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", "02", votes.Charioteer, _displayedCharioteerVotes / displayedTotal,
-            highlightedChampion == Champion.Charioteer, revealWinner == Champion.Charioteer, hasReveal, (float)revealProgress);
-        DrawChampionCard(canvas, new RectF(startX + (cardWidth + gap) * 2, cardTop, cardWidth, cardHeight),
-            "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", "03", votes.SpacePilot, _displayedSpacePilotVotes / displayedTotal,
-            highlightedChampion == Champion.SpacePilot, revealWinner == Champion.SpacePilot, hasReveal, (float)revealProgress);
+        var choices = new[]
+        {
+            (Champion.RacingDriver, "THE DRIVER", "Speed. Precision.", "Questionable braking.", votes.RacingDriver, _displayedDriverVotes),
+            (Champion.Charioteer, "THE CHARIOTEER", "Glory. Courage.", "Undefined behaviour.", votes.Charioteer, _displayedCharioteerVotes),
+            (Champion.SpacePilot, "THE SPACE PILOT", "Exploration. Thrusters.", "Naturally, Orbit.", votes.SpacePilot, _displayedSpacePilotVotes)
+        };
+        // Draw the growing winner last so the other cards fade beneath it.
+        foreach (var choice in choices.OrderBy(choice => choice.Item1 == revealWinner))
+        {
+            var rect = ChampionSelectionLayout.Card(dimensions, choice.Item1);
+            if (choice.Item1 == revealWinner)
+            {
+                var target = BookLayout.RightPage(dimensions);
+                var t = EaseInOut((float)revealProgress);
+                rect = new RectF(rect.X + (target.X - rect.X) * t,
+                    rect.Y + (target.Y - rect.Y) * t,
+                    rect.Width + (target.Width - rect.Width) * t,
+                    rect.Height + (target.Height - rect.Height) * t);
+            }
+            DrawChampionCard(canvas, rect, choice.Item2, choice.Item3, choice.Item4, choice.Item1,
+                choice.Item5, choice.Item6 / displayedTotal, highlightedChampion == choice.Item1,
+                revealWinner == choice.Item1, hasReveal, (float)revealProgress);
+        }
 
-        var qrSize = Math.Clamp(dimensions.Height * 0.19f, 105f, 170f);
-        var qrRect = new RectF(dimensions.X + dimensions.Width * 0.12f,
-            dimensions.Y + dimensions.Height * 0.66f, qrSize, qrSize);
+        var qrSize = Math.Clamp(dimensions.Height * .20f, 110f, 210f);
+        var qrRect = new RectF(left.X, dimensions.Y + dimensions.Height * .57f, qrSize, qrSize);
         _qrCodeRenderer.Draw(canvas, qrRect);
-
+        var infoX = qrRect.Right + 20;
+        var infoWidth = left.Right - infoX;
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = votes.Phase == VotePhase.Open ? PresentationTheme.AccentRed : PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.016f, 14f, 23f);
-        canvas.DrawString(GetVotingStatus(votes), qrRect.Right + 28, qrRect.Y + 8, dimensions.Width * 0.50f, 32,
+        canvas.FontColor = PresentationTheme.AccentRed;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .015f, 14f, 22f);
+        canvas.DrawString(GetVotingStatus(votes), infoX, qrRect.Y, infoWidth, 64,
             HorizontalAlignment.Left, VerticalAlignment.Center);
-
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = PresentationTheme.MutedInk;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.012f, 11f, 18f);
-        canvas.DrawString(_liveAudienceOptions.JoinUrl, qrRect.Right + 28, qrRect.Y + 42,
-            dimensions.Width * 0.55f, 28, HorizontalAlignment.Left, VerticalAlignment.Center);
-        canvas.DrawString($"LIVE VOTES: {votes.Total}", qrRect.Right + 28, qrRect.Y + 75,
-            dimensions.Width * 0.30f, 28, HorizontalAlignment.Left, VerticalAlignment.Center);
-
-        canvas.FontColor = PresentationTheme.CodeMuted;
-        canvas.DrawString(GetPresenterPrompt(votes, _votePhaseElapsedMilliseconds),
-            qrRect.Right + 28, qrRect.Y + 108, dimensions.Width * 0.58f, 52,
+        canvas.FontSize = Math.Clamp(dimensions.Width * .012f, 12f, 18f);
+        canvas.DrawString($"LIVE VOTES: {votes.Total}", infoX, qrRect.Y + 76, infoWidth, 32,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+        canvas.DrawString(_liveAudienceOptions.JoinUrl, left.X, qrRect.Bottom + 12, left.Width, 44,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+        canvas.DrawString(GetPresenterPrompt(votes, _votePhaseElapsedMilliseconds), left.X,
+            dimensions.Y + dimensions.Height * .85f, left.Width, dimensions.Height * .09f,
             HorizontalAlignment.Left, VerticalAlignment.Top);
 
         if (votes.Phase == VotePhase.Closed && _votePhaseElapsedMilliseconds < LockInDurationMilliseconds)
@@ -260,11 +273,11 @@ public sealed class OpeningScene : GameScene
     }
 
     private void DrawChampionCard(ICanvas canvas, RectF rect, string title, string line1, string line2,
-        string number, int voteCount, float voteShare, bool isHighlighted, bool isWinner, bool hasReveal, float revealProgress)
+        Champion champion, int voteCount, float voteShare, bool isHighlighted, bool isWinner, bool hasReveal, float revealProgress)
     {
         if (hasReveal && !isWinner)
         {
-            canvas.Alpha = 1f - (0.65f * revealProgress);
+            canvas.Alpha = 1f - revealProgress;
         }
 
         canvas.FillColor = isWinner
@@ -280,46 +293,37 @@ public sealed class OpeningScene : GameScene
         canvas.DrawRoundedRectangle(rect, 18);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.CodeMetric;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.13f, 24f, 42f);
-        canvas.DrawString(number, rect.X, rect.Y + rect.Height * 0.07f, rect.Width, rect.Height * 0.22f,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.070f, 14f, 23f);
-        canvas.DrawString(title, rect.X + 10, rect.Y + rect.Height * 0.37f, rect.Width - 20, 34,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.FontColor = isWinner ? PresentationTheme.AccentRed : PresentationTheme.Ink;
+        canvas.FontSize = Math.Clamp(Math.Min(rect.Width * (isWinner ? .065f : .044f), rect.Height * .13f), 16f, isWinner ? 38f : 26f);
+        canvas.DrawString(isWinner ? $"★ {title}" : title, rect.X + 20, rect.Y + rect.Height * .06f,
+            rect.Width - 40, rect.Height * .29f, HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = PresentationTheme.MutedInk;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.046f, 12f, 18f);
-        canvas.DrawString(line1, rect.X + 10, rect.Y + rect.Height * 0.53f, rect.Width - 20, 28,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-        canvas.DrawString(line2, rect.X + 10, rect.Y + rect.Height * 0.63f, rect.Width - 20, 28,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        var barRect = new RectF(rect.X + rect.Width * 0.10f, rect.Y + rect.Height * 0.73f, rect.Width * 0.80f, 8f);
-        canvas.FillColor = Color.FromArgb("#E3CFA4");
-        canvas.FillRoundedRectangle(barRect, 4);
-        if (voteShare > 0f)
-        {
-            var animatedWidth = Math.Clamp(barRect.Width * voteShare, 2f, barRect.Width);
-            canvas.FillColor = PresentationTheme.AccentRed;
-            canvas.FillRoundedRectangle(new RectF(barRect.X, barRect.Y, animatedWidth, barRect.Height), 4);
-        }
+        canvas.FontSize = Math.Clamp(Math.Min(rect.Width * .031f, rect.Height * .10f), 12f, 18f);
+        canvas.DrawString($"{line1} {line2}", rect.X + 20, rect.Y + rect.Height * .36f,
+            rect.Width - 40, rect.Height * .25f, HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = voteCount > 0 ? PresentationTheme.AccentRed : PresentationTheme.MutedInk;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.055f, 12f, 19f);
-        canvas.DrawString($"{voteCount} VOTE{(voteCount == 1 ? string.Empty : "S")}", rect.X + 10,
-            rect.Y + rect.Height * 0.80f, rect.Width - 20, 30, HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.FontSize = Math.Clamp(rect.Height * .10f, 12f, 19f);
+        canvas.DrawString($"{voteCount} VOTE{(voteCount == 1 ? string.Empty : "S")}",
+            rect.X + 20, rect.Y + rect.Height * .65f, rect.Width * .32f, rect.Height * .25f,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+        var destination = PresentationTheme.GetPageNumber(PresentationSlide.AddGameObject, champion);
+        canvas.FontColor = PresentationTheme.AccentRed;
+        canvas.DrawString($"TURN TO PAGE {destination}", rect.X + rect.Width * .35f,
+            rect.Y + rect.Height * .65f, rect.Width * .65f - 20, rect.Height * .25f,
+            HorizontalAlignment.Right, VerticalAlignment.Center);
 
-        if (isWinner)
+        var barRect = new RectF(rect.X + 20, rect.Bottom - 12, rect.Width - 40, 4);
+        canvas.FillColor = Color.FromArgb("#E3CFA4");
+        canvas.FillRoundedRectangle(barRect, 2);
+        if (voteShare > 0f)
         {
-            canvas.FontColor = PresentationTheme.CodeMetric;
-            canvas.FontSize = Math.Clamp(rect.Width * 0.045f, 11f, 17f);
-            canvas.DrawString("★ AUDIENCE CHAMPION ★", rect.X + 10,
-                rect.Bottom - 28, rect.Width - 20, 20, HorizontalAlignment.Center, VerticalAlignment.Center);
+            canvas.FillColor = PresentationTheme.AccentRed;
+            canvas.FillRoundedRectangle(new RectF(barRect.X, barRect.Y,
+                Math.Clamp(barRect.Width * voteShare, 2f, barRect.Width), barRect.Height), 2);
         }
 
         canvas.Alpha = 1f;
@@ -347,13 +351,13 @@ public sealed class OpeningScene : GameScene
 
     private static string GetPresenterPrompt(VoteSnapshot votes, double phaseElapsedMilliseconds) => votes.Phase switch
     {
-        VotePhase.Ready => "A / ENTER  ·  OPEN VOTING   •   B / ESC  ·  RESET",
-        VotePhase.Open => "A / ENTER  ·  CLOSE VOTING   •   B / ESC  ·  RESET",
+        VotePhase.Ready => "A / ENTER  ·  OPEN VOTING   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
+        VotePhase.Open => "A / ENTER  ·  CLOSE VOTING   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
         VotePhase.Closed when phaseElapsedMilliseconds < LockInDurationMilliseconds => "LOCKING VOTES…",
-        VotePhase.Closed => "A / ENTER  ·  REVEAL WINNER   •   B / ESC  ·  RESET",
+        VotePhase.Closed => "A / ENTER  ·  REVEAL WINNER   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
         VotePhase.Revealed when phaseElapsedMilliseconds < RevealSuspenseMilliseconds => "AND THE AUDIENCE CHOSE…",
-        VotePhase.Revealed when votes.RevealedChampion is null => "A / ENTER  ·  REOPEN VOTING   •   B / ESC  ·  RESET",
-        VotePhase.Revealed => "A / ENTER  ·  CONTINUE WITH THE WINNER   •   B / ESC  ·  RESET",
+        VotePhase.Revealed when votes.RevealedChampion is null => "A / ENTER  ·  REOPEN VOTING   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
+        VotePhase.Revealed => "A / ENTER  ·  CONTINUE WITH THE WINNER   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
         _ => string.Empty
     };
 
@@ -361,8 +365,9 @@ public sealed class OpeningScene : GameScene
     {
         var secondsRemaining = Math.Max(1, 3 - (int)(_votePhaseElapsedMilliseconds / 1000d));
         var pulse = (float)((Math.Sin(_elapsedMilliseconds / 120d) + 1d) / 2d);
-        var box = new RectF(dimensions.X + dimensions.Width * 0.39f,
-            dimensions.Y + dimensions.Height * 0.30f, dimensions.Width * 0.22f, dimensions.Height * 0.25f);
+        var left = BookLayout.LeftPage(dimensions);
+        var box = new RectF(left.X, dimensions.Y + dimensions.Height * .25f,
+            left.Width, dimensions.Height * .25f);
 
         canvas.FillColor = Color.FromRgba(255, 240, 194, 242);
         canvas.FillRoundedRectangle(box, 24);
@@ -385,8 +390,9 @@ public sealed class OpeningScene : GameScene
         var progress = Math.Clamp(_votePhaseElapsedMilliseconds / RevealSuspenseMilliseconds, 0d, 1d);
         canvas.Alpha = (float)(0.72d + progress * 0.20d);
         canvas.FillColor = Color.FromArgb("#FFF0C2");
-        var banner = new RectF(dimensions.X + dimensions.Width * 0.18f,
-            dimensions.Y + dimensions.Height * 0.31f, dimensions.Width * 0.64f, dimensions.Height * 0.18f);
+        var left = BookLayout.LeftPage(dimensions);
+        var banner = new RectF(left.X, dimensions.Y + dimensions.Height * .25f,
+            left.Width, dimensions.Height * .20f);
         canvas.FillRoundedRectangle(banner, 24);
         canvas.StrokeColor = PresentationTheme.AccentRed;
         canvas.StrokeSize = 3;
@@ -395,15 +401,15 @@ public sealed class OpeningScene : GameScene
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.028f, 24f, 42f);
+        canvas.FontSize = Math.Clamp(dimensions.Width * 0.020f, 20f, 30f);
         canvas.DrawString("AND THE AUDIENCE CHOSE…", banner, HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
     private static void DrawTieBanner(ICanvas canvas, RectF dimensions)
     {
         canvas.FillColor = PresentationTheme.AccentRed;
-        var banner = new RectF(dimensions.X + dimensions.Width * 0.34f,
-            dimensions.Y + dimensions.Height * 0.21f, dimensions.Width * 0.32f, 42);
+        var left = BookLayout.LeftPage(dimensions);
+        var banner = new RectF(left.X, dimensions.Y + dimensions.Height * .19f, left.Width, 42);
         canvas.FillRoundedRectangle(banner, 14);
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Colors.White;
