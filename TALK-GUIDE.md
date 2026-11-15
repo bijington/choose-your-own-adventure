@@ -130,7 +130,7 @@ Do **not** let audience networking block the rest of the talk.
 
 # Slide-by-slide walkthrough
 
-## 1. Title — `TitleScene`
+## Title — `TitleScene`
 
 ### On screen
 
@@ -180,17 +180,25 @@ Pause for the joke, then A/Enter or tap the right page to join the prologue at p
 
 ## Book chapters
 
-Running headers group the scenes; Chapter One also has a dedicated right-page opening after the vote.
+Every section has a dedicated right-page opening and matching running headers. Each chapter leaf leaves the left page blank.
 
 | Section | Content |
 | --- | --- |
 | Prologue · Discovering Orbit | Orbit overview through loading a scene |
-| Chapter One · Meet Your Champion | Champion vote, GameObject, character reveal |
+| Chapter One · Meet Our Champion | Champion vote, GameObject, character reveal |
 | Chapter Two · Take Control | Input, game loop, local driving/flying |
 | Chapter Three · An Adventure Together | SignalR explanation and audience race |
 | Epilogue · The Journey Home | Podium and recap |
 
-## 2. What is Orbit? — `OrbitOverviewScene` — page 2
+## PROLOGUE · DISCOVERING ORBIT — `PrologueChapterScene` — page 2
+
+Right-page chapter opener. Left page blank.
+
+> Before we choose a path, let’s discover the engine that brings this world to life.
+
+A/Enter or right-page tap continues; left-page tap goes back.
+
+## What is Orbit? — `OrbitOverviewScene` — page 3
 
 ### On screen
 
@@ -229,7 +237,7 @@ YOUR GAME
 
 ---
 
-## 3. Install & Register Orbit — `InstallOrbitScene` — page 3
+## Install & Register Orbit — `InstallOrbitScene` — page 4
 
 ### On screen
 
@@ -262,7 +270,7 @@ builder
 
 ---
 
-## 4. `GameSceneView` — `GameSceneViewIntroScene` — page 4
+## `GameSceneView` — `GameSceneViewIntroScene` — page 5
 
 ### On screen
 
@@ -289,7 +297,7 @@ builder
 
 ---
 
-## 5. Load a Game Scene — `LoadGameSceneIntroScene` — page 5
+## Load a Game Scene — `LoadGameSceneIntroScene` — page 6
 
 ### On screen
 
@@ -315,15 +323,19 @@ gameSceneManager.Start();
 
 ---
 
-## 6. Choose Your Champion — `OpeningScene` — page 6
+## Chapter One opening — `ChampionChapterScene` — page 7
+
+Introduce “MEET OUR CHAMPION” before voting. The right page contains the chapter title and self-discovery lead-in; the left stays blank. No selected character appears yet. Continue opens the champion vote; Back returns to the end of the prologue.
+
+## Choose Your Champion — `OpeningScene` — page 8
 
 ### On screen
 
 Voting instructions, QR code and live status on the left page. Three stacked champion cards on the right show their destination pages:
 
-- **The Driver** — page 27 — Speed. Precision. Questionable braking.
-- **The Charioteer** — page 57 — Glory. Courage. Undefined behaviour.
-- **The Space Pilot** — page 87 — Exploration. Thrusters. Naturally, Orbit.
+- **The Driver** — page 29 — Speed. Precision. Questionable braking.
+- **The Charioteer** — page 59 — Glory. Courage. Undefined behaviour.
+- **The Space Pilot** — page 89 — Exploration. Thrusters. Naturally, Orbit.
 
 ### Purpose
 
@@ -365,21 +377,22 @@ winning champion
 
 ### Transition
 
-Celebrate the enlarged winner on the selection spread, then turn to the Meet Your Champion chapter opening.
+Celebrate the enlarged winner on the selection spread, then turn to the chosen-champion summary.
 
 > “In a proper choose-your-own-adventure book, this is the point where the book tells us where to go next…”
 
 ---
 
-The final result stays on this spread: the losing cards fade out while the winning card enlarges on the right page. Its final vote count and “TURN TO PAGE” destination stay visible. Once the reveal finishes, press A/Enter or tap the right page to turn to the Meet Your Champion chapter opening. Left-page taps or Escape return to Load a Game Scene; B/Shift resets voting. A tie retains all choices and can reopen voting.
+The final result stays on this spread: the losing cards fade out while the winning card enlarges on the right page. Its final vote count and “TURN TO PAGE” destination stay visible. Once the reveal finishes, press A/Enter or tap the right page to turn to the chosen-champion summary. Left-page taps or Escape return to Load a Game Scene; B/Shift resets voting. A tie retains all choices and can reopen voting.
 
 ---
 
-## Chapter One opening — `ChampionChapterScene` — page 27 / 57 / 87
 
-A right-page-only chapter leaf: “CHAPTER ONE”, “MEET YOUR CHAMPION”, the selected champion's name and the real `ChampionGameObject`. The left page stays blank. Pause to introduce the main character, then A/Enter or a right-page tap opens Add GameObject (28 / 58 / 88). Left-page tap / Escape returns to the final vote.
+## Our chosen champion — `ChosenChampionScene` — page 29 / 59 / 89
 
-## 7. Add a `GameObject` — `AddGameObjectScene` — branch page 28 / 58 / 88
+After accepting the final vote, show “THE AUDIENCE HAS CHOSEN / OUR CHAMPION”, the selected name and its GameObject on the right page. This is a character summary within Chapter One, not another chapter opener. Continue opens Add GameObject; Back returns to the final vote.
+
+## Add a `GameObject` — `AddGameObjectScene` — page 30 / 60 / 90
 
 ### On screen
 
@@ -426,13 +439,13 @@ Add(new ChampionGameObject(state));
 
 ---
 
-## 8. Our Main Character — `ChampionRevealScene` — branch page + 1
+## Our Main Character — `ChampionRevealScene` — page 31 / 61 / 91
 
 ### Page numbers
 
-- Driver → page 29
-- Charioteer → page 59
-- Space Pilot → page 89
+- Driver → page 30
+- Charioteer → page 60
+- Space Pilot → page 90
 
 ### On screen
 
@@ -454,7 +467,15 @@ The chosen champion rendered by the actual `ChampionGameObject`.
 
 ---
 
-## 9. How Does It Move? — `InputPackageScene` — page 30 / 60 / 90
+## CHAPTER TWO · TAKE CONTROL — `InputChapterScene` — page 32 / 62 / 92
+
+Right-page chapter opener. Left page blank.
+
+> Our champion has potential. A little input will set it in motion.
+
+A/Enter or right-page tap continues; left-page tap goes back.
+
+## How Does It Move? — `InputPackageScene` — page 33 / 63 / 93
 
 ### On screen
 
@@ -489,7 +510,7 @@ and a small controller-state example.
 
 ---
 
-## 10. Game Loop — `GameLoopScene` — page 31 / 61 / 91
+## Game Loop — `GameLoopScene` — page 34 / 64 / 94
 
 ### On screen
 
@@ -588,7 +609,7 @@ Suggested line:
 
 ---
 
-## 11. Now Drive It — `VehicleControlScene` — page 32 / 62 / 92
+## Now Drive It — `VehicleControlScene` — page 35 / 65 / 95
 
 ### Purpose
 
@@ -641,7 +662,7 @@ Then:
 
 ### Moving on
 
-Current code uses `Up / W` to leave the interactive vehicle scene and move to the SignalR transition. Touch also has a lower-right next area.
+Current code uses `Up / W` to leave the interactive vehicle scene and move to the SignalR chapter opening. Touch also has a lower-right next area.
 
 ### Transition
 
@@ -649,7 +670,15 @@ Current code uses `Up / W` to leave the interactive vehicle scene and move to th
 
 ---
 
-## 12. What If the Input Source Changes? — `SignalRTransitionScene` — page 33 / 63 / 93
+## CHAPTER THREE · AN ADVENTURE TOGETHER — `SignalRChapterScene` — page 36 / 66 / 96
+
+Right-page chapter opener. Left page blank.
+
+> One champion. An entire room of players. Let’s turn the audience into the input.
+
+A/Enter or right-page tap continues; left-page tap goes back.
+
+## What If the Input Source Changes? — `SignalRTransitionScene` — page 37 / 67 / 97
 
 ### On screen
 
@@ -672,7 +701,7 @@ Conceptual transition from local controller intent to remote/audience intent.
 
 ---
 
-## 13. SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 34 / 64 / 94
+## SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 38 / 68 / 98
 
 ### On screen
 
@@ -719,7 +748,7 @@ Mention batching briefly:
 
 ---
 
-## 14. Audience Grand Prix — `AudienceRaceScene` — page 35 / 65 / 95
+## Audience Grand Prix — `AudienceRaceScene` — page 39 / 69 / 99
 
 ### On screen
 
@@ -739,7 +768,7 @@ Explain fairness in one sentence:
 
 - `A / Enter` while race is **Ready** → start race
 - `B / Esc` → reset race
-- `A / Enter` after **Finished** → podium
+- `A / Enter` after **Finished** → epilogue chapter, then podium
 
 ### During the race
 
@@ -765,7 +794,15 @@ After the race finishes, press `A / Enter`.
 
 ---
 
-## 15. The Podium — `PodiumScene` — page 36 / 66 / 96
+## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 40 / 70 / 100
+
+Right-page chapter opener. Left page blank.
+
+> Every race has a finish. Every adventure leaves us with something to take home.
+
+A/Enter or right-page tap continues; left-page tap goes back.
+
+## The Podium — `PodiumScene` — page 41 / 71 / 101
 
 ### On screen
 
@@ -792,7 +829,7 @@ Celebrate the audience before switching back into recap mode.
 
 ---
 
-## 16. Adventure Complete — `RecapScene` — page 37 / 67 / 97
+## Adventure Complete — `RecapScene` — page 42 / 72 / 102
 
 ### On screen
 
@@ -842,23 +879,24 @@ Suggested final line:
 
 # Page-number map
 
-Before branching, pages are 1–6. The chapter opening uses value 7, and Add GameObject uses 8. From the chapter opening onward, add Driver 20, Charioteer 50 or Space Pilot 80. The winning card points to chapter page 27, 57 or 87; the following code spread is 28, 58 or 88.
+Printed page numbers follow `PresentationDeck` story order (cover and optional page 404 excluded). Champion offsets apply from the chosen-champion summary onward. Inserting an opener automatically updates every destination and footer.
 
-| Beat | Driver | Charioteer | Space Pilot |
+| Spread | Driver | Charioteer | Space Pilot |
 | --- | ---: | ---: | ---: |
-| Meet Your Champion chapter | 27 | 57 | 87 |
-| Add GameObject | 28 | 58 | 88 |
-| Champion reveal | 29 | 59 | 89 |
-| Input | 30 | 60 | 90 |
-| Game loop | 31 | 61 | 91 |
-| Vehicle control | 32 | 62 | 92 |
-| SignalR transition | 33 | 63 | 93 |
-| SignalR architecture | 34 | 64 | 94 |
-| Audience race | 35 | 65 | 95 |
-| Podium | 36 | 66 | 96 |
-| Recap | 37 | 67 | 97 |
-
-The branch offset remains in effect through the recap. The presenter and web enum values and browser mapping must agree.
+| ChosenChampion | 29 | 59 | 89 |
+| AddGameObject | 30 | 60 | 90 |
+| ChampionReveal | 31 | 61 | 91 |
+| InputChapter | 32 | 62 | 92 |
+| InputPackage | 33 | 63 | 93 |
+| GameLoop | 34 | 64 | 94 |
+| VehicleControl | 35 | 65 | 95 |
+| SignalRChapter | 36 | 66 | 96 |
+| SignalRTransition | 37 | 67 | 97 |
+| SignalRArchitecture | 38 | 68 | 98 |
+| AudienceRace | 39 | 69 | 99 |
+| EpilogueChapter | 40 | 70 | 100 |
+| Podium | 41 | 71 | 101 |
+| Recap | 42 | 72 | 102 |
 
 ---
 

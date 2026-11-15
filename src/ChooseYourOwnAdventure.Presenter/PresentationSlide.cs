@@ -20,5 +20,10 @@ public enum PresentationSlide
     Podium = 16,
     Recap = 17,
     FirstDecision = 18,
+    PrologueChapter = 19,
+    InputChapter = 20,
+    SignalRChapter = 21,
+    EpilogueChapter = 22,
+    ChosenChampion = 23,
     AfterParty = 404
 }

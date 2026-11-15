@@ -23,7 +23,7 @@
     <!-- Make the local Mac Catalyst RID explicit for .NET 10. -->
     <RuntimeIdentifier Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">maccatalyst-arm64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst' and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64'">maccatalyst-x64</RuntimeIdentifier>
-    <ApplicationId>com.bijington.chooseyourownadventure</ApplicationId>
+    <ApplicationId>com.tinysoft.colours</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
 

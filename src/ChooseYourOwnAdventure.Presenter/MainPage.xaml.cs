@@ -112,7 +112,7 @@ public partial class MainPage : ContentPage
 
             if (isNextArea)
             {
-                _presentationNavigator.GoTo(PresentationSlide.SignalRTransition);
+                _presentationNavigator.GoTo(PresentationSlide.SignalRChapter);
             }
             else
             {
@@ -160,7 +160,7 @@ public partial class MainPage : ContentPage
             case PresentationSlide.VehicleControl:
                 if (action == AdventureAction.Up)
                 {
-                    _presentationNavigator.GoTo(PresentationSlide.SignalRTransition);
+                    _presentationNavigator.GoTo(PresentationSlide.SignalRChapter);
                 }
                 return;
 
@@ -223,7 +223,7 @@ public partial class MainPage : ContentPage
             else if (DateTimeOffset.UtcNow - _adventureState.LocalVoteRevealedAt >= VoteRevealDuration)
             {
                 _adventureState.ChooseChampion(localWinner);
-                _presentationNavigator.GoTo(PresentationSlide.ChampionChapter);
+                _presentationNavigator.GoTo(PresentationSlide.ChosenChampion);
             }
             return;
         }
@@ -246,7 +246,7 @@ public partial class MainPage : ContentPage
             case VotePhase.Revealed when vote.RevealedChampion is { } winner:
                 if (_liveVoteState.PhaseElapsed < VoteRevealDuration) break;
                 _adventureState.ChooseChampion(winner);
-                _presentationNavigator.GoTo(PresentationSlide.ChampionChapter);
+                _presentationNavigator.GoTo(PresentationSlide.ChosenChampion);
                 break;
             case VotePhase.Revealed:
                 await _audienceVoteClient.OpenVotingAsync();
@@ -301,7 +301,7 @@ public partial class MainPage : ContentPage
         }
         else if (race.Phase == RacePhase.Finished)
         {
-            _presentationNavigator.GoTo(PresentationSlide.Podium);
+            _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
         }
     }
 

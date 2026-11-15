@@ -32,7 +32,6 @@ public sealed class TitleScene : PresentationSceneBase
         }
 
         DrawStartPrompt(canvas, dimensions);
-        PresentationTheme.DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.Title));
     }
 
     private void DrawStartPrompt(ICanvas canvas, RectF dimensions)

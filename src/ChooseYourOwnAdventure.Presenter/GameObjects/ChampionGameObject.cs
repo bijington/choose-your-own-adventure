@@ -38,8 +38,8 @@ public sealed class ChampionGameObject : GameObject
         if (_chapterPage)
         {
             var right = BookLayout.RightPage(dimensions);
-            return new RectF(right.X, dimensions.Y + dimensions.Height * .39f,
-                right.Width, dimensions.Height * .43f);
+            return new RectF(right.X, dimensions.Y + dimensions.Height * .46f,
+                right.Width, dimensions.Height * .38f);
         }
         if (_onBookPage) return BookLayout.RightPage(dimensions);
 

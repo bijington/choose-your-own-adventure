@@ -197,7 +197,7 @@ public sealed class OpeningScene : GameScene
         canvas.DrawString($"{voteCount} VOTE{(voteCount == 1 ? string.Empty : "S")}",
             rect.X + 20, rect.Y + rect.Height * .65f, rect.Width * .32f, rect.Height * .25f,
             HorizontalAlignment.Left, VerticalAlignment.Center);
-        var destination = PresentationTheme.GetPageNumber(PresentationSlide.ChampionChapter, champion);
+        var destination = PresentationTheme.GetPageNumber(PresentationSlide.ChosenChampion, champion);
         canvas.FontColor = PresentationTheme.AccentRed;
         canvas.DrawString($"TURN TO PAGE {destination}", rect.X + rect.Width * .35f,
             rect.Y + rect.Height * .65f, rect.Width * .65f - 20, rect.Height * .25f,

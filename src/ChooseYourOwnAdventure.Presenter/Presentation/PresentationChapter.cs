@@ -8,7 +8,7 @@ public static class PresentationChapter
             or PresentationSlide.GameSceneView or PresentationSlide.LoadGameScene
             => "PROLOGUE · DISCOVERING ORBIT",
         PresentationSlide.ChooseChampion or PresentationSlide.AddGameObject
-            or PresentationSlide.ChampionReveal => "CHAPTER ONE · MEET YOUR CHAMPION",
+            or PresentationSlide.ChampionReveal => "CHAPTER ONE · MEET OUR CHAMPION",
         PresentationSlide.InputPackage or PresentationSlide.GameLoop
             or PresentationSlide.VehicleControl => "CHAPTER TWO · TAKE CONTROL",
         PresentationSlide.SignalRTransition or PresentationSlide.SignalRArchitecture
