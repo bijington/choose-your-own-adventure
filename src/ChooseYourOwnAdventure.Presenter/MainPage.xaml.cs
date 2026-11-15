@@ -2,6 +2,7 @@ using ChooseYourOwnAdventure.Input;
 using ChooseYourOwnAdventure.Live;
 using ChooseYourOwnAdventure.Presentation;
 using Orbit.Engine;
+using ChooseYourOwnAdventure.Scenes;
 
 namespace ChooseYourOwnAdventure;
 
@@ -66,6 +67,19 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        if (_presentationNavigator.Current == PresentationSlide.FirstDecision)
+        {
+            if (position.Value.X < GameView.Width / 2d)
+                _presentationNavigator.Previous();
+            else if (FirstDecisionScene.IsAfterPartyChoice(
+                new Microsoft.Maui.Graphics.RectF(0, 0, (float)GameView.Width, (float)GameView.Height),
+                new Microsoft.Maui.Graphics.PointF((float)position.Value.X, (float)position.Value.Y)))
+                _presentationNavigator.GoTo(PresentationSlide.AfterParty);
+            else
+                _presentationNavigator.Next();
+            return;
+        }
+
         if (_presentationNavigator.Current == PresentationSlide.ChooseChampion
             && position.Value.X < GameView.Width / 2d)
         {
@@ -126,6 +140,15 @@ public partial class MainPage : ContentPage
 
         switch (_presentationNavigator.Current)
         {
+            case PresentationSlide.FirstDecision:
+                if (action == AdventureAction.Secondary)
+                    _presentationNavigator.GoTo(PresentationSlide.AfterParty);
+                else if (action == AdventureAction.Back)
+                    _presentationNavigator.Previous();
+                else if (action == AdventureAction.Primary)
+                    _presentationNavigator.Next();
+                return;
+
             case PresentationSlide.ChooseChampion:
                 await HandleChampionVoteAsync(action);
                 return;
@@ -200,7 +223,7 @@ public partial class MainPage : ContentPage
             else if (DateTimeOffset.UtcNow - _adventureState.LocalVoteRevealedAt >= VoteRevealDuration)
             {
                 _adventureState.ChooseChampion(localWinner);
-                _presentationNavigator.GoTo(PresentationSlide.AddGameObject);
+                _presentationNavigator.GoTo(PresentationSlide.ChampionChapter);
             }
             return;
         }
@@ -223,7 +246,7 @@ public partial class MainPage : ContentPage
             case VotePhase.Revealed when vote.RevealedChampion is { } winner:
                 if (_liveVoteState.PhaseElapsed < VoteRevealDuration) break;
                 _adventureState.ChooseChampion(winner);
-                _presentationNavigator.GoTo(PresentationSlide.AddGameObject);
+                _presentationNavigator.GoTo(PresentationSlide.ChampionChapter);
                 break;
             case VotePhase.Revealed:
                 await _audienceVoteClient.OpenVotingAsync();

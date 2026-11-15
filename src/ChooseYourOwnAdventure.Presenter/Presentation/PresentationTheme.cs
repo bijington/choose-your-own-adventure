@@ -42,7 +42,12 @@ public static class PresentationTheme
     }
 
     public static int GetPageNumber(PresentationSlide slide, Champion? champion = null)
-        => (int)slide + (slide >= PresentationSlide.AddGameObject ? (int)(champion ?? 0) : 0);
+        => slide switch
+        {
+            PresentationSlide.FirstDecision => 1,
+            PresentationSlide.AfterParty => 404,
+            _ => (int)slide + (slide >= PresentationSlide.ChampionChapter ? (int)(champion ?? 0) : 0)
+        };
 
     public static void DrawParchment(ICanvas canvas, RectF dimensions)
     {

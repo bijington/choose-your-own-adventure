@@ -8,13 +8,19 @@ public static class PresentationDeck
     private static readonly PresentationSlideDefinition[] Slides =
     [
         PresentationSlideDefinition.Create<TitleScene>(PresentationSlide.Title),
-        PresentationSlideDefinition.Create<OrbitOverviewScene>(PresentationSlide.OrbitOverview),
+        PresentationSlideDefinition.Create<FirstDecisionScene>(PresentationSlide.FirstDecision,
+            next: PresentationSlide.OrbitOverview),
+        PresentationSlideDefinition.Create<AfterPartyScene>(PresentationSlide.AfterParty),
+        PresentationSlideDefinition.Create<OrbitOverviewScene>(PresentationSlide.OrbitOverview,
+            previous: PresentationSlide.FirstDecision),
         PresentationSlideDefinition.Create<InstallOrbitScene>(PresentationSlide.InstallOrbit),
         PresentationSlideDefinition.Create<GameSceneViewIntroScene>(PresentationSlide.GameSceneView),
         PresentationSlideDefinition.Create<LoadGameSceneIntroScene>(PresentationSlide.LoadGameScene),
         PresentationSlideDefinition.Create<OpeningScene>(
             PresentationSlide.ChooseChampion,
             state => state.PrepareChampionVote()),
+        PresentationSlideDefinition.Create<ChampionChapterScene>(PresentationSlide.ChampionChapter,
+            state => state.PrepareChampionReveal()),
         PresentationSlideDefinition.Create<AddGameObjectScene>(PresentationSlide.AddGameObject),
         PresentationSlideDefinition.Create<ChampionRevealScene>(
             PresentationSlide.ChampionReveal,

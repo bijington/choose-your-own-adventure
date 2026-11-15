@@ -8,12 +8,16 @@ public sealed class ChampionGameObject : GameObject
 {
     private readonly AdventureState _state;
     private readonly bool _onBookPage;
+    private readonly bool _chapterPage;
 
-    public ChampionGameObject(AdventureState state, bool onBookPage = false)
+    public ChampionGameObject(AdventureState state, bool onBookPage = false, bool chapterPage = false)
     {
         _state = state;
         _onBookPage = onBookPage;
+        _chapterPage = chapterPage;
     }
+
+    public string ChampionName => GetChampionName(_state.Champion);
 
     public override void Render(ICanvas canvas, RectF dimensions)
     {
@@ -25,12 +29,18 @@ public sealed class ChampionGameObject : GameObject
         }
 
         var rect = GetRenderPanel(dimensions);
-        DrawPanel(canvas, rect);
-        DrawChampion(canvas, rect, _state.Champion);
+        if (!_chapterPage) DrawPanel(canvas, rect);
+        DrawChampion(canvas, rect, _state.Champion, showLabels: !_chapterPage);
     }
 
     private RectF GetRenderPanel(RectF dimensions)
     {
+        if (_chapterPage)
+        {
+            var right = BookLayout.RightPage(dimensions);
+            return new RectF(right.X, dimensions.Y + dimensions.Height * .39f,
+                right.Width, dimensions.Height * .43f);
+        }
         if (_onBookPage) return BookLayout.RightPage(dimensions);
 
         var finalRect = GetSpritePanel(dimensions);
@@ -93,23 +103,29 @@ public sealed class ChampionGameObject : GameObject
         canvas.DrawRoundedRectangle(rect, 18);
     }
 
-    private static void DrawChampion(ICanvas canvas, RectF rect, Champion? champion)
+    private static void DrawChampion(ICanvas canvas, RectF rect, Champion? champion, bool showLabels = true)
     {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Colors.White;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.064f, 18f, 30f);
-        canvas.DrawString(
-            GetChampionName(champion),
-            rect.X + 20,
-            rect.Y + 24,
-            rect.Width - 40,
-            40,
-            HorizontalAlignment.Center,
-            VerticalAlignment.Center);
+        if (showLabels)
+        {
+            canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+            canvas.FontColor = Colors.White;
+            canvas.FontSize = Math.Clamp(rect.Width * 0.064f, 18f, 30f);
+            canvas.DrawString(
+                GetChampionName(champion),
+                rect.X + 20,
+                rect.Y + 24,
+                rect.Width - 40,
+                40,
+                HorizontalAlignment.Center,
+                VerticalAlignment.Center);
+
+        }
 
         var centerX = rect.X + rect.Width / 2f;
-        var groundY = rect.Y + rect.Height * 0.75f;
-        var scale = Math.Clamp(rect.Width * 0.045f, 10f, 18f);
+        var groundY = rect.Y + rect.Height * (showLabels ? .75f : .60f);
+        var scale = showLabels
+            ? Math.Clamp(rect.Width * .045f, 10f, 18f)
+            : Math.Clamp(rect.Width * .065f, 16f, 28f);
 
         switch (champion)
         {
@@ -123,6 +139,8 @@ public sealed class ChampionGameObject : GameObject
                 DrawRacingDriver(canvas, centerX, groundY, scale);
                 break;
         }
+
+        if (!showLabels) return;
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Color.FromArgb("#94A3B8");

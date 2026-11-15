@@ -48,6 +48,7 @@ internal sealed class PresentationNavigator : IPresentationNavigator, IDisposabl
 
     public bool Next()
     {
+        if (_slides[_index].Next is { } next) return GoTo(next);
         if (_book.IsTurning || _index >= _slides.Count - 1)
         {
             return false;
@@ -61,6 +62,7 @@ internal sealed class PresentationNavigator : IPresentationNavigator, IDisposabl
 
     public bool Previous()
     {
+        if (_slides[_index].Previous is { } previous) return GoTo(previous);
         if (_book.IsTurning || _index <= 0)
         {
             return false;
@@ -100,7 +102,7 @@ internal sealed class PresentationNavigator : IPresentationNavigator, IDisposabl
         try
         {
             var scene = (GameScene)scope.ServiceProvider.GetRequiredService(definition.SceneType);
-            _book.Show(scene);
+            _book.Show(scene, definition.Slide);
             _contentScope?.Dispose();
             _contentScope = scope;
         }

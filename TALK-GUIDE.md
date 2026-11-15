@@ -162,6 +162,34 @@ Keep this to 60–90 seconds. Do not cut it entirely; it establishes the whole t
 
 ---
 
+## Opening choice — `FirstDecisionScene` — page 1
+
+Allow about 30 seconds after the cover. Invite a show of hands or a shouted answer, without opening SignalR voting:
+
+> “One last session… or straight to the after-party?”
+
+- **Attend the talk → page 2**: A/Enter, or tap the upper right-page card.
+- **Go straight to the after-party → page 404**: B/Shift, or tap the lower card.
+- Left page / Escape: return to the cover.
+
+The optional page-404 spread reads:
+
+> “The after-party could not be found. Please complete this adventure first.”
+
+Pause for the joke, then A/Enter or tap the right page to join the prologue at page 2. The normal talk route skips page 404, and Back from the prologue returns to the decision page. This introduces the book format before the real champion vote.
+
+## Book chapters
+
+Running headers group the scenes; Chapter One also has a dedicated right-page opening after the vote.
+
+| Section | Content |
+| --- | --- |
+| Prologue · Discovering Orbit | Orbit overview through loading a scene |
+| Chapter One · Meet Your Champion | Champion vote, GameObject, character reveal |
+| Chapter Two · Take Control | Input, game loop, local driving/flying |
+| Chapter Three · An Adventure Together | SignalR explanation and audience race |
+| Epilogue · The Journey Home | Podium and recap |
+
 ## 2. What is Orbit? — `OrbitOverviewScene` — page 2
 
 ### On screen
@@ -293,9 +321,9 @@ gameSceneManager.Start();
 
 Voting instructions, QR code and live status on the left page. Three stacked champion cards on the right show their destination pages:
 
-- **The Driver** — page 28 — Speed. Precision. Questionable braking.
-- **The Charioteer** — page 58 — Glory. Courage. Undefined behaviour.
-- **The Space Pilot** — page 88 — Exploration. Thrusters. Naturally, Orbit.
+- **The Driver** — page 27 — Speed. Precision. Questionable braking.
+- **The Charioteer** — page 57 — Glory. Courage. Undefined behaviour.
+- **The Space Pilot** — page 87 — Exploration. Thrusters. Naturally, Orbit.
 
 ### Purpose
 
@@ -337,15 +365,19 @@ winning champion
 
 ### Transition
 
-Celebrate the enlarged winner on the selection spread, then continue directly to Add GameObject.
+Celebrate the enlarged winner on the selection spread, then turn to the Meet Your Champion chapter opening.
 
 > “In a proper choose-your-own-adventure book, this is the point where the book tells us where to go next…”
 
 ---
 
-The final result stays on this spread: the losing cards fade out while the winning card enlarges on the right page. Its final vote count and “TURN TO PAGE” destination stay visible. Once the reveal finishes, press A/Enter or tap the right page to continue directly to Add GameObject. Left-page taps or Escape return to Load a Game Scene; B/Shift resets voting. A tie retains all choices and can reopen voting.
+The final result stays on this spread: the losing cards fade out while the winning card enlarges on the right page. Its final vote count and “TURN TO PAGE” destination stay visible. Once the reveal finishes, press A/Enter or tap the right page to turn to the Meet Your Champion chapter opening. Left-page taps or Escape return to Load a Game Scene; B/Shift resets voting. A tie retains all choices and can reopen voting.
 
 ---
+
+## Chapter One opening — `ChampionChapterScene` — page 27 / 57 / 87
+
+A right-page-only chapter leaf: “CHAPTER ONE”, “MEET YOUR CHAMPION”, the selected champion's name and the real `ChampionGameObject`. The left page stays blank. Pause to introduce the main character, then A/Enter or a right-page tap opens Add GameObject (28 / 58 / 88). Left-page tap / Escape returns to the final vote.
 
 ## 7. Add a `GameObject` — `AddGameObjectScene` — branch page 28 / 58 / 88
 
@@ -810,10 +842,11 @@ Suggested final line:
 
 # Page-number map
 
-Before branching, pages are 1–6. Add GameObject keeps its explicit value 8; page 7 is retired with the separate result scene. From Add GameObject onward, add Driver 20, Charioteer 50 or Space Pilot 80. The winning card points to page 28, 58 or 88, matching the next footer.
+Before branching, pages are 1–6. The chapter opening uses value 7, and Add GameObject uses 8. From the chapter opening onward, add Driver 20, Charioteer 50 or Space Pilot 80. The winning card points to chapter page 27, 57 or 87; the following code spread is 28, 58 or 88.
 
 | Beat | Driver | Charioteer | Space Pilot |
 | --- | ---: | ---: | ---: |
+| Meet Your Champion chapter | 27 | 57 | 87 |
 | Add GameObject | 28 | 58 | 88 |
 | Champion reveal | 29 | 59 | 89 |
 | Input | 30 | 60 | 90 |

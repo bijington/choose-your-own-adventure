@@ -218,22 +218,28 @@ The presenter now uses one `GameScene` per major presentation beat. `Presentatio
 
 Current order:
 
-1. `TitleScene`
-2. `OrbitOverviewScene`
-3. `InstallOrbitScene`
-4. `GameSceneViewIntroScene`
-5. `LoadGameSceneIntroScene`
-6. `OpeningScene`
-7. `AddGameObjectScene`
-8. `ChampionRevealScene`
-9. `InputPackageScene`
-10. `GameLoopScene`
-11. `VehicleControlScene`
-12. `SignalRTransitionScene`
-13. `SignalRArchitectureScene`
-14. `AudienceRaceScene`
-15. `PodiumScene`
-16. `RecapScene`
+1. `TitleScene` — cover
+2. `FirstDecisionScene` — attend the talk (page 2) or take the after-party shortcut (page 404)
+3. `AfterPartyScene` — optional joke branch; continue rejoins page 2
+4. `OrbitOverviewScene`
+5. `InstallOrbitScene`
+6. `GameSceneViewIntroScene`
+7. `LoadGameSceneIntroScene`
+8. `OpeningScene` — champion vote
+9. `ChampionChapterScene` — right-page chapter opening
+10. `AddGameObjectScene`
+11. `ChampionRevealScene`
+12. `InputPackageScene`
+13. `GameLoopScene`
+14. `VehicleControlScene`
+15. `SignalRTransitionScene`
+16. `SignalRArchitectureScene`
+17. `AudienceRaceScene`
+18. `PodiumScene`
+19. `RecapScene`
+
+The normal Next route skips the optional after-party page. Back from the prologue returns to the first decision. These routes are declared alongside the scene order in `PresentationDeck`.
+
 
 ### Presenter controls
 
@@ -272,7 +278,7 @@ Code samples now use the same parchment visual language as the rest of the deck.
 
 ## Branch page numbers
 
-`PresentationSlide` keeps its existing explicit page values (page 7 is retired). From `AddGameObject` onward, `PresentationTheme.GetPageNumber` adds the selected champion value: Driver 20, Charioteer 50, Space Pilot 80. The enlarged winner on the voting spread points directly to `AddGameObject` (28, 58 or 88). Presenter and web `Champion` enums and the browser numeric mapping must stay synchronized.
+`PresentationSlide` keeps its explicit page values. The champion chapter uses page 7. From `ChampionChapter` onward, `PresentationTheme.GetPageNumber` adds the selected champion value: Driver 20, Charioteer 50, Space Pilot 80. The enlarged winner on the voting spread points to the chapter opening (27, 57 or 87), followed by `AddGameObject` (28, 58 or 88). Presenter and web `Champion` enums and the browser numeric mapping must stay synchronized.
 
 Vehicle artwork lives in `ChampionVehicleGameObject`, shared by `LoopVehicle`, `AudienceRaceVehicle` and podium `StaticChampionVehicleGameObject`s.
 
@@ -290,6 +296,22 @@ The presenter now renders facing paper pages with a spine, layered edges and a s
 
 On ordinary spreads, tap anywhere on the left page to turn back, or the right page to continue. Tap anywhere on the cover to start; existing keyboard/controller and special-scene controls still apply. Controller and SignalR discovery remain asynchronous.
 
-Champion selection uses the left page for voting instructions, QR code and live status. Three stacked cards on the right show the Driver, Charioteer and Space Pilot, with their derived destination pages (28, 58 and 88). Touch selection uses the same card bounds as rendering; voting lifecycle controls are unchanged.
+Champion selection uses the left page for voting instructions, QR code and live status. Three stacked cards on the right show the Driver, Charioteer and Space Pilot, with their derived destination pages (27, 57 and 87). Touch selection uses the same card bounds as rendering; voting lifecycle controls are unchanged.
 
-The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue goes directly to Add GameObject; there is no separate result scene. On the vote spread, left-page taps and Escape go back; B/Shift resets voting. Offline selection uses the same reveal before continuing.
+The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue opens a right-page chapter leaf with “MEET YOUR CHAMPION”, the selected name and the real `ChampionGameObject`; the next turn opens Add GameObject. On the vote spread, left-page taps and Escape go back; B/Shift resets voting. Offline selection uses the same reveal before continuing.
+
+## Opening decision and chapter structure
+
+After the cover, invite the room to shout a preference: **attend the talk → page 2**, or **go straight to the after-party → page 404**. This is presenter-controlled; no voting round opens. Tap the corresponding right-page choice, use A/Enter for the talk, or B/Shift for the shortcut. Page 404 says “The after-party could not be found. Please complete this adventure first.” A/Enter or a right-page tap then begins the prologue.
+
+`PresentationChapter` supplies running labels on existing spreads, with a right-page opening for Chapter One:
+
+- Prologue · Discovering Orbit — overview, install, view and scene loading.
+- Chapter One · Meet Your Champion — vote, GameObject and character reveal.
+- Chapter Two · Take Control — input, loop and vehicle demo.
+- Chapter Three · An Adventure Together — SignalR and audience race.
+- Epilogue · The Journey Home — podium and recap.
+
+The opening is page 1 and the joke is page 404. Existing prologue and champion destination pages remain unchanged; enum identity is independent of deck order.
+
+The vote scene renders only voting content, independent of `OpeningStage`. Accepting a champion cannot switch its outgoing capture into the old character-reveal layout. The chapter scene reuses `ChampionGameObject` artwork without the dark panel or duplicate labels; its left leaf remains blank.

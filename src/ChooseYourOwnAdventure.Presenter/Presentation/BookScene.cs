@@ -9,6 +9,7 @@ public sealed class BookScene : GameScene, IDisposable
 {
     private const double TurnDuration = 680;
     private GameScene? _content;
+    private PresentationSlide _slide;
     private PlatformBitmapExportContext? _paper;
     private Microsoft.Maui.Graphics.IImage? _paperImage;
     private PlatformBitmapExportContext? _incomingPaper;
@@ -28,7 +29,7 @@ public sealed class BookScene : GameScene, IDisposable
         {
             _paper = new PlatformBitmapExportContext((int)Math.Ceiling(_dimensions.Width),
                 (int)Math.Ceiling(_dimensions.Height), 1);
-            _content.Render(_paper.Canvas, new RectF(0, 0, _dimensions.Width, _dimensions.Height));
+            RenderContent(_paper.Canvas, new RectF(0, 0, _dimensions.Width, _dimensions.Height));
             _paperImage = _paper.Image;
             _backwards = backwards;
             _turnElapsed = 0;
@@ -41,15 +42,16 @@ public sealed class BookScene : GameScene, IDisposable
         }
     }
 
-    public void Show(GameScene content)
+    public void Show(GameScene content, PresentationSlide slide)
     {
         _content = content;
+        _slide = slide;
         if (!IsTurning) return;
         try
         {
             _incomingPaper = new PlatformBitmapExportContext((int)Math.Ceiling(_dimensions.Width),
                 (int)Math.Ceiling(_dimensions.Height), 1);
-            content.Render(_incomingPaper.Canvas, new RectF(0, 0, _dimensions.Width, _dimensions.Height));
+            RenderContent(_incomingPaper.Canvas, new RectF(0, 0, _dimensions.Width, _dimensions.Height));
             _incomingImage = _incomingPaper.Image;
             _startTurnOnNextUpdate = true;
         }
@@ -79,7 +81,7 @@ public sealed class BookScene : GameScene, IDisposable
     {
         _dimensions = dimensions;
         canvas.SaveState();
-        _content?.Render(canvas, dimensions);
+        RenderContent(canvas, dimensions);
         canvas.RestoreState();
         if (_paperImage is null) return;
 
@@ -131,6 +133,23 @@ public sealed class BookScene : GameScene, IDisposable
             canvas.FillColor = PresentationTheme.Ink;
             canvas.FillRectangle(leafX + (direction * cosine >= 0 ? i : leafWidth - i), leaf.Y, 1, leaf.Height);
         }
+        canvas.RestoreState();
+    }
+
+    private void RenderContent(ICanvas canvas, RectF bounds)
+    {
+        canvas.SaveState();
+        _content?.Render(canvas, bounds);
+        canvas.RestoreState();
+        var chapter = PresentationChapter.LabelFor(_slide);
+        if (chapter is null) return;
+        canvas.SaveState();
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = PresentationTheme.MutedInk;
+        canvas.FontSize = Math.Clamp(bounds.Width * .009f, 10f, 15f);
+        var left = BookLayout.LeftPage(bounds);
+        canvas.DrawString(chapter, left.X, bounds.Y + 25, left.Width, 30,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
         canvas.RestoreState();
     }
 

@@ -1,4 +1,3 @@
-using ChooseYourOwnAdventure.GameObjects;
 using ChooseYourOwnAdventure.Live;
 using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
@@ -23,7 +22,6 @@ public sealed class OpeningScene : GameScene
     private const double LockInDurationMilliseconds = 3000d;
     private const double RevealSuspenseMilliseconds = 1100d;
     private const double RevealFadeMilliseconds = 900d;
-    private const double CodeRevealTransitionMilliseconds = 1400d;
 
     public OpeningScene(
         AdventureState state,
@@ -35,7 +33,6 @@ public sealed class OpeningScene : GameScene
         _liveVoteState = liveVoteState;
         _liveAudienceOptions = liveAudienceOptions;
         _qrCodeRenderer = qrCodeRenderer;
-        Add(new ChampionGameObject(state));
     }
 
     private VoteSnapshot CurrentVotes => _state.LocalVoteWinner is { } local
@@ -46,7 +43,6 @@ public sealed class OpeningScene : GameScene
     {
         base.Update(millisecondsSinceLastUpdate);
         _elapsedMilliseconds += millisecondsSinceLastUpdate;
-
         var votes = CurrentVotes;
         if (!_votePhaseInitialized || votes.Phase != _displayedVotePhase)
         {
@@ -58,127 +54,18 @@ public sealed class OpeningScene : GameScene
         {
             _votePhaseElapsedMilliseconds += millisecondsSinceLastUpdate;
         }
-
         var smoothing = (float)(1d - Math.Exp(-millisecondsSinceLastUpdate / 180d));
         _displayedDriverVotes += (votes.RacingDriver - _displayedDriverVotes) * smoothing;
         _displayedCharioteerVotes += (votes.Charioteer - _displayedCharioteerVotes) * smoothing;
         _displayedSpacePilotVotes += (votes.SpacePilot - _displayedSpacePilotVotes) * smoothing;
-
-        if (_state.OpeningStage == OpeningStage.ChampionTransition)
-        {
-            var progress = _state.CodeRevealTransitionProgress
-                + (float)(millisecondsSinceLastUpdate / CodeRevealTransitionMilliseconds);
-            _state.SetCodeRevealTransitionProgress(progress);
-
-            if (progress >= 1f)
-            {
-                _state.CompleteCodeRevealTransition();
-            }
-        }
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
     {
-        DrawBackground(canvas, dimensions);
-
-        if (_state.OpeningStage == OpeningStage.ChampionTransition)
-        {
-            DrawCodeRevealTransition(canvas, dimensions, _state.CodeRevealTransitionProgress);
-            base.Render(canvas, dimensions);
-            return;
-        }
-
-        if (_state.OpeningStage is OpeningStage.CodeReveal or OpeningStage.Complete)
-        {
-            DrawCodeRevealShell(canvas, dimensions);
-            base.Render(canvas, dimensions);
-            DrawCodePanel(canvas, GetCodePanel(dimensions));
-            DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  CONTINUE TO THE GAME LOOP", 0.88f);
-            return;
-        }
-
-        base.Render(canvas, dimensions);
-
-        switch (_state.OpeningStage)
-        {
-            case OpeningStage.Title:
-                DrawTitle(canvas, dimensions);
-                break;
-            case OpeningStage.Awakening:
-                DrawDialogue(canvas, dimensions, "You awaken in a strange conference hall...");
-                break;
-            case OpeningStage.Memory:
-                DrawDialogue(canvas, dimensions, "You remember nothing.");
-                break;
-            case OpeningStage.DotNetMemory:
-                DrawDialogue(canvas, dimensions, "Except C#.");
-                break;
-            case OpeningStage.DependencyInjection:
-                DrawDialogue(canvas, dimensions, "And, strangely...", "dependency injection.");
-                break;
-            case OpeningStage.ChooseChampion:
-                DrawChampionSelection(canvas, dimensions, _state.HighlightedChampion);
-                break;
-            case OpeningStage.ChampionChosen:
-                DrawChampionChosen(canvas, dimensions);
-                break;
-        }
-    }
-
-    private static void DrawBackground(ICanvas canvas, RectF dimensions)
-    {
+        // Voting stays visually stable when accepting the winner changes AdventureState.
+        // BookScene captures this page before loading the chapter reveal.
         PresentationTheme.DrawParchment(canvas, dimensions);
-    }
-
-    private void DrawTitle(ICanvas canvas, RectF dimensions)
-    {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.045f, 28f, 64f);
-        canvas.DrawString("CHOOSE YOUR OWN ADVENTURE", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.28f, Math.Max(0, dimensions.Width - 80), 90,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = PresentationTheme.MutedInk;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.018f, 15f, 26f);
-        canvas.DrawString("Built with .NET MAUI + Orbit", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.45f, Math.Max(0, dimensions.Width - 80), 50,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        DrawContinuePrompt(canvas, dimensions, "PRESS START", 0.64f);
-    }
-
-    private void DrawDialogue(ICanvas canvas, RectF dimensions, string line1, string? line2 = null)
-    {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.033f, 24f, 48f);
-        canvas.DrawString(line1, dimensions.X + dimensions.Width * 0.10f,
-            dimensions.Y + dimensions.Height * 0.37f, dimensions.Width * 0.80f, 70,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        if (!string.IsNullOrWhiteSpace(line2))
-        {
-            canvas.FontColor = PresentationTheme.AccentRed;
-            canvas.DrawString(line2, dimensions.X + dimensions.Width * 0.10f,
-                dimensions.Y + dimensions.Height * 0.49f, dimensions.Width * 0.80f, 70,
-                HorizontalAlignment.Center, VerticalAlignment.Center);
-        }
-
-        DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  CONTINUE", 0.72f);
-    }
-
-    private void DrawContinuePrompt(ICanvas canvas, RectF dimensions, string text, float yFactor)
-    {
-        var pulse = (Math.Sin(_elapsedMilliseconds / 450d) + 1d) / 2d;
-        canvas.Alpha = (float)(0.35d + pulse * 0.65d);
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.AccentRed;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.018f, 16f, 28f);
-        canvas.DrawString(text, dimensions.X + 40, dimensions.Y + dimensions.Height * yFactor,
-            Math.Max(0, dimensions.Width - 80), 50, HorizontalAlignment.Center, VerticalAlignment.Center);
-        canvas.Alpha = 1f;
+        DrawChampionSelection(canvas, dimensions, _state.HighlightedChampion);
     }
 
     private void DrawChampionSelection(ICanvas canvas, RectF dimensions, Champion highlightedChampion)
@@ -310,7 +197,7 @@ public sealed class OpeningScene : GameScene
         canvas.DrawString($"{voteCount} VOTE{(voteCount == 1 ? string.Empty : "S")}",
             rect.X + 20, rect.Y + rect.Height * .65f, rect.Width * .32f, rect.Height * .25f,
             HorizontalAlignment.Left, VerticalAlignment.Center);
-        var destination = PresentationTheme.GetPageNumber(PresentationSlide.AddGameObject, champion);
+        var destination = PresentationTheme.GetPageNumber(PresentationSlide.ChampionChapter, champion);
         canvas.FontColor = PresentationTheme.AccentRed;
         canvas.DrawString($"TURN TO PAGE {destination}", rect.X + rect.Width * .35f,
             rect.Y + rect.Height * .65f, rect.Width * .65f - 20, rect.Height * .25f,
@@ -417,136 +304,9 @@ public sealed class OpeningScene : GameScene
         canvas.DrawString("TIE — ONE MORE ROUND!", banner, HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
-    private void DrawChampionChosen(ICanvas canvas, RectF dimensions)
-    {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.AccentRed;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.04f, 28f, 56f);
-        canvas.DrawString(GetChampionName(_state.Champion), dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.09f, Math.Max(0, dimensions.Width - 80), 70,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.019f, 16f, 28f);
-        canvas.DrawString(GetThemeTagline(_state.Champion), dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.18f, Math.Max(0, dimensions.Width - 80), 50,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        DrawContinuePrompt(canvas, dimensions, "A / ENTER  ·  REVEAL THE ORBIT CODE", 0.88f);
-    }
-
-    private void DrawCodeRevealTransition(ICanvas canvas, RectF dimensions, float progress)
-    {
-        var eased = EaseInOut(progress);
-
-        canvas.Alpha = Math.Clamp((eased - 0.18f) / 0.52f, 0f, 1f);
-        DrawCodeRevealShell(canvas, dimensions);
-
-        var codePanel = GetCodePanel(dimensions);
-        var slide = (1f - eased) * Math.Min(90f, dimensions.Width * 0.08f);
-        codePanel = new RectF(codePanel.X - slide, codePanel.Y, codePanel.Width, codePanel.Height);
-        DrawCodePanel(canvas, codePanel);
-        canvas.Alpha = 1f;
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.AccentRed;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.015f, 13f, 21f);
-        canvas.Alpha = Math.Clamp(1f - eased * 1.6f, 0f, 1f);
-        canvas.DrawString("THE CHAMPION BECOMES A GAMEOBJECT…", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.87f, Math.Max(0, dimensions.Width - 80), 36,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-        canvas.Alpha = 1f;
-    }
-
     private static float EaseInOut(float value)
     {
         value = Math.Clamp(value, 0f, 1f);
         return value * value * (3f - 2f * value);
     }
-
-    private static RectF GetCodePanel(RectF dimensions)
-    {
-        var margin = Math.Max(42f, dimensions.Width * 0.05f);
-        var gap = Math.Max(28f, dimensions.Width * 0.035f);
-        var contentTop = dimensions.Y + dimensions.Height * 0.16f;
-        var contentHeight = dimensions.Height * 0.66f;
-        var panelWidth = (dimensions.Width - margin * 2 - gap) / 2f;
-        return new RectF(dimensions.X + margin, contentTop, panelWidth, contentHeight);
-    }
-
-    private static void DrawCodeRevealShell(ICanvas canvas, RectF dimensions)
-    {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.032f, 28f, 48f);
-        canvas.DrawString("REAL ORBIT CODE → LIVE GAMEOBJECT", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.055f, Math.Max(0, dimensions.Width - 80), 60,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        var left = GetCodePanel(dimensions);
-        canvas.FillColor = PresentationTheme.CodePanel;
-        canvas.FillRoundedRectangle(left, 18);
-        canvas.StrokeColor = PresentationTheme.CodePanelBorder;
-        canvas.StrokeSize = 2;
-        canvas.DrawRoundedRectangle(left, 18);
-    }
-
-    private void DrawCodePanel(ICanvas canvas, RectF rect)
-    {
-        canvas.Font = CodeFonts.SemiBold;
-        canvas.FontColor = PresentationTheme.CodeMuted;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.048f, 16f, 24f);
-        canvas.DrawString("OpeningScene.cs", rect.X + 24, rect.Y + 14, rect.Width - 48, 26,
-            HorizontalAlignment.Left, VerticalAlignment.Center);
-
-        string[] lines =
-        [
-            "// OpeningScene",
-            "Add(new ChampionGameObject(state));",
-            "",
-            "public sealed class ChampionGameObject",
-            "    : GameObject",
-            "{",
-            "    public override void Render(",
-            "        ICanvas canvas, RectF dimensions)",
-            "    {",
-            "        DrawChampion(canvas, dimensions,",
-            "            _state.Champion);",
-            "    }",
-            "}"
-        ];
-
-        canvas.Font = CodeFonts.Regular;
-        canvas.FontColor = PresentationTheme.CodeText;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.027f, 10f, 15f);
-        var lineHeight = Math.Clamp(rect.Height * 0.044f, 18f, 25f);
-        var y = rect.Y + rect.Height * 0.13f;
-        foreach (var line in lines)
-        {
-            canvas.DrawString(line, rect.X + 24, y, rect.Width - 48, lineHeight,
-                HorizontalAlignment.Left, VerticalAlignment.Center);
-            y += lineHeight;
-        }
-
-        canvas.Font = CodeFonts.SemiBold;
-        canvas.FontColor = PresentationTheme.CodeMetric;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.036f, 14f, 20f);
-        canvas.DrawString($"Selected: {GetChampionName(_state.Champion)}", rect.X + 24,
-            rect.Bottom - 40, rect.Width - 48, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
-    }
-
-    private static string GetChampionName(Champion? champion) => champion switch
-    {
-        Champion.Charioteer => "THE CHARIOTEER",
-        Champion.SpacePilot => "THE SPACE PILOT",
-        _ => "THE RACING DRIVER"
-    };
-
-    private static string GetThemeTagline(Champion? champion) => champion switch
-    {
-        Champion.Charioteer => "The arena awaits.",
-        Champion.SpacePilot => "Course plotted. Welcome to Orbit.",
-        _ => "Engines ready. Lights out."
-    };
 }

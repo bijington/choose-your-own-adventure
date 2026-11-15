@@ -8,7 +8,7 @@ public enum PresentationSlide
     GameSceneView = 4,
     LoadGameScene = 5,
     ChooseChampion = 6,
-    // Page 7 is retired; keep the established champion destinations.
+    ChampionChapter = 7,
     AddGameObject = 8,
     ChampionReveal = 9,
     InputPackage = 10,
@@ -18,5 +18,7 @@ public enum PresentationSlide
     SignalRArchitecture = 14,
     AudienceRace = 15,
     Podium = 16,
-    Recap = 17
+    Recap = 17,
+    FirstDecision = 18,
+    AfterParty = 404
 }
