@@ -1,3 +1,4 @@
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using IImage = Microsoft.Maui.Graphics.IImage;
@@ -31,6 +32,7 @@ public sealed class TitleScene : PresentationSceneBase
         }
 
         DrawStartPrompt(canvas, dimensions);
+        PresentationTheme.DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.Title));
     }
 
     private void DrawStartPrompt(ICanvas canvas, RectF dimensions)

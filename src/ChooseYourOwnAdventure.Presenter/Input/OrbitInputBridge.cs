@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Reflection;
 using Microsoft.Maui.ApplicationModel;
 using Orbit.Input;
 
@@ -11,7 +9,7 @@ namespace ChooseYourOwnAdventure.Input;
 /// </summary>
 public sealed class OrbitInputBridge : IDisposable
 {
-    private const double StickDeadZone = 0.55d;
+    private const float StickDeadZone = 0.55f;
 
     private readonly AdventureInputRouter _router;
     private readonly GameControllerManager _gameControllerManager;
@@ -139,7 +137,7 @@ public sealed class OrbitInputBridge : IDisposable
         {
             while (await timer.WaitForNextTickAsync(cancellationToken))
             {
-                var controller = FindConnectedController(_gameControllerManager);
+                var controller = _gameControllerManager.GameControllers.FirstOrDefault();
                 if (controller is null)
                 {
                     ResetControllerEdges();
@@ -155,16 +153,16 @@ public sealed class OrbitInputBridge : IDisposable
         }
     }
 
-    private void PollButtons(object controller)
+    private void PollButtons(Orbit.Input.GameController controller)
     {
-        var southPressed = ReadButton(controller, "ButtonSouth", "South");
+        var southPressed = controller.South.Value;
         if (southPressed != _southWasPressed)
         {
             SetPressed(AdventureAction.Primary, southPressed);
             _southWasPressed = southPressed;
         }
 
-        var eastPressed = ReadButton(controller, "ButtonEast", "East");
+        var eastPressed = controller.East.Value;
         if (eastPressed != _eastWasPressed)
         {
             SetPressed(AdventureAction.Secondary, eastPressed);
@@ -172,9 +170,9 @@ public sealed class OrbitInputBridge : IDisposable
         }
     }
 
-    private void PollLeftStick(object controller)
+    private void PollLeftStick(Orbit.Input.GameController controller)
     {
-        var x = ReadAxis(controller, "LeftStick", "XAxis");
+        var x = controller.LeftStick.XAxis.Value;
         var horizontalDirection = x switch
         {
             < -StickDeadZone => -1,
@@ -189,7 +187,7 @@ public sealed class OrbitInputBridge : IDisposable
             _horizontalDirection = horizontalDirection;
         }
 
-        var y = ReadAxis(controller, "LeftStick", "YAxis");
+        var y = controller.LeftStick.YAxis.Value;
         var verticalDirection = y switch
         {
             < -StickDeadZone => -1,
@@ -245,104 +243,6 @@ public sealed class OrbitInputBridge : IDisposable
         _horizontalDirection = 0;
         _verticalDirection = 0;
     }
-
-    private static object? FindConnectedController(object manager)
-    {
-        foreach (var property in manager.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-        {
-            if (!property.CanRead || property.GetIndexParameters().Length != 0)
-            {
-                continue;
-            }
-
-            object? value;
-            try
-            {
-                value = property.GetValue(manager);
-            }
-            catch
-            {
-                continue;
-            }
-
-            if (value is null || value is string)
-            {
-                continue;
-            }
-
-            if (LooksLikeGameController(value))
-            {
-                return value;
-            }
-
-            if (value is IEnumerable enumerable)
-            {
-                foreach (var item in enumerable)
-                {
-                    if (item is not null && LooksLikeGameController(item))
-                    {
-                        return item;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private static bool LooksLikeGameController(object value) =>
-        value.GetType().Name.Contains("GameController", StringComparison.OrdinalIgnoreCase)
-        && GetPropertyValue(value, "LeftStick") is not null;
-
-    private static bool ReadButton(object controller, params string[] buttonNames)
-    {
-        foreach (var name in buttonNames)
-        {
-            var button = GetPropertyValue(controller, name);
-            var rawValue = button is null ? null : GetPropertyValue(button, "Value");
-
-            if (rawValue is bool boolean)
-            {
-                return boolean;
-            }
-
-            if (rawValue is IConvertible convertible)
-            {
-                try
-                {
-                    return convertible.ToDouble(null) > 0.5d;
-                }
-                catch
-                {
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private static double ReadAxis(object controller, string stickName, string axisName)
-    {
-        var stick = GetPropertyValue(controller, stickName);
-        var axis = stick is null ? null : GetPropertyValue(stick, axisName);
-        var rawValue = axis is null ? null : GetPropertyValue(axis, "Value");
-
-        if (rawValue is IConvertible convertible)
-        {
-            try
-            {
-                return convertible.ToDouble(null);
-            }
-            catch
-            {
-            }
-        }
-
-        return 0d;
-    }
-
-    private static object? GetPropertyValue(object target, string propertyName) =>
-        target.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)?.GetValue(target);
 
     private static bool Matches(string value, params string[] candidates) =>
         candidates.Any(candidate => string.Equals(value, candidate, StringComparison.OrdinalIgnoreCase));

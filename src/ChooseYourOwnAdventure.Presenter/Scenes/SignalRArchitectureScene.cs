@@ -1,9 +1,14 @@
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 
 namespace ChooseYourOwnAdventure.Scenes;
 
 public sealed class SignalRArchitectureScene : PresentationSceneBase
 {
+    private readonly AdventureState _state;
+
+    public SignalRArchitectureScene(AdventureState state) => _state = state;
+
     public override void Render(ICanvas canvas, RectF dimensions)
     {
         DrawShell(canvas, dimensions);
@@ -43,5 +48,6 @@ public sealed class SignalRArchitectureScene : PresentationSceneBase
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         DrawPrompt(canvas, dimensions, "A / ENTER  ·  GIVE CONTROL TO THE ROOM");
+        DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.SignalRArchitecture, _state.Champion));
     }
 }

@@ -15,6 +15,7 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<OpeningScene>(
             PresentationSlide.ChooseChampion,
             state => state.PrepareChampionVote()),
+        PresentationSlideDefinition.Create<BranchResultScene>(PresentationSlide.BranchResult),
         PresentationSlideDefinition.Create<AddGameObjectScene>(PresentationSlide.AddGameObject),
         PresentationSlideDefinition.Create<ChampionRevealScene>(
             PresentationSlide.ChampionReveal,
@@ -27,6 +28,7 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<SignalRTransitionScene>(PresentationSlide.SignalRTransition),
         PresentationSlideDefinition.Create<SignalRArchitectureScene>(PresentationSlide.SignalRArchitecture),
         PresentationSlideDefinition.Create<AudienceRaceScene>(PresentationSlide.AudienceRace),
+        PresentationSlideDefinition.Create<PodiumScene>(PresentationSlide.Podium),
         PresentationSlideDefinition.Create<RecapScene>(PresentationSlide.Recap)
     ];
 

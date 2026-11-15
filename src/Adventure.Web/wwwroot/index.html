@@ -105,7 +105,7 @@
     function championName(value) {
       if (value == null) return null;
       if (typeof value === 'string') return value;
-      return ['RacingDriver', 'Charioteer', 'SpacePilot'][value] || null;
+      return ({ 20: 'RacingDriver', 50: 'Charioteer', 80: 'SpacePilot' })[value] || null;
     }
 
     function applySnapshot(snapshot) {

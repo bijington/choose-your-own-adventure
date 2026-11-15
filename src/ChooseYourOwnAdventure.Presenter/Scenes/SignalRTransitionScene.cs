@@ -1,9 +1,14 @@
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 
 namespace ChooseYourOwnAdventure.Scenes;
 
 public sealed class SignalRTransitionScene : PresentationSceneBase
 {
+    private readonly AdventureState _state;
+
+    public SignalRTransitionScene(AdventureState state) => _state = state;
+
     public override void Render(ICanvas canvas, RectF dimensions)
     {
         DrawShell(canvas, dimensions);
@@ -26,12 +31,13 @@ public sealed class SignalRTransitionScene : PresentationSceneBase
         canvas.DrawLine(right.X - 37, centreY + 8, right.X - 25, centreY);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Colors.White;
+        canvas.FontColor = Ink;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.025f, 20f, 36f);
         canvas.DrawString("Same game. Different source of intent.", dimensions.X + 60,
             dimensions.Y + dimensions.Height * 0.64f, dimensions.Width - 120, 52,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         DrawPrompt(canvas, dimensions, "A / ENTER  ·  REVEAL HOW THE OPENING VOTE WORKED");
+        DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.SignalRTransition, _state.Champion));
     }
 }

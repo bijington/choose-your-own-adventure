@@ -1,3 +1,4 @@
+using ChooseYourOwnAdventure.Presentation;
 using ChooseYourOwnAdventure.Live;
 using Microsoft.Maui.Graphics;
 
@@ -5,10 +6,13 @@ namespace ChooseYourOwnAdventure.Scenes;
 
 public sealed class RecapScene : PresentationSceneBase
 {
+    private readonly AdventureState _state;
+
     private readonly LiveRaceState _raceState;
 
-    public RecapScene(LiveRaceState raceState)
+    public RecapScene(AdventureState state, LiveRaceState raceState)
     {
+        _state = state;
         _raceState = raceState;
     }
 
@@ -35,7 +39,7 @@ public sealed class RecapScene : PresentationSceneBase
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Accent;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.023f, 19f, 34f);
-        canvas.DrawString(winner is null ? "THANK YOU" : $"RACE WINNER: {winner}",
+        canvas.DrawString(winner is null ? "THANK YOU" : $"RACE WINNER: {FormatWinner(winner.Value)}",
             dimensions.X + 60, dimensions.Y + dimensions.Height * 0.73f, dimensions.Width - 120, 48,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
@@ -45,7 +49,17 @@ public sealed class RecapScene : PresentationSceneBase
         canvas.DrawString("Input affects state. Update evolves state. Render displays state.",
             dimensions.X + 60, dimensions.Y + dimensions.Height * 0.82f, dimensions.Width - 120, 38,
             HorizontalAlignment.Center, VerticalAlignment.Center);
+
+        DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.Recap, _state.Champion));
     }
+
+    private static string FormatWinner(Champion champion) => champion switch
+    {
+        Champion.RacingDriver => "THE DRIVER",
+        Champion.Charioteer => "THE CHARIOTEER",
+        Champion.SpacePilot => "THE SPACE PILOT",
+        _ => "THE CHAMPION"
+    };
 
     private static void DrawSummary(ICanvas canvas, RectF rect, string title, string body)
     {
@@ -60,7 +74,7 @@ public sealed class RecapScene : PresentationSceneBase
         canvas.DrawString(title, rect.X + 18, rect.Y + 24, rect.Width - 36, 36,
             HorizontalAlignment.Center, VerticalAlignment.Center);
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = Color.FromArgb("#E2E8F0");
+        canvas.FontColor = Muted;
         canvas.FontSize = Math.Clamp(rect.Width * 0.052f, 14f, 21f);
         canvas.DrawString(body, rect.X + 20, rect.Y + 88, rect.Width - 40, rect.Height - 110,
             HorizontalAlignment.Center, VerticalAlignment.Top);

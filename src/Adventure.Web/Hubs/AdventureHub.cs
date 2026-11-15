@@ -26,7 +26,7 @@ public sealed class AdventureHub : Hub
     public async Task Vote(string sessionId, string participantId, string championName)
     {
         var normalized = Normalize(sessionId);
-        if (!Enum.TryParse<Champion>(championName, ignoreCase: true, out var champion))
+        if (!Enum.TryParse<Champion>(championName, ignoreCase: true, out var champion) || !Enum.IsDefined(champion))
         {
             throw new HubException("Unknown champion.");
         }

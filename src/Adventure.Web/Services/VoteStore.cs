@@ -32,7 +32,7 @@ public sealed class VoteStore
         var session = GetSession(sessionId);
         lock (session.Gate)
         {
-            if (session.Phase == VotePhase.Open)
+            if (session.Phase == VotePhase.Open && Enum.IsDefined(champion))
             {
                 session.VotesByParticipant[participantId] = champion;
             }
@@ -120,7 +120,7 @@ public sealed class VoteStore
         var session = GetSession(sessionId);
         lock (session.Gate)
         {
-            if (session.RacePhase != RacePhase.Racing ||
+            if (taps <= 0 || session.RacePhase != RacePhase.Racing ||
                 !session.VotesByParticipant.TryGetValue(participantId, out var champion))
             {
                 return RaceSnapshotFor(sessionId, session);
@@ -130,6 +130,9 @@ public sealed class VoteStore
             var acceptedTaps = Math.Clamp(taps, 1, 20);
             var boostPerTap = 1d / (teamSize * AverageTapsPerPlayerToFinish);
             var progress = Math.Clamp(session.RaceProgress[champion] + boostPerTap * acceptedTaps, 0d, 1d);
+            // Batched fractions can land just below 1 (for example 20 + 4 taps
+            // from each of two racers). Snap numerical roundoff to the finish.
+            if (progress >= 1d - 1e-9d) progress = 1d;
             session.RaceProgress[champion] = progress;
 
             if (progress >= 1d && session.RaceWinner is null)

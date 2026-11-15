@@ -16,9 +16,9 @@ public enum OpeningStage
 
 public enum Champion
 {
-    RacingDriver,
-    Charioteer,
-    SpacePilot
+    RacingDriver = 20,
+    Charioteer = 50,
+    SpacePilot = 80
 }
 
 public enum LoopStation

@@ -1,3 +1,4 @@
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 
 namespace ChooseYourOwnAdventure.Scenes;
@@ -24,5 +25,6 @@ public sealed class LoadGameSceneIntroScene : PresentationSceneBase
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         DrawPrompt(canvas, dimensions);
+        DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.LoadGameScene));
     }
 }

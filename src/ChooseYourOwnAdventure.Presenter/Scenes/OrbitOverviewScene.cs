@@ -1,3 +1,4 @@
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 
 namespace ChooseYourOwnAdventure.Scenes;
@@ -31,5 +32,6 @@ public sealed class OrbitOverviewScene : PresentationSceneBase
         }
 
         DrawPrompt(canvas, dimensions);
+        DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.OrbitOverview));
     }
 }

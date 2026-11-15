@@ -1,4 +1,5 @@
 using ChooseYourOwnAdventure.GameObjects;
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 using Orbit.Engine;
 
@@ -33,28 +34,24 @@ public sealed class GameLoopScene : GameScene
 
         base.Render(canvas, dimensions);
         DrawPrompt(canvas, dimensions);
+        PresentationTheme.DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.GameLoop, _state.Champion));
     }
 
     private static void DrawBackground(ICanvas canvas, RectF dimensions)
     {
-        canvas.FillColor = Color.FromArgb("#07111F");
-        canvas.FillRectangle(dimensions);
-        canvas.StrokeColor = Color.FromArgb("#26364D");
-        canvas.StrokeSize = 2;
-        canvas.DrawRectangle(dimensions.X + 24, dimensions.Y + 24,
-            Math.Max(0, dimensions.Width - 48), Math.Max(0, dimensions.Height - 48));
+        PresentationTheme.DrawParchment(canvas, dimensions);
     }
 
     private void DrawHeading(ICanvas canvas, RectF dimensions)
     {
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Colors.White;
+        canvas.FontColor = PresentationTheme.Ink;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.031f, 24f, 46f);
         canvas.DrawString(GetTitle(), dimensions.X + 40, dimensions.Y + dimensions.Height * 0.05f,
             Math.Max(0, dimensions.Width - 80), 52, HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = Color.FromArgb("#94A3B8");
+        canvas.FontColor = PresentationTheme.MutedInk;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 21f);
         canvas.DrawString("Walk one iteration of the loop — one button press at a time.", dimensions.X + 40,
             dimensions.Y + dimensions.Height * 0.11f, Math.Max(0, dimensions.Width - 80), 36,
@@ -71,7 +68,7 @@ public sealed class GameLoopScene : GameScene
                 canvas.StrokeColor = Color.FromArgb("#D97706");
                 canvas.StrokeSize = 25;
                 canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = Color.FromArgb("#F8D866");
+                canvas.StrokeColor = PresentationTheme.CodePanelBorder;
                 canvas.StrokeSize = 2;
                 canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
                 break;
@@ -111,14 +108,14 @@ public sealed class GameLoopScene : GameScene
                     (radius + 8) * 2, (radius + 8) * 2);
             }
 
-            canvas.FillColor = Color.FromArgb("#111827");
+            canvas.FillColor = active ? Color.FromArgb("#FFF0C2") : PresentationTheme.CodePanel;
             canvas.FillEllipse(position.X - radius, position.Y - radius, radius * 2, radius * 2);
             canvas.StrokeColor = Color.FromArgb("#F8D866");
             canvas.StrokeSize = active ? 4 : 2;
             canvas.DrawEllipse(position.X - radius, position.Y - radius, radius * 2, radius * 2);
 
             canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-            canvas.FontColor = active ? Color.FromArgb("#F8D866") : Colors.White;
+            canvas.FontColor = active ? PresentationTheme.AccentRed : PresentationTheme.Ink;
             canvas.FontSize = 13;
             canvas.DrawString(GetStationName(station), position.X - 54, position.Y - 12, 108, 24,
                 HorizontalAlignment.Center, VerticalAlignment.Center);
@@ -158,22 +155,22 @@ public sealed class GameLoopScene : GameScene
 
     private static void DrawCodeCard(ICanvas canvas, RectF rect, string title, string code)
     {
-        canvas.FillColor = Color.FromArgb("#0F172A");
+        canvas.FillColor = PresentationTheme.CodePanel;
         canvas.FillRoundedRectangle(rect, 14);
-        canvas.StrokeColor = Color.FromArgb("#334155");
+        canvas.StrokeColor = PresentationTheme.CodePanelBorder;
         canvas.StrokeSize = 2;
         canvas.DrawRoundedRectangle(rect, 14);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Color.FromArgb("#F8D866");
-        canvas.FontSize = Math.Clamp(rect.Width * 0.036f, 12f, 18f);
-        canvas.DrawString(title, rect.X + 16, rect.Y + 12, rect.Width - 32, 24,
+        canvas.FontColor = PresentationTheme.AccentRed;
+        canvas.FontSize = Math.Clamp(rect.Width * 0.040f, 15f, 22f);
+        canvas.DrawString(title, rect.X + 16, rect.Y + 2, rect.Width - 32, 44,
             HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = CodeFonts.Regular;
-        canvas.FontColor = Color.FromArgb("#E2E8F0");
-        canvas.FontSize = Math.Clamp(rect.Width * 0.027f, 10f, 14f);
-        canvas.DrawString(code, rect.X + 16, rect.Y + 40, rect.Width - 32, rect.Height - 52,
+        canvas.FontColor = PresentationTheme.CodeText;
+        canvas.FontSize = Math.Clamp(rect.Width * 0.031f, 13f, 18f);
+        canvas.DrawString(code, rect.X + 16, rect.Y + 50, rect.Width - 32, rect.Height - 62,
             HorizontalAlignment.Left, VerticalAlignment.Top);
     }
 
@@ -192,31 +189,31 @@ public sealed class GameLoopScene : GameScene
 
     private static void DrawInfoCard(ICanvas canvas, RectF rect, string title, string body)
     {
-        canvas.FillColor = Color.FromArgb("#0F172A");
+        canvas.FillColor = PresentationTheme.CodePanel;
         canvas.FillRoundedRectangle(rect, 14);
-        canvas.StrokeColor = Color.FromArgb("#334155");
+        canvas.StrokeColor = PresentationTheme.CodePanelBorder;
         canvas.StrokeSize = 2;
         canvas.DrawRoundedRectangle(rect, 14);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Color.FromArgb("#F8D866");
-        canvas.FontSize = Math.Clamp(rect.Width * 0.036f, 12f, 18f);
-        canvas.DrawString(title, rect.X + 16, rect.Y + 12, rect.Width - 32, 24,
+        canvas.FontColor = PresentationTheme.AccentRed;
+        canvas.FontSize = Math.Clamp(rect.Width * 0.040f, 15f, 22f);
+        canvas.DrawString(title, rect.X + 16, rect.Y + 2, rect.Width - 32, 44,
             HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = Color.FromArgb("#E2E8F0");
-        canvas.FontSize = Math.Clamp(rect.Width * 0.029f, 11f, 15f);
-        canvas.DrawString(body, rect.X + 16, rect.Y + 40, rect.Width - 32, rect.Height - 52,
+        canvas.FontColor = PresentationTheme.CodeText;
+        canvas.FontSize = Math.Clamp(rect.Width * 0.032f, 13f, 18f);
+        canvas.DrawString(body, rect.X + 16, rect.Y + 50, rect.Width - 32, rect.Height - 62,
             HorizontalAlignment.Left, VerticalAlignment.Top);
     }
 
     private void DrawPrompt(ICanvas canvas, RectF dimensions)
     {
-        var bottom = dimensions.Bottom - 58f;
+        var bottom = dimensions.Bottom - 94f;
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Color.FromArgb("#94A3B8");
+        canvas.FontColor = PresentationTheme.MutedInk;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.011f, 11f, 16f);
         canvas.DrawString("TAP / A / ENTER · MOVE TO NEXT NODE",
             dimensions.X + 40, bottom, dimensions.Width * 0.62f, 34,
@@ -229,13 +226,13 @@ public sealed class GameLoopScene : GameScene
             nextWidth,
             38);
 
-        canvas.FillColor = Color.FromArgb("#172033");
+        canvas.FillColor = Color.FromArgb("#FFF4D8");
         canvas.FillRoundedRectangle(next, 12);
-        canvas.StrokeColor = Color.FromArgb("#F8D866");
+        canvas.StrokeColor = PresentationTheme.AccentRed;
         canvas.StrokeSize = 2;
         canvas.DrawRoundedRectangle(next, 12);
 
-        canvas.FontColor = Color.FromArgb("#F8D866");
+        canvas.FontColor = PresentationTheme.AccentRed;
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.0105f, 11f, 15f);
 

@@ -1,5 +1,6 @@
 using ChooseYourOwnAdventure.GameObjects;
 using ChooseYourOwnAdventure.Input;
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 using Orbit.Engine;
 
@@ -35,29 +36,25 @@ public sealed class VehicleControlScene : GameScene
 
         // The actual Orbit GameObject is rendered over the shell/course.
         base.Render(canvas, dimensions);
+        PresentationTheme.DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.VehicleControl, _state.Champion));
     }
 
     private static void DrawBackground(ICanvas canvas, RectF dimensions)
     {
-        canvas.FillColor = Color.FromArgb("#07111F");
-        canvas.FillRectangle(dimensions);
-        canvas.StrokeColor = Color.FromArgb("#26364D");
-        canvas.StrokeSize = 2;
-        canvas.DrawRectangle(dimensions.X + 24, dimensions.Y + 24,
-            Math.Max(0, dimensions.Width - 48), Math.Max(0, dimensions.Height - 48));
+        PresentationTheme.DrawParchment(canvas, dimensions);
     }
 
     private void DrawHeading(ICanvas canvas, RectF dimensions)
     {
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Colors.White;
+        canvas.FontColor = PresentationTheme.Ink;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.031f, 24f, 46f);
         canvas.DrawString(GetHeading(), dimensions.X + 40,
             dimensions.Y + dimensions.Height * 0.05f, dimensions.Width - 80, 52,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = Color.FromArgb("#94A3B8");
+        canvas.FontColor = PresentationTheme.MutedInk;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 21f);
         canvas.DrawString(GetSubtitle(), dimensions.X + 40,
             dimensions.Y + dimensions.Height * 0.11f, dimensions.Width - 80, 34,
@@ -134,15 +131,15 @@ public sealed class VehicleControlScene : GameScene
     private void DrawCodePanel(ICanvas canvas, RectF dimensions, LoopVehicle vehicle)
     {
         var panel = VehicleControlLayout.GetCodePanel(dimensions);
-        canvas.FillColor = Color.FromArgb("#0F172A");
+        canvas.FillColor = PresentationTheme.CodePanel;
         canvas.FillRoundedRectangle(panel, 18);
-        canvas.StrokeColor = Color.FromArgb("#334155");
+        canvas.StrokeColor = PresentationTheme.CodePanelBorder;
         canvas.StrokeSize = 2;
         canvas.DrawRoundedRectangle(panel, 18);
 
         canvas.Font = CodeFonts.SemiBold;
-        canvas.FontColor = Color.FromArgb("#94A3B8");
-        canvas.FontSize = Math.Clamp(panel.Width * 0.042f, 13f, 19f);
+        canvas.FontColor = PresentationTheme.CodeMuted;
+        canvas.FontSize = Math.Clamp(panel.Width * 0.046f, 16f, 22f);
         canvas.DrawString("LoopVehicle.cs", panel.X + 22, panel.Y + 14,
             panel.Width - 44, 26, HorizontalAlignment.Left, VerticalAlignment.Center);
 
@@ -249,8 +246,8 @@ public sealed class VehicleControlScene : GameScene
         string title, bool active, IReadOnlyList<CodeLine> lines)
     {
         canvas.Font = CodeFonts.SemiBold;
-        canvas.FontColor = active ? Color.FromArgb("#F8D866") : Color.FromArgb("#64748B");
-        canvas.FontSize = Math.Clamp(panel.Width * 0.035f, 12f, 17f);
+        canvas.FontColor = active ? PresentationTheme.CodeActive : PresentationTheme.CodeMuted;
+        canvas.FontSize = Math.Clamp(panel.Width * 0.039f, 14f, 20f);
         canvas.DrawString(title, panel.X + 22, y, panel.Width - 44, 24,
             HorizontalAlignment.Left, VerticalAlignment.Center);
         y += 28;
@@ -260,8 +257,8 @@ public sealed class VehicleControlScene : GameScene
             canvas.Font = line.IsActive
                 ? CodeFonts.Bold
                 : CodeFonts.Regular;
-            canvas.FontColor = line.IsActive ? Colors.White : Color.FromArgb("#94A3B8");
-            canvas.FontSize = Math.Clamp(panel.Width * 0.027f, 10f, 14f);
+            canvas.FontColor = line.IsActive ? PresentationTheme.CodeActive : PresentationTheme.CodeText;
+            canvas.FontSize = Math.Clamp(panel.Width * 0.031f, 13f, 17f);
             canvas.DrawString(line.Text, panel.X + 30, y, panel.Width - 52, 24,
                 HorizontalAlignment.Left, VerticalAlignment.Center);
             y += 25;
@@ -271,8 +268,8 @@ public sealed class VehicleControlScene : GameScene
     private static void DrawMetric(ICanvas canvas, RectF panel, string text)
     {
         canvas.Font = CodeFonts.SemiBold;
-        canvas.FontColor = Color.FromArgb("#F8D866");
-        canvas.FontSize = Math.Clamp(panel.Width * 0.031f, 11f, 15f);
+        canvas.FontColor = PresentationTheme.CodeMetric;
+        canvas.FontSize = Math.Clamp(panel.Width * 0.034f, 13f, 17f);
         canvas.DrawString(text, panel.X + 22, panel.Bottom - 42,
             panel.Width - 44, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
     }
@@ -318,8 +315,8 @@ public sealed class VehicleControlScene : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsThrusting ||
                            vehicle.IsUsingDownThrust || vehicle.IsSteering
-            ? Color.FromArgb("#F8D866")
-            : Color.FromArgb("#CBD5E1");
+            ? PresentationTheme.AccentRed
+            : PresentationTheme.MutedInk;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.012f, 11f, 17f);
         canvas.DrawString(text, track.X - 10, track.Bottom + 56, track.Width + 20, 42,
             HorizontalAlignment.Center, VerticalAlignment.Center);
@@ -328,14 +325,14 @@ public sealed class VehicleControlScene : GameScene
     private static void DrawNextPrompt(ICanvas canvas, RectF dimensions)
     {
         var width = Math.Clamp(dimensions.Width * 0.19f, 190f, 300f);
-        var bounds = new RectF(dimensions.Right - width - 44, dimensions.Bottom - 58, width, 34);
+        var bounds = new RectF(dimensions.Right - width - 44, dimensions.Bottom - 94, width, 34);
         canvas.FillColor = Color.FromArgb("#172033");
         canvas.FillRoundedRectangle(bounds, 12);
         canvas.StrokeColor = Color.FromArgb("#F8D866");
         canvas.StrokeSize = 1.5f;
         canvas.DrawRoundedRectangle(bounds, 12);
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Color.FromArgb("#F8D866");
+        canvas.FontColor = PresentationTheme.CodeMetric;
         canvas.FontSize = 12;
         canvas.DrawString("W / STICK UP  ·  WHAT IF THE INPUT SOURCE CHANGES? →", bounds.X + 10, bounds.Y, bounds.Width - 20, bounds.Height,
             HorizontalAlignment.Center, VerticalAlignment.Center);

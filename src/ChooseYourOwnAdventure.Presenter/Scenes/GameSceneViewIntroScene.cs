@@ -1,3 +1,4 @@
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 
 namespace ChooseYourOwnAdventure.Scenes;
@@ -17,5 +18,6 @@ public sealed class GameSceneViewIntroScene : PresentationSceneBase
             "<orbit:GameSceneView\n    x:Name=\"GameView\"\n    HorizontalOptions=\"Fill\"\n    VerticalOptions=\"Fill\" />");
 
         DrawPrompt(canvas, dimensions);
+        DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.GameSceneView));
     }
 }

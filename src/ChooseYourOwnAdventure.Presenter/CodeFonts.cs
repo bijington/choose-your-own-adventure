@@ -13,6 +13,9 @@ public static class CodeFonts
 #if ANDROID
     // MAUI Graphics currently resolves packaged fonts more reliably by filename on Android.
     private const string FontName = "CascadiaCode-VariableFont_wght.ttf";
+#elif IOS || MACCATALYST
+    // Apple's graphics canvas resolves the font by its bundled PostScript name.
+    private const string FontName = "CascadiaCode-Regular";
 #else
     private const string FontName = "CascadiaCode";
 #endif

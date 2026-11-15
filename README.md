@@ -1,5 +1,7 @@
 # Repository layout
 
+> Presenter rehearsal notes and the maintained walkthrough live in [`TALK-GUIDE.md`](TALK-GUIDE.md).
+
 ```text
 src/
 ├── ChooseYourOwnAdventure.Presenter/   # .NET MAUI + Orbit presenter/game
@@ -151,21 +153,9 @@ The presenter vote flow now includes presentation-side polish without adding ext
 
 The server still only knows `Ready`, `Open`, `Closed`, and `Revealed`, so the theatrical timing stays local to the presenter and cannot add load or timing dependencies to the audience site.
 
-## Apple UIScene lifecycle
+## Apple application lifecycle
 
-The iOS and Mac Catalyst heads include an explicit `SceneDelegate` and `UIApplicationSceneManifest` for current Apple SDKs. After changing these files, clean generated outputs before rebuilding:
-
-```bash
-rm -rf src/ChooseYourOwnAdventure.Presenter/bin src/ChooseYourOwnAdventure.Presenter/obj
-dotnet restore
-dotnet build -t:Run -f net10.0-maccatalyst src/ChooseYourOwnAdventure.Presenter/ChooseYourOwnAdventure.csproj
-```
-
-## Latest presenter transition
-
-The winning champion now transitions directly into the Orbit code reveal. After the audience winner is accepted, the champion is shown centre-stage. Press A/Enter once more and the same `ChampionGameObject` animates into the right-hand code panel while the real Orbit code panel fades in on the left.
-
-This transition is presenter-side only; the SignalR vote lifecycle and web host are unchanged.
+The iOS and Mac Catalyst heads currently use `AppDelegate`; the attempted `SceneDelegate` migration was rolled back. Preserve the explicit Mac Catalyst RID and application-title settings in the project file. Start the presentation before asynchronously discovering controllers and connecting SignalR so unavailable devices or networking cannot block the first scene.
 
 ## Theme-specific vehicle input
 
@@ -224,25 +214,27 @@ It is registered under the `CascadiaCode` alias in `MauiProgram.cs`. The `CodeFo
 
 ## Presenter slide architecture
 
-The presenter now uses one `GameScene` per major presentation beat. `MainPage` owns the ordered `PresentationSlide` state and loads the appropriate scene.
+The presenter now uses one `GameScene` per major presentation beat. `PresentationDeck` declares the slide order and registers scenes; `IPresentationNavigator` loads them. `MainPage` handles slide-specific controls.
 
 Current order:
 
-1. `TitleScene` — why choose-your-own-adventure / games inspired the talk
-2. `OrbitOverviewScene` — what Orbit is
-3. `InstallOrbitScene` — NuGet + `UseOrbitEngine()`
-4. `GameSceneViewIntroScene` — give Orbit somewhere to render
-5. `LoadGameSceneIntroScene` — load/start a scene
-6. `OpeningScene` — champion voting only in the presentation flow
-7. `AddGameObjectScene` — real Orbit `GameObject` code
-8. `ChampionRevealScene` — the chosen champion appears
-9. `InputPackageScene` — introduce `Bijington.Orbit.Input`
-10. `GameLoopScene` — Input → Update → Render → Wait, plus the firmware comparison
-11. `VehicleControlScene` — drive the chosen theme with live code highlighting
-12. `SignalRTransitionScene` — what if the input source changes?
-13. `SignalRArchitectureScene` — reveal how the opening vote worked
-14. `AudienceRaceScene` — all three audience teams race
-15. `RecapScene` — Orbit + Orbit.Input + SignalR
+1. `TitleScene`
+2. `OrbitOverviewScene`
+3. `InstallOrbitScene`
+4. `GameSceneViewIntroScene`
+5. `LoadGameSceneIntroScene`
+6. `OpeningScene`
+7. `BranchResultScene`
+8. `AddGameObjectScene`
+9. `ChampionRevealScene`
+10. `InputPackageScene`
+11. `GameLoopScene`
+12. `VehicleControlScene`
+13. `SignalRTransitionScene`
+14. `SignalRArchitectureScene`
+15. `AudienceRaceScene`
+16. `PodiumScene`
+17. `RecapScene`
 
 ### Presenter controls
 
@@ -251,7 +243,7 @@ Current order:
 - Champion vote: retains the existing Open → Close → Reveal → Continue lifecycle.
 - Game loop: A advances around loop nodes; Right/D reveals firmware then proceeds to driving.
 - Vehicle control: Up/W moves to the SignalR transition; normal controls continue to drive the vehicle.
-- Audience race: A starts; after the race has finished A advances to recap; B/Escape resets the race.
+- Audience race: A starts; after the race has finished A advances to the podium, then recap; B/Escape resets the race.
 
 ## Central presentation registration
 
@@ -266,3 +258,27 @@ The presenter slide deck is now declared in one place:
 ## Title artwork
 
 The presenter title scene uses `Resources/Images/choose_your_own_adventure_title.png`, embedded into the presenter assembly as `ChooseYourOwnAdventure.TitleScreen.png`. `TitleScene` renders it aspect-fit and overlays the animated start prompt.
+
+## Presentation visual theme
+
+The presenter uses a shared `PresentationTheme` (`src/ChooseYourOwnAdventure.Presenter/Presentation/PresentationTheme.cs`).
+
+The deck now uses a warm parchment page as the common presentation canvas, with dark-brown typography, red/orange section accents, gold details, and light parchment inset panels for code. The title artwork remains its own full-screen illustrated cover, while the game-loop, control and audience-race scenes retain richer champion-specific visuals inside the parchment presentation frame.
+
+When adding a new explanatory slide, prefer deriving from `PresentationSceneBase` and use `DrawShell`, `DrawTitle`, `DrawCodeCard`, `DrawPill` and `DrawPrompt` rather than hard-coding a new palette.
+
+## Code sample theme
+
+Code samples now use the same parchment visual language as the rest of the deck. Cascadia Code remains the code font, while code cards use a warm inset-paper background, brown ink, red-orange active lines, and gold/brown metrics instead of the previous dark IDE-style panels.
+
+## Branch page numbers
+
+`PresentationSlide` has explicit values 1–17. From `BranchResult` onward, `PresentationTheme.GetPageNumber` adds the selected champion value: Driver 20, Charioteer 50, Space Pilot 80. The branch result points to the following `AddGameObject` page (28, 58 or 88). Presenter and web `Champion` enums and the browser numeric mapping must stay synchronized.
+
+Vehicle artwork lives in `ChampionVehicleGameObject`, shared by `LoopVehicle`, `AudienceRaceVehicle` and podium `StaticChampionVehicleGameObject`s.
+
+## Reliability checks
+
+Run `dotnet run --project tests/Adventure.Rehearsal` for vote/race state checks and a 600-participant concurrency simulation. With the local web host running, append `-- http://localhost:5187` for live SignalR checks with three independent identities. See [rehearsal instructions](tests/Adventure.Rehearsal/README.md).
+
+Before a conference, still rehearse keyboard/controller input, all three branches, real phones, projector readability, mobile reconnects and the deployed Azure host. Local concurrency checks do not measure Azure capacity or venue networking.

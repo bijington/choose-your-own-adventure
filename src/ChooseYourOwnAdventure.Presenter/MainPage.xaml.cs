@@ -171,7 +171,7 @@ public partial class MainPage : ContentPage
         if (!_audienceVoteClient.IsConnected)
         {
             _adventureState.ConfirmHighlightedChampion();
-            _presentationNavigator.GoTo(PresentationSlide.AddGameObject);
+            _presentationNavigator.GoTo(PresentationSlide.BranchResult);
             return;
         }
 
@@ -192,7 +192,7 @@ public partial class MainPage : ContentPage
                 break;
             case VotePhase.Revealed when vote.RevealedChampion is { } winner:
                 _adventureState.ChooseChampion(winner);
-                _presentationNavigator.GoTo(PresentationSlide.AddGameObject);
+                _presentationNavigator.GoTo(PresentationSlide.BranchResult);
                 break;
             case VotePhase.Revealed:
                 await _audienceVoteClient.OpenVotingAsync();
@@ -247,7 +247,7 @@ public partial class MainPage : ContentPage
         }
         else if (race.Phase == RacePhase.Finished)
         {
-            _presentationNavigator.GoTo(PresentationSlide.Recap);
+            _presentationNavigator.GoTo(PresentationSlide.Podium);
         }
     }
 

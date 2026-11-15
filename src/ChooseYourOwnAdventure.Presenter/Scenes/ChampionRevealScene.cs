@@ -1,3 +1,4 @@
+using ChooseYourOwnAdventure.Presentation;
 using ChooseYourOwnAdventure.GameObjects;
 using Microsoft.Maui.Graphics;
 
@@ -19,6 +20,10 @@ public sealed class ChampionRevealScene : PresentationSceneBase
         DrawTitle(canvas, dimensions, "OUR MAIN CHARACTER",
             "That object is being rendered by the real Orbit GameObject we just added.");
 
+        var pageNumber = PresentationTheme.GetPageNumber(PresentationSlide.ChampionReveal, _state.Champion);
+        DrawPill(canvas, new RectF(dimensions.X + dimensions.Width * 0.40f, dimensions.Y + dimensions.Height * 0.18f, dimensions.Width * 0.20f, 42f),
+            $"PAGE {pageNumber}", true);
+
         base.Render(canvas, dimensions);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
@@ -28,5 +33,6 @@ public sealed class ChampionRevealScene : PresentationSceneBase
             dimensions.Bottom - 130, dimensions.Width - 120, 42,
             HorizontalAlignment.Center, VerticalAlignment.Center);
         DrawPrompt(canvas, dimensions);
+        DrawPageNumber(canvas, dimensions, pageNumber);
     }
 }
