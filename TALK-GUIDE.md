@@ -940,3 +940,7 @@ Each major beat is now a two-page spread. Headings and explanation occupy the le
 Normal navigation plays a 680 ms paper-turn animation; Back reverses it. Wait for the leaf to settle before the next action. Tap anywhere on the left page to turn back on ordinary spreads; the right page continues. Tap anywhere on the cover to start. The voting lifecycle, stepping between loop stations, firmware reveal and local vehicle inputs stay within their current spread and do not animate a page turn.
 
 Orbit runs one `BookScene`, which hosts the current scene and captures outgoing and incoming images during navigation so the turning leaf carries the next page’s content. The scene manager lifetime remains unchanged. `PresentationDeck` still defines the content order, and `IPresentationNavigator` owns next/previous/branch navigation.
+
+### Controller navigation and confirmation
+
+Use Left/Right shoulder for previous/next page or presentation beat (Page Up/Page Down on keyboard). South confirms the current action (Enter/Space); East cancels or resets it (Escape/Shift). The left stick and arrows/WASD select champions or control the vehicle. Navigation cannot open/close/reveal a vote or start a race: use confirmation for those commands. Forward navigation continues once a champion is revealed or a race has finished. In the vehicle demo South/East remain throttle/brake or thrust/down-thrust.

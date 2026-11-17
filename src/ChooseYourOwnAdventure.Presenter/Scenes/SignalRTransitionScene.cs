@@ -37,7 +37,7 @@ public sealed class SignalRTransitionScene : PresentationSceneBase
             dimensions.Y + dimensions.Height * 0.64f, dimensions.Width - 120, 52,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
-        DrawPrompt(canvas, dimensions, "A / ENTER  ·  REVEAL HOW THE OPENING VOTE WORKED");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER  ·  REVEAL HOW THE OPENING VOTE WORKED");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.SignalRTransition, _state.Champion));
     }
 }

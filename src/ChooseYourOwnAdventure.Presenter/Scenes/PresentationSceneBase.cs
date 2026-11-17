@@ -71,7 +71,7 @@ public abstract class PresentationSceneBase : GameScene
             HorizontalAlignment.Left, VerticalAlignment.Top);
     }
 
-    protected static void DrawPrompt(ICanvas canvas, RectF dimensions, string prompt = "A / ENTER  ·  CONTINUE")
+    protected static void DrawPrompt(ICanvas canvas, RectF dimensions, string prompt = "SOUTH / ENTER  ·  CONTINUE")
     {
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Muted;

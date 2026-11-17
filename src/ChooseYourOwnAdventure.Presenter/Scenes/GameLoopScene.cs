@@ -215,7 +215,7 @@ public sealed class GameLoopScene : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = PresentationTheme.MutedInk;
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.011f, 11f, 16f);
-        canvas.DrawString("TAP / A / ENTER · MOVE TO NEXT NODE",
+        canvas.DrawString("TAP / SOUTH / ENTER · MOVE TO NEXT NODE",
             dimensions.X + 40, bottom, dimensions.Width * 0.62f, 34,
             HorizontalAlignment.Left, VerticalAlignment.Center);
 

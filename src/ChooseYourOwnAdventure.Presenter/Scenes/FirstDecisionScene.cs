@@ -30,7 +30,7 @@ public sealed class FirstDecisionScene : PresentationSceneBase
             "ATTEND THE TALK", "TURN TO PAGE 2");
         DrawChoice(canvas, AfterPartyChoice(dimensions),
             "GO STRAIGHT TO THE AFTER-PARTY", "TURN TO PAGE 404");
-        DrawPrompt(canvas, dimensions, "A / ENTER · THE TALK    B / SHIFT · THE AFTER-PARTY");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER · THE TALK    EAST / SHIFT · THE AFTER-PARTY");
         DrawPageNumber(canvas, dimensions, 1);
     }
 

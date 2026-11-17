@@ -2,11 +2,12 @@ namespace ChooseYourOwnAdventure.Input;
 
 public enum AdventureAction
 {
-    Primary,
-    Secondary,
+    Confirm,
+    Cancel,
+    Previous,
+    Next,
     Left,
     Right,
     Up,
-    Down,
-    Back
+    Down
 }

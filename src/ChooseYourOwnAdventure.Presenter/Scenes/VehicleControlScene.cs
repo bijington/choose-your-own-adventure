@@ -287,7 +287,7 @@ public sealed class VehicleControlScene : GameScene
                     ? "DOWN THRUST — applying force with the secondary input"
                     : vehicle.IsFalling
                         ? "BUTTON RELEASED — gravity is changing velocity every update"
-                        : "HOLD A / ENTER FOR THRUST   ·   RELEASE TO FALL   ·   B / SHIFT DOWN THRUST";
+                        : "HOLD SOUTH / ENTER FOR THRUST   ·   RELEASE TO FALL   ·   EAST / SHIFT DOWN THRUST";
         }
         else if (vehicle.IsCharioteer)
         {
@@ -297,7 +297,7 @@ public sealed class VehicleControlScene : GameScene
                     ? "REINS ON — braking removes momentum"
                     : vehicle.IsCoastingWithMomentum
                         ? "BUTTON RELEASED — momentum keeps the chariot moving"
-                        : "HOLD A / ENTER TO BUILD MOMENTUM   ·   HOLD B / SHIFT TO BRAKE";
+                        : "HOLD SOUTH / ENTER TO BUILD MOMENTUM   ·   HOLD EAST / SHIFT TO BRAKE";
         }
         else
         {
@@ -309,7 +309,7 @@ public sealed class VehicleControlScene : GameScene
                         ? "BRAKING — input is reducing velocity"
                         : vehicle.IsMoving
                             ? "COASTING — UPDATE keeps advancing position"
-                            : "HOLD A / ENTER FOR THROTTLE   ·   LEFT / RIGHT TO STEER   ·   B / SHIFT TO BRAKE";
+                            : "HOLD SOUTH / ENTER FOR THROTTLE   ·   LEFT / RIGHT TO STEER   ·   EAST / SHIFT TO BRAKE";
         }
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;

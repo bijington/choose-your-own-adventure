@@ -19,8 +19,7 @@ public sealed class OrbitInputBridge : IDisposable
 
     private Task? _pollingTask;
     private bool _started;
-    private bool _southWasPressed;
-    private bool _eastWasPressed;
+    private readonly HashSet<AdventureAction> _controllerButtons = [];
     private int _horizontalDirection;
     private int _verticalDirection;
 
@@ -68,6 +67,11 @@ public sealed class OrbitInputBridge : IDisposable
 
     private void GameControllerManagerOnGameControllerConnected(object? sender, GameControllerConnectedEventArgs e)
     {
+        if (_gameController is not null)
+        {
+            _gameController.ButtonChanged -= GameControllerOnButtonChanged;
+            _gameController.ValueChanged -= GameControllerOnValueChanged;
+        }
         ResetControllerEdges();
         _gameController = e.GameController;
         
@@ -129,24 +133,17 @@ public sealed class OrbitInputBridge : IDisposable
             return;
         }
 
-        if (e.ButtonName == gameController.South.Name)
+        AdventureAction? action = e.ButtonName switch
         {
-            var southPressed = e.IsPressed;
-            if (southPressed != _southWasPressed)
-            {
-                SetPressed(AdventureAction.Primary, southPressed);
-                _southWasPressed = southPressed;
-            }
-        }
-        else if (e.ButtonName == gameController.East.Name)
-        {
-            var eastPressed = e.IsPressed;
-            if (eastPressed != _eastWasPressed)
-            {
-                SetPressed(AdventureAction.Secondary, eastPressed);
-                _eastWasPressed = eastPressed;
-            }
-        }
+            var name when name == gameController.LeftShoulder.Button.Name => AdventureAction.Previous,
+            var name when name == gameController.RightShoulder.Button.Name => AdventureAction.Next,
+            var name when name == gameController.South.Name => AdventureAction.Confirm,
+            var name when name == gameController.East.Name => AdventureAction.Cancel,
+            _ => null
+        };
+        if (action is not { } mapped) return;
+        var changed = e.IsPressed ? _controllerButtons.Add(mapped) : _controllerButtons.Remove(mapped);
+        if (changed) SetPressed(mapped, e.IsPressed);
     }
 
     private void OnKeyDown(object? sender, KeyboardKeyChangeEventArgs key)
@@ -171,6 +168,9 @@ public sealed class OrbitInputBridge : IDisposable
     {
         var name = key.ToString();
 
+        if (Matches(name, "PageUp")) return AdventureAction.Previous;
+        if (Matches(name, "PageDown")) return AdventureAction.Next;
+
         if (Matches(name, "KeyA", "ArrowLeft", "LeftArrow", "Left"))
         {
             return AdventureAction.Left;
@@ -193,17 +193,17 @@ public sealed class OrbitInputBridge : IDisposable
 
         if (Matches(name, "Enter", "Return", "Space", "Spacebar"))
         {
-            return AdventureAction.Primary;
+            return AdventureAction.Confirm;
         }
 
-        if (Matches(name, "ShiftLeft", "ShiftRight"))
+        if (Matches(name, "ShiftLeft", "ShiftRight", "Escape"))
         {
-            return AdventureAction.Secondary;
+            return AdventureAction.Cancel;
         }
 
-        if (Matches(name, "Escape", "Backspace"))
+        if (Matches(name, "Backspace"))
         {
-            return AdventureAction.Back;
+            return AdventureAction.Previous;
         }
 
         return null;
@@ -216,15 +216,8 @@ public sealed class OrbitInputBridge : IDisposable
 
     private void ResetControllerEdges()
     {
-        if (_southWasPressed)
-        {
-            SetPressed(AdventureAction.Primary, false);
-        }
-
-        if (_eastWasPressed)
-        {
-            SetPressed(AdventureAction.Secondary, false);
-        }
+        foreach (var action in _controllerButtons) SetPressed(action, false);
+        _controllerButtons.Clear();
 
         if (_horizontalDirection < 0)
         {
@@ -244,8 +237,6 @@ public sealed class OrbitInputBridge : IDisposable
             SetPressed(AdventureAction.Down, false);
         }
 
-        _southWasPressed = false;
-        _eastWasPressed = false;
         _horizontalDirection = 0;
         _verticalDirection = 0;
     }
@@ -255,6 +246,13 @@ public sealed class OrbitInputBridge : IDisposable
 
     public void Dispose()
     {
+        _gameControllerManager.GameControllerConnected -= GameControllerManagerOnGameControllerConnected;
+        if (_gameController is not null)
+        {
+            _gameController.ButtonChanged -= GameControllerOnButtonChanged;
+            _gameController.ValueChanged -= GameControllerOnValueChanged;
+        }
+        ResetControllerEdges();
         _keyboardManager.KeyDown -= OnKeyDown;
         _keyboardManager.KeyUp -= OnKeyUp;
         _cancellationTokenSource.Cancel();

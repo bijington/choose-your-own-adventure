@@ -57,7 +57,7 @@ public sealed class TitleScene : PresentationSceneBase
         canvas.FontColor = Color.FromArgb("#7A2414");
         canvas.FontSize = Math.Clamp(dimensions.Width * 0.0135f, 14f, 22f);
         canvas.DrawString(
-            "A / ENTER  ·  PRESS START",
+            "SOUTH / ENTER  ·  PRESS START",
             rect.X + 18f,
             rect.Y,
             rect.Width - 36f,

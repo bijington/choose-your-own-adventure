@@ -24,7 +24,7 @@ public sealed class InputPackageScene : PresentationSceneBase
         DrawCodeCard(canvas, right, "MauiProgram.cs",
             "builder\n    .UseMauiApp<App>()\n    .UseOrbitEngine()\n    .UseOrbitGameController()\n    .UseOrbitKeyboard();");
 
-        DrawPrompt(canvas, dimensions, "A / ENTER  ·  WHERE DOES THAT INPUT GET PROCESSED?");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER  ·  WHERE DOES THAT INPUT GET PROCESSED?");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.InputPackage, _state.Champion));
     }
 }

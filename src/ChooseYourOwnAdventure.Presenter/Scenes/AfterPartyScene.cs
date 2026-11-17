@@ -30,7 +30,7 @@ public sealed class AfterPartyScene : PresentationSceneBase
         canvas.FontSize = Math.Clamp(dimensions.Width * .018f, 18f, 27f);
         canvas.DrawString("TURN TO PAGE 2", right.X, right.Y + right.Height * .73f,
             right.Width, 64, HorizontalAlignment.Left, VerticalAlignment.Center);
-        DrawPrompt(canvas, dimensions, "A / ENTER · BEGIN THE ADVENTURE");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER · BEGIN THE ADVENTURE");
         DrawPageNumber(canvas, dimensions, 404);
     }
 }

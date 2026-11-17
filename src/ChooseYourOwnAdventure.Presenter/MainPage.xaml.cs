@@ -97,7 +97,7 @@ public partial class MainPage : ContentPage
         if (_presentationNavigator.Current == PresentationSlide.ChosenChampion)
         {
             _inputRouter.Trigger(position.Value.X < GameView.Width / 2d
-                ? AdventureAction.Back : AdventureAction.Primary);
+                ? AdventureAction.Previous : AdventureAction.Confirm);
             return;
         }
 
@@ -114,7 +114,7 @@ public partial class MainPage : ContentPage
                 new Microsoft.Maui.Graphics.RectF(0, 0, (float)GameView.Width, (float)GameView.Height),
                 new Microsoft.Maui.Graphics.PointF((float)position.Value.X, (float)position.Value.Y));
             if (chosen is { } champion) _adventureState.HighlightChampion(champion);
-            _inputRouter.Trigger(AdventureAction.Primary);
+            _inputRouter.Trigger(AdventureAction.Confirm);
             return;
         }
 
@@ -122,7 +122,7 @@ public partial class MainPage : ContentPage
         {
             var isNextArea = position.Value.X >= GameView.Width * 0.75d
                 && position.Value.Y >= GameView.Height * 0.88d;
-            _inputRouter.Trigger(isNextArea ? AdventureAction.Right : AdventureAction.Primary);
+            _inputRouter.Trigger(isNextArea ? AdventureAction.Right : AdventureAction.Confirm);
             return;
         }
 
@@ -137,7 +137,7 @@ public partial class MainPage : ContentPage
             }
             else
             {
-                _ = _inputRouter.PulseAsync(AdventureAction.Primary, TimeSpan.FromMilliseconds(400));
+                _ = _inputRouter.PulseAsync(AdventureAction.Confirm, TimeSpan.FromMilliseconds(400));
             }
             return;
         }
@@ -152,21 +152,42 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        _inputRouter.Trigger(AdventureAction.Primary);
+        _inputRouter.Trigger(AdventureAction.Confirm);
     }
 
     private async void OnAdventureAction(object? sender, AdventureAction action)
     {
         if (_presentationNavigator.IsTurning) return;
 
+        // Navigation never starts or resets a vote/race. Confirmation owns those commands.
+        if (action == AdventureAction.Previous)
+        {
+            if (_presentationNavigator.Current == PresentationSlide.ChosenChampion
+                && _adventureState.ChampionRenderingVisible)
+                _adventureState.HideChampionRendering();
+            else
+                _presentationNavigator.Previous();
+            return;
+        }
+        if (action == AdventureAction.Next)
+        {
+            var resolved = PresentationNavigation.ResolveNext(_presentationNavigator.Current,
+                _adventureState, _liveVoteState.Snapshot, _liveRaceState.Snapshot, _audienceVoteClient.IsConnected);
+            if (resolved is null) return;
+            if (resolved == AdventureAction.Next)
+            {
+                _presentationNavigator.Next();
+                return;
+            }
+            action = resolved.Value;
+        }
+
         switch (_presentationNavigator.Current)
         {
             case PresentationSlide.FirstDecision:
-                if (action == AdventureAction.Secondary)
+                if (action == AdventureAction.Cancel)
                     _presentationNavigator.GoTo(PresentationSlide.AfterParty);
-                else if (action == AdventureAction.Back)
-                    _presentationNavigator.Previous();
-                else if (action == AdventureAction.Primary)
+                else if (action == AdventureAction.Confirm)
                     _presentationNavigator.Next();
                 return;
 
@@ -175,14 +196,14 @@ public partial class MainPage : ContentPage
                 return;
 
             case PresentationSlide.ChosenChampion:
-                if (action is AdventureAction.Back or AdventureAction.Secondary)
+                if (action == AdventureAction.Cancel)
                 {
                     if (_adventureState.ChampionRenderingVisible)
                         _adventureState.HideChampionRendering();
                     else
                         _presentationNavigator.Previous();
                 }
-                else if (action == AdventureAction.Primary)
+                else if (action == AdventureAction.Confirm)
                 {
                     if (!_adventureState.ChampionRenderingVisible)
                         _adventureState.ShowChampionRendering();
@@ -207,13 +228,13 @@ public partial class MainPage : ContentPage
                 return;
         }
 
-        if (action is AdventureAction.Back or AdventureAction.Secondary)
+        if (action == AdventureAction.Cancel)
         {
             _presentationNavigator.Previous();
             return;
         }
 
-        if (action != AdventureAction.Primary)
+        if (action != AdventureAction.Confirm)
         {
             return;
         }
@@ -223,12 +244,7 @@ public partial class MainPage : ContentPage
 
     private async Task HandleChampionVoteAsync(AdventureAction action)
     {
-        if (action == AdventureAction.Back)
-        {
-            _presentationNavigator.Previous();
-            return;
-        }
-        if (action == AdventureAction.Secondary)
+        if (action == AdventureAction.Cancel)
         {
             _adventureState.ResetLocalVote();
             if (_audienceVoteClient.IsConnected) await _audienceVoteClient.ResetVotingAsync();
@@ -247,7 +263,7 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (action != AdventureAction.Primary)
+        if (action != AdventureAction.Confirm)
         {
             return;
         }
@@ -294,13 +310,13 @@ public partial class MainPage : ContentPage
 
     private void HandleGameLoop(AdventureAction action)
     {
-        if (action == AdventureAction.Primary)
+        if (action == AdventureAction.Confirm)
         {
             _adventureState.AdvanceLoopStation();
             return;
         }
 
-        if (action == AdventureAction.Left)
+        if (action is AdventureAction.Left or AdventureAction.Cancel)
         {
             _adventureState.PreviousLoopStation();
             return;
@@ -321,13 +337,13 @@ public partial class MainPage : ContentPage
 
     private async Task HandleAudienceRaceAsync(AdventureAction action)
     {
-        if (action is AdventureAction.Secondary or AdventureAction.Back)
+        if (action == AdventureAction.Cancel)
         {
             await _audienceVoteClient.ResetRaceAsync();
             return;
         }
 
-        if (action != AdventureAction.Primary)
+        if (action != AdventureAction.Confirm)
         {
             return;
         }

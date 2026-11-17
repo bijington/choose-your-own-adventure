@@ -28,7 +28,7 @@ public sealed class PodiumScene : PresentationSceneBase
         var standings = GetStandings();
         DrawPodium(canvas, dimensions, standings);
         base.Render(canvas, dimensions);
-        DrawPrompt(canvas, dimensions, "A / ENTER  ·  RECAP THE ADVENTURE");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER  ·  RECAP THE ADVENTURE");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.Podium, _state.Champion));
     }
 

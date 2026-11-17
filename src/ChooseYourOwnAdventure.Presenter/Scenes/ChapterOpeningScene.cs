@@ -29,7 +29,7 @@ public abstract class ChapterOpeningScene : PresentationSceneBase
         }
     }
 
-    protected virtual string ContinuePrompt => "A / ENTER · TURN THE PAGE";
+    protected virtual string ContinuePrompt => "SOUTH / ENTER · TURN THE PAGE";
 
     public override void Render(ICanvas canvas, RectF dimensions)
     {

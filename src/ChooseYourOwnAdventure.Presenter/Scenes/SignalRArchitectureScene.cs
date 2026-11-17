@@ -47,7 +47,7 @@ public sealed class SignalRArchitectureScene : PresentationSceneBase
             dimensions.X + 60, dimensions.Y + dimensions.Height * 0.63f, dimensions.Width - 120, 42,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
-        DrawPrompt(canvas, dimensions, "A / ENTER  ·  GIVE CONTROL TO THE ROOM");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER  ·  GIVE CONTROL TO THE ROOM");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.SignalRArchitecture, _state.Champion));
     }
 }

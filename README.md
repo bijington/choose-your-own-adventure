@@ -22,7 +22,7 @@ This version adds the first audience-participation milestone to the existing .NE
 - The browser receives live totals via SignalR.
 - The MAUI presenter app connects to the same hub and renders those totals in the Orbit champion-selection scene.
 - A QR code is generated from the configured join URL and drawn directly with MAUI Graphics.
-- Pressing A / Enter while votes exist chooses the current audience leader. If the web service is unavailable or there are no votes, the original local highlight/selection remains the fallback.
+- Pressing South / Enter while votes exist chooses the current audience leader. If the web service is unavailable or there are no votes, the original local highlight/selection remains the fallback.
 
 ## Projects
 
@@ -119,13 +119,13 @@ That gives the talk a deliberate dramatic beat before we reuse the same SignalR 
 
 The presenter now controls the audience vote from the `CHOOSE YOUR CHAMPION` screen:
 
-- **A / Enter** while ready: open voting.
-- **A / Enter** while voting is open: close voting and lock the result.
-- **A / Enter** while closed: reveal the winner.
-- **A / Enter** after the reveal: accept the winning champion and continue the adventure.
-- **B / Shift**: reset the voting round for rehearsal or recovery.
+- **South / Enter** while ready: open voting.
+- **South / Enter** while voting is open: close voting and lock the result.
+- **South / Enter** while closed: reveal the winner.
+- **South / Enter** after the reveal: accept the winning champion and continue the adventure.
+- **East / Shift**: reset the voting round for rehearsal or recovery.
 
-If the result is tied, no hidden tie-break rule is applied. The presenter screen and audience devices show the tie, and **A / Enter** reopens voting for another round.
+If the result is tied, no hidden tie-break rule is applied. The presenter screen and audience devices show the tie, and **South / Enter** reopens voting for another round.
 
 The audience page follows the same lifecycle: vote buttons are disabled until voting opens, locked when voting closes, and the winning champion is highlighted when the presenter reveals the result.
 
@@ -180,11 +180,11 @@ The opening vote now also assigns every browser to a race team. The participant 
 
 After the individual vehicle-control demo, use **W / stick up** (or tap the bottom-right `AUDIENCE RACE` control) to open the race scene. Then:
 
-- **A / Enter** starts the audience race.
+- **South / Enter** starts the audience race.
 - The existing audience voting page automatically switches to a large **BOOST** button.
 - Every tap boosts the champion that participant originally voted for.
-- **B / Escape** resets the race for rehearsal.
-- After a finish, **A / Enter** starts another race.
+- **East / Escape** resets the race for rehearsal.
+- After a finish, **South / Enter** continues to The Journey Home; reset with East to race again.
 
 All three champions are rendered together in Orbit. Race progress is server-authoritative and broadcast with SignalR. Browser taps are batched every 100ms so frantic audience tapping does not create one network call per physical tap.
 
@@ -247,12 +247,17 @@ Chapter One opens before voting. The chosen-champion summary reveals its renderi
 
 ### Presenter controls
 
-- `A` / Enter: advance ordinary slides.
-- `B` / Escape: go back on ordinary slides (or reset where a live interaction owns Back).
-- Champion vote: retains the existing Open → Close → Reveal → Continue lifecycle.
-- Game loop: A advances around loop nodes; Right/D reveals firmware then proceeds to driving.
-- Vehicle control: Up/W moves to the SignalR transition; normal controls continue to drive the vehicle.
-- Audience race: A starts; after the race has finished A advances to the podium, then recap; B/Escape resets the race.
+| Action | Controller | Keyboard |
+| --- | --- | --- |
+| Previous page / beat | Left shoulder | Page Up / Backspace |
+| Next page / beat | Right shoulder | Page Down |
+| Confirm / act | South | Enter / Space |
+| Cancel / reset | East | Escape / Shift |
+| Select / steer | Left stick | Arrow keys / WASD |
+
+Navigation and confirmation are separate semantic actions. On the champion vote, South runs Open → Close → Reveal → Continue; East resets the round. Right shoulder only continues after a winner has been revealed, respecting the reveal delay; it cannot open/close voting or accept a tie. Left shoulder always navigates back.
+
+On the game-loop spread, South advances loop nodes, East steps back a node, and Right shoulder reveals firmware then proceeds to driving. On the vehicle demo, South supplies throttle/thrust and East supplies brake/down-thrust; shoulders navigate without driving the vehicle. On the audience race, South starts the race, East resets it, and Right shoulder continues only after the finish. Touch targets retain their existing behavior. South also continues ordinary spreads.
 
 ## Central presentation registration
 
@@ -302,11 +307,11 @@ On ordinary spreads, tap anywhere on the left page to turn back, or the right pa
 
 Champion selection uses the left page for voting instructions, QR code and live status. Three stacked cards on the right show the Driver, Charioteer and Space Pilot, with their derived destination pages (29, 59 and 89). Touch selection uses the same card bounds as rendering; voting lifecycle controls are unchanged.
 
-The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue opens a simple “OUR CHAMPION” summary with the selected name and real `ChampionGameObject`; the next action reveals rendering code on the left while the champion stays on the right. A further action opens Take Control. “MEET OUR CHAMPION” introduces Chapter One before voting, with the self-discovery lead-in and no selected character. On the vote spread, left-page taps and Escape go back; B/Shift resets voting. Offline selection uses the same reveal before continuing.
+The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue opens a simple “OUR CHAMPION” summary with the selected name and real `ChampionGameObject`; the next action reveals rendering code on the left while the champion stays on the right. A further action opens Take Control. “MEET OUR CHAMPION” introduces Chapter One before voting, with the self-discovery lead-in and no selected character. On the vote spread, left-page taps and Left shoulder / Page Up go back; East / Escape / Shift resets voting. Offline selection uses the same reveal before continuing.
 
 ## Opening decision and chapter structure
 
-After the cover, invite the room to shout a preference: **attend the talk → page 2**, or **go straight to the after-party → page 404**. This is presenter-controlled; no voting round opens. Tap the corresponding right-page choice, use A/Enter for the talk, or B/Shift for the shortcut. Page 404 says “The after-party could not be found. Please complete this adventure first.” A/Enter or a right-page tap then begins the prologue.
+After the cover, invite the room to shout a preference: **attend the talk → page 2**, or **go straight to the after-party → page 404**. This is presenter-controlled; no voting round opens. Tap the corresponding right-page choice, use South/Enter for the talk, or East/Shift for the shortcut. Page 404 says “The after-party could not be found. Please complete this adventure first.” South/Enter or a right-page tap then begins the prologue.
 
 `PresentationChapter` supplies running labels on existing spreads, with a matching right-page opener for every section:
 
@@ -324,7 +329,7 @@ Every section now has a dedicated right-page chapter opener: Prologue, Meet Our 
 
 ## Champion summary and rendering reveal
 
-The champion appears once in the post-vote summary. A/Enter or a right-page tap fades in the real `Render()` excerpt and a champion-specific drawing-primitives example on the left; the right-page character remains unchanged. The next action opens Take Control. Left-page tap / Escape first hides the code, then returns to voting. The redundant Add GameObject and second character-reveal scenes have been removed; scene loading remains covered in the prologue.
+The champion appears once in the post-vote summary. South/Enter or a right-page tap fades in the real `Render()` excerpt and a champion-specific drawing-primitives example on the left; the right-page character remains unchanged. The next action opens Take Control. Left-page tap / Left shoulder / Page Up first hides the code, then returns to voting. The redundant Add GameObject and second character-reveal scenes have been removed; scene loading remains covered in the prologue.
 
 ## Private presenter-notes window
 

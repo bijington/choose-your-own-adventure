@@ -47,9 +47,9 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
     public bool IsCharioteer => _state.Champion == Champion.Charioteer;
     public bool IsSpacePilot => _state.Champion == Champion.SpacePilot;
 
-    public bool IsAccelerating => !IsSpacePilot && _input.IsPressed(AdventureAction.Primary);
+    public bool IsAccelerating => !IsSpacePilot && _input.IsPressed(AdventureAction.Confirm);
     public bool IsBraking => !IsSpacePilot &&
-        (_input.IsPressed(AdventureAction.Secondary) || _input.IsPressed(AdventureAction.Down));
+        (_input.IsPressed(AdventureAction.Cancel) || _input.IsPressed(AdventureAction.Down));
 
     public double SteeringInput => IsRacingDriver
         ? (_input.IsPressed(AdventureAction.Left) ? -1d : 0d) +
@@ -62,9 +62,9 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
     public bool IsPulling => IsCharioteer && IsAccelerating;
     public bool IsCoastingWithMomentum => IsCharioteer && !IsPulling && !IsBraking && _speed > 0.004d;
 
-    public bool IsThrusting => IsSpacePilot && _input.IsPressed(AdventureAction.Primary);
+    public bool IsThrusting => IsSpacePilot && _input.IsPressed(AdventureAction.Confirm);
     public bool IsUsingDownThrust => IsSpacePilot &&
-        (_input.IsPressed(AdventureAction.Secondary) || _input.IsPressed(AdventureAction.Down));
+        (_input.IsPressed(AdventureAction.Cancel) || _input.IsPressed(AdventureAction.Down));
     public bool IsFalling => IsSpacePilot && !IsThrusting && _verticalVelocity > 0.0005d;
 
     public bool IsMoving => IsSpacePilot

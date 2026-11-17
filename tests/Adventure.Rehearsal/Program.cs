@@ -35,6 +35,27 @@ foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
 Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 23).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
 
+// Navigation must not accidentally issue confirmation commands to live interactions.
+var navState = new ChooseYourOwnAdventure.AdventureState();
+var navVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("ORBIT", 0, 0, 0,
+    ChooseYourOwnAdventure.Live.VotePhase.Ready, null);
+var navRace = new ChooseYourOwnAdventure.Live.RaceSnapshot("ORBIT", 0, 0, 0, 0, 0, 0,
+    ChooseYourOwnAdventure.Live.RacePhase.Ready, null);
+foreach (var phase in Enum.GetValues<ChooseYourOwnAdventure.Live.VotePhase>())
+    Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+        ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, navState, navVote with { Phase = phase }, navRace, true) is null,
+        "Navigation started voting, revealed a result or accepted a tie");
+Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+    ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, navState,
+    navVote with { Phase = ChooseYourOwnAdventure.Live.VotePhase.Revealed, RevealedChampion = ChooseYourOwnAdventure.Champion.SpacePilot },
+    navRace, true) == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Navigation could not accept a revealed winner");
+foreach (var phase in Enum.GetValues<ChooseYourOwnAdventure.Live.RacePhase>())
+    Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+        ChooseYourOwnAdventure.PresentationSlide.AudienceRace, navState, navVote, navRace with { Phase = phase }, true)
+        == (phase == ChooseYourOwnAdventure.Live.RacePhase.Finished ? ChooseYourOwnAdventure.Input.AdventureAction.Confirm : null),
+        "Race navigation started or interrupted a race");
+Console.WriteLine("PASS: navigation waits for a revealed champion or finished race without starting live interactions.");
+
 // Presenter notes must follow interactive beats, not just the scene index.
 var presenterState = new ChooseYourOwnAdventure.AdventureState();
 var readyVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("ORBIT", 0, 0, 0,

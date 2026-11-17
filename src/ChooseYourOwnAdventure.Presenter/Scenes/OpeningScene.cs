@@ -238,13 +238,13 @@ public sealed class OpeningScene : GameScene
 
     private static string GetPresenterPrompt(VoteSnapshot votes, double phaseElapsedMilliseconds) => votes.Phase switch
     {
-        VotePhase.Ready => "A / ENTER  ·  OPEN VOTING   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
-        VotePhase.Open => "A / ENTER  ·  CLOSE VOTING   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
+        VotePhase.Ready => "SOUTH / ENTER  ·  OPEN VOTING   •   EAST / SHIFT  ·  RESET   •   LB / PGUP / LEFT PAGE  ·  BACK",
+        VotePhase.Open => "SOUTH / ENTER  ·  CLOSE VOTING   •   EAST / SHIFT  ·  RESET   •   LB / PGUP / LEFT PAGE  ·  BACK",
         VotePhase.Closed when phaseElapsedMilliseconds < LockInDurationMilliseconds => "LOCKING VOTES…",
-        VotePhase.Closed => "A / ENTER  ·  REVEAL WINNER   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
+        VotePhase.Closed => "SOUTH / ENTER  ·  REVEAL WINNER   •   EAST / SHIFT  ·  RESET   •   LB / PGUP / LEFT PAGE  ·  BACK",
         VotePhase.Revealed when phaseElapsedMilliseconds < RevealSuspenseMilliseconds => "AND THE AUDIENCE CHOSE…",
-        VotePhase.Revealed when votes.RevealedChampion is null => "A / ENTER  ·  REOPEN VOTING   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
-        VotePhase.Revealed => "A / ENTER  ·  CONTINUE WITH THE WINNER   •   B / SHIFT  ·  RESET   •   ESC / LEFT PAGE  ·  BACK",
+        VotePhase.Revealed when votes.RevealedChampion is null => "SOUTH / ENTER  ·  REOPEN VOTING   •   EAST / SHIFT  ·  RESET   •   LB / PGUP / LEFT PAGE  ·  BACK",
+        VotePhase.Revealed => "SOUTH / ENTER  ·  CONTINUE WITH THE WINNER   •   EAST / SHIFT  ·  RESET   •   LB / PGUP / LEFT PAGE  ·  BACK",
         _ => string.Empty
     };
 
