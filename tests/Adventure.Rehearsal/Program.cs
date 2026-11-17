@@ -35,6 +35,50 @@ foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
 Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 23).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
 
+// Presenter notes must follow interactive beats, not just the scene index.
+var presenterState = new ChooseYourOwnAdventure.AdventureState();
+var readyVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("ORBIT", 0, 0, 0,
+    ChooseYourOwnAdventure.Live.VotePhase.Ready, null);
+var readyRace = new ChooseYourOwnAdventure.Live.RaceSnapshot("ORBIT", 0, 0, 0, 0, 0, 0,
+    ChooseYourOwnAdventure.Live.RacePhase.Ready, null);
+ChooseYourOwnAdventure.PresenterNotes.PresenterCue Cue(ChooseYourOwnAdventure.PresentationSlide slide,
+    ChooseYourOwnAdventure.Live.VoteSnapshot? vote = null,
+    ChooseYourOwnAdventure.Live.RaceSnapshot? raceSnapshot = null) =>
+    ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(slide, presenterState,
+        vote ?? readyVote, raceSnapshot ?? readyRace, true);
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Contains("Reveal Render()"),
+    "Summary notes skipped the local rendering reveal");
+presenterState.ShowChampionRendering();
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).Beat == "Rendering code revealed"
+    && Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Contains("Take Control"),
+    "Notes did not track the rendering beat");
+presenterState.ShowFirmwareComparison();
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.GameLoop).NextAction.Contains("live control"),
+    "Firmware notes did not describe the next action");
+var tiedVote = readyVote with { Phase = ChooseYourOwnAdventure.Live.VotePhase.Revealed,
+    RacingDriver = 1, Charioteer = 1, SpacePilot = 1 };
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, tiedVote).NextAction.Contains("Reopen voting"),
+    "Tied-vote notes incorrectly continued to a champion");
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.AudienceRace,
+    raceSnapshot: readyRace with { Phase = ChooseYourOwnAdventure.Live.RacePhase.Finished,
+    Winner = ChooseYourOwnAdventure.Champion.SpacePilot }).NextAction.Contains("The Journey Home"),
+    "Finished-race notes skipped the epilogue");
+var parsedGuide = new ChooseYourOwnAdventure.PresenterNotes.PresenterNotesGuide(
+    "## Sample — `TitleScene`\n### Talking points\n- **Keep this point.**\n```csharp\nsecret code\n## Bogus — `OpeningScene`\n```\n## Another section\nDo not include this.");
+Check(parsedGuide.ForScene("TitleScene").Contains("Keep this point.")
+    && !parsedGuide.ForScene("TitleScene").Contains("secret code")
+    && !parsedGuide.ForScene("TitleScene").Contains("Do not include"),
+    "Talk-guide parsing leaked code or another section");
+using (var guideStream = typeof(ChooseYourOwnAdventure.PresenterNotes.PresenterNotesGuide).Assembly
+    .GetManifestResourceStream("Rehearsal.TalkGuide.md")!)
+using (var guideReader = new StreamReader(guideStream))
+{
+    var realGuide = new ChooseYourOwnAdventure.PresenterNotes.PresenterNotesGuide(guideReader.ReadToEnd());
+    Check(realGuide.ForScene("ChosenChampionScene").Contains("DrawChampion", StringComparison.Ordinal),
+        "Maintained guide no longer supplies champion-rendering notes");
+}
+Console.WriteLine("PASS: presenter notes track local rendering, firmware, vote ties and race finish; guide parser extracts prose and excludes code.");
+
 var store = new VoteStore();
 const string loadSession = "LOAD";
 store.OpenVoting(loadSession);

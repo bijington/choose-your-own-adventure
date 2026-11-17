@@ -8,6 +8,11 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Adventure.Web/Adventure.Web.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/PresenterNotes/PresenterNotesGuide.cs" Link="Presenter/PresenterNotesGuide.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/PresenterNotes/PresenterCue.cs" Link="Presenter/PresenterCue.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/LiveVoteState.cs" Link="Presenter/LiveVoteState.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/LiveRaceState.cs" Link="Presenter/LiveRaceState.cs" />
+    <EmbeddedResource Include="../../TALK-GUIDE.md" LogicalName="Rehearsal.TalkGuide.md" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/AdventureState.cs" Link="Presenter/AdventureState.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/PresentationSlide.cs" Link="Presenter/PresentationSlide.cs" />
   </ItemGroup>

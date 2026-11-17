@@ -27,3 +27,5 @@ dotnet run --project tests/Adventure.Rehearsal -- --demo boost
 ```
 
 These demo commands intentionally use only localhost and the local presenter key. Never use them against a live conference session.
+
+The headless checks also verify presenter-note cues for the rendering reveal, firmware comparison, voting ties and race finish, plus extraction of speaker prose from the embedded talk guide. These checks do not open native windows; multi-window startup and screen placement require desktop rehearsal.

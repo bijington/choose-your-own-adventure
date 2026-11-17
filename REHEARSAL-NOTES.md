@@ -48,3 +48,10 @@ Corrected Chapter One’s narrative order: MEET OUR CHAMPION now opens before th
 
 
 Simplified the champion section: the chosen-character summary now keeps the champion visible on the right and reveals Render()/drawing-primitives examples on the left as a local beat. The next action opens Take Control. Left-page tap/Escape hides code before navigating back to voting. Removed the separate AddGameObjectScene and ChampionRevealScene and updated the guide/page map. Mac Catalyst build: zero warnings/errors. Existing rehearsal checks passed. Desktop visual QA could not complete because the computer-use preview connection expired; this version has not been visually verified.
+
+
+## Presenter notes — 17 November 2026
+
+Added a separate desktop MAUI presenter-notes window, automatically opened after the audience scene starts and reopenable via Presenter → Show Presenter Notes. It follows the existing navigator, local rendering/loop beats and live vote/race state. Notes include guide-derived prose, controls, next action/spread, session clock and live status; only the audience window hosts Orbit. Mac Catalyst uses a registered SceneDelegate plus an explicit partial scene manifest, with SDK preprocessor-symbol support for the non-UseMaui project setup.
+
+The Mac Catalyst build passes with zero warnings/errors. Tests pass for notes' rendering/firmware/tie/finish cues, guide extraction, and existing vote/race concurrency/regressions. Desktop checks confirmed automatic two-window startup, separate audience output, synchronization after advancing the book, Return to presentation focus, and notes close/reopen with the clock/current spread preserved. Native preview used an unchanged copy of the built app in /tmp because the computer-use app resolver cached the original path's older bundle identity. Physical projector/full-screen placement and Windows remain to be rehearsed.

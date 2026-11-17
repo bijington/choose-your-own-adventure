@@ -23,6 +23,14 @@ Useful phrases to repeat during the talk:
 
 ---
 
+# Presenter notes window
+
+The desktop presenter opens two windows: **Audience** (the book) and **Presenter Notes** (private cues). Keep the book on the projector and notes on the laptop using an extended desktop. Move the windows before the session, then rehearse full-screen behavior on the actual display setup.
+
+If notes are closed, use **Presenter → Show Presenter Notes**. **Return to presentation** changes focus without advancing a page. Closing/reopening notes preserves the session clock and current scene. The notes window follows rendering reveals, loop stations/firmware, vote phases/ties and race completion, with the current controls and next action always visible.
+
+Speaker prose is extracted from this guide at build time; code blocks and audience-screen descriptions are omitted. Interactive cues are maintained in `PresenterNotes/PresenterCue.cs`. Rebuild after editing this guide.
+
 # Pre-flight checklist
 
 ## Presenter app

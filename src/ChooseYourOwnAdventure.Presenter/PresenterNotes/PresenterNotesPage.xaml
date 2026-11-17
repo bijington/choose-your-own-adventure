@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="ChooseYourOwnAdventure.PresenterNotes.PresenterNotesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Presenter Notes"
+    BackgroundColor="#F6F3EC">
+
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="#34271E" />
+            <Setter Property="LineBreakMode" Value="WordWrap" />
+        </Style>
+        <Style x:Key="CardHeading" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="TextColor" Value="#776858" />
+        </Style>
+        <Style TargetType="Border">
+            <Setter Property="Padding" Value="18" />
+            <Setter Property="BackgroundColor" Value="White" />
+            <Setter Property="Stroke" Value="#E3DCCE" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.MenuBarItems>
+        <MenuBarItem Text="Presenter">
+            <MenuFlyoutItem Text="Return to Presentation" Clicked="OnReturnToPresentation" />
+        </MenuBarItem>
+    </ContentPage.MenuBarItems>
+
+    <Grid Padding="20" RowSpacing="14" RowDefinitions="Auto,*,Auto">
+        <VerticalStackLayout Spacing="10">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="PRESENTER NOTES" FontSize="13" FontAttributes="Bold"
+                       TextColor="#776858" VerticalOptions="Center" />
+                <Label x:Name="_clock" Grid.Column="1" FontSize="26"
+                       FontAttributes="Bold" HorizontalOptions="End" />
+            </Grid>
+            <Label x:Name="_section" FontSize="13" FontAttributes="Bold" />
+            <Label x:Name="_title" FontSize="28" FontAttributes="Bold" />
+            <Label x:Name="_beat" FontSize="21" FontAttributes="Bold" TextColor="#B33F20" />
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="1">
+            <Border>
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="TALKING POINTS" Style="{StaticResource CardHeading}" />
+                    <Label x:Name="_notes" FontSize="19" />
+                </VerticalStackLayout>
+            </Border>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="12">
+            <Border>
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="CURRENT CONTROLS" Style="{StaticResource CardHeading}" />
+                    <Label x:Name="_controls" FontSize="16" />
+                </VerticalStackLayout>
+            </Border>
+            <Border>
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="NEXT ACTION" Style="{StaticResource CardHeading}" />
+                    <Label x:Name="_nextAction" FontSize="18" FontAttributes="Bold" />
+                    <Label x:Name="_nextSpread" FontSize="16" />
+                </VerticalStackLayout>
+            </Border>
+            <Label x:Name="_status" FontSize="14" />
+            <Button Text="Return to presentation" BackgroundColor="#563C2B"
+                    TextColor="White" Clicked="OnReturnToPresentation" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

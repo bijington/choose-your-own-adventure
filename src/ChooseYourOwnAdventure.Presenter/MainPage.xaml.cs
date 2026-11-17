@@ -1,6 +1,7 @@
 using ChooseYourOwnAdventure.Input;
 using ChooseYourOwnAdventure.Live;
 using ChooseYourOwnAdventure.Presentation;
+using ChooseYourOwnAdventure.PresenterNotes;
 using Orbit.Engine;
 using ChooseYourOwnAdventure.Scenes;
 
@@ -19,6 +20,7 @@ public partial class MainPage : ContentPage
     private readonly LiveVoteState _liveVoteState;
     private readonly LiveRaceState _liveRaceState;
 
+    private readonly PresenterNotesWindow _notes;
     private bool _hasStarted;
 
     public MainPage(
@@ -28,9 +30,16 @@ public partial class MainPage : ContentPage
         OrbitInputBridge orbitInputBridge,
         AudienceVoteClient audienceVoteClient,
         LiveVoteState liveVoteState,
-        LiveRaceState liveRaceState)
+        LiveRaceState liveRaceState,
+        PresenterNotesWindow notes)
     {
         InitializeComponent();
+        _notes = notes;
+#if MACCATALYST || __MACCATALYST__ || WINDOWS
+        var presenterMenu = new MenuBarItem { Text = "Presenter" };
+        presenterMenu.Add(new MenuFlyoutItem { Text = "Show Presenter Notes", Command = new Command(_notes.Show) });
+        MenuBarItems.Add(presenterMenu);
+#endif
         _presentationNavigator = presentationNavigator;
         _adventureState = adventureState;
         _inputRouter = inputRouter;
@@ -51,6 +60,11 @@ public partial class MainPage : ContentPage
 
         _presentationNavigator.Start(GameView);
         _hasStarted = true;
+        _notes.StartSession();
+#if MACCATALYST || __MACCATALYST__ || WINDOWS
+        // The audience scene is already running; opening notes cannot block startup.
+        Dispatcher.Dispatch(_notes.Show);
+#endif
 
         // Input/network discovery must never block the presentation rendering.
         _ = _orbitInputBridge.StartAsync();

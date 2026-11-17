@@ -155,7 +155,9 @@ The server still only knows `Ready`, `Open`, `Closed`, and `Revealed`, so the th
 
 ## Apple application lifecycle
 
-The iOS and Mac Catalyst heads currently use `AppDelegate`; the attempted `SceneDelegate` migration was rolled back. Preserve the explicit Mac Catalyst RID and application-title settings in the project file. Start the presentation before asynchronously discovering controllers and connecting SignalR so unavailable devices or networking cannot block the first scene.
+The Mac Catalyst head now uses `SceneDelegate : MauiUISceneDelegate` and an explicit multiple-scene manifest to support separate audience and presenter-notes windows. The manifest is included as a `PartialAppManifest` because this project intentionally omits `UseMaui`. The notes startup also accepts the SDK's `__MACCATALYST__` symbol. The iOS head remains unchanged.
+
+Preserve the explicit Mac Catalyst RID/application-title workaround. The presentation starts before controller/network discovery and before notes are opened. This follows [MAUI's documented multi-window configuration](https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/window?view=net-maui-10.0#multi-window-support).
 
 ## Theme-specific vehicle input
 
@@ -323,3 +325,18 @@ Every section now has a dedicated right-page chapter opener: Prologue, Meet Our 
 ## Champion summary and rendering reveal
 
 The champion appears once in the post-vote summary. A/Enter or a right-page tap fades in the real `Render()` excerpt and a champion-specific drawing-primitives example on the left; the right-page character remains unchanged. The next action opens Take Control. Left-page tap / Escape first hides the code, then returns to voting. The redundant Add GameObject and second character-reveal scenes have been removed; scene loading remains covered in the prologue.
+
+## Private presenter-notes window
+
+On Mac Catalyst and Windows, a separate notes window opens after the audience presentation starts. Put **Choose Your Own Adventure — Audience** on the projector and keep **Presenter Notes — Choose Your Own Adventure** on the laptop. Use an extended desktop rather than display mirroring. Only the audience window hosts Orbit.
+
+Notes show the current spread/page, interactive beat, talking points, current controls, next action/spread, elapsed session time, audience connection, vote count and race phase. Controls and next action remain visible while longer notes scroll. Notes follow local beats such as rendering-code reveal, loop stations and firmware comparison; voting/tie and race-finish prompts reflect live state.
+
+- **Presenter → Show Presenter Notes** opens or focuses the notes window without creating another presentation.
+- **Return to presentation** brings the audience window forward without advancing it.
+- Closing notes leaves the audience presentation running; reopening preserves the current state and session clock.
+- Closing the audience window closes its notes window.
+
+`TALK-GUIDE.md` is embedded at build time and supplies speaker prose. `PresenterCueFactory` adds concise cues for interactive beats. A notes-window dispatcher timer reads the existing shared state; there is no second Orbit loop or SignalR connection. Editing the guide requires rebuilding the presenter.
+
+Mac Catalyst startup, automatic opening, live spread synchronization, return focus and close/reopen have been checked locally. Rehearse actual projector placement and full-screen behavior on the conference setup; Windows has not been exercised here.
