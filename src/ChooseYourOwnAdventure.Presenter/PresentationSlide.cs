@@ -9,8 +9,7 @@ public enum PresentationSlide
     LoadGameScene = 5,
     ChooseChampion = 6,
     ChampionChapter = 7,
-    AddGameObject = 8,
-    ChampionReveal = 9,
+    // Ids 8 and 9 retired: rendering is now revealed within ChosenChampion.
     InputPackage = 10,
     GameLoop = 11,
     VehicleControl = 12,

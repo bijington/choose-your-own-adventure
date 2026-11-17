@@ -33,7 +33,7 @@ if (args.Length >= 2 && args[0] == "--demo")
 
 foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
-Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 23).Append(404)), "Slide numbering mismatch");
+Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 23).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
 
 var store = new VoteStore();
 const string loadSession = "LOAD";

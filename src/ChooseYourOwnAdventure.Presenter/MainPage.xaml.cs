@@ -80,6 +80,13 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        if (_presentationNavigator.Current == PresentationSlide.ChosenChampion)
+        {
+            _inputRouter.Trigger(position.Value.X < GameView.Width / 2d
+                ? AdventureAction.Back : AdventureAction.Primary);
+            return;
+        }
+
         if (_presentationNavigator.Current == PresentationSlide.ChooseChampion
             && position.Value.X < GameView.Width / 2d)
         {
@@ -151,6 +158,23 @@ public partial class MainPage : ContentPage
 
             case PresentationSlide.ChooseChampion:
                 await HandleChampionVoteAsync(action);
+                return;
+
+            case PresentationSlide.ChosenChampion:
+                if (action is AdventureAction.Back or AdventureAction.Secondary)
+                {
+                    if (_adventureState.ChampionRenderingVisible)
+                        _adventureState.HideChampionRendering();
+                    else
+                        _presentationNavigator.Previous();
+                }
+                else if (action == AdventureAction.Primary)
+                {
+                    if (!_adventureState.ChampionRenderingVisible)
+                        _adventureState.ShowChampionRendering();
+                    else
+                        _presentationNavigator.Next();
+                }
                 return;
 
             case PresentationSlide.GameLoop:

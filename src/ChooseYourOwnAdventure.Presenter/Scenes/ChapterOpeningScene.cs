@@ -29,6 +29,8 @@ public abstract class ChapterOpeningScene : PresentationSceneBase
         }
     }
 
+    protected virtual string ContinuePrompt => "A / ENTER · TURN THE PAGE";
+
     public override void Render(ICanvas canvas, RectF dimensions)
     {
         DrawShell(canvas, dimensions);
@@ -73,7 +75,7 @@ public abstract class ChapterOpeningScene : PresentationSceneBase
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Muted;
         canvas.FontSize = Math.Clamp(dimensions.Width * .011f, 12f, 17f);
-        canvas.DrawString("A / ENTER · TURN THE PAGE", right.X, dimensions.Bottom - 96,
+        canvas.DrawString(ContinuePrompt, right.X, dimensions.Bottom - 96,
             right.Width, 42, HorizontalAlignment.Center, VerticalAlignment.Center);
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(_slide, _state.Champion));
     }

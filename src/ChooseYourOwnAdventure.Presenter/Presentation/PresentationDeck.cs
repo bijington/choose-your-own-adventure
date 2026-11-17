@@ -23,10 +23,6 @@ public static class PresentationDeck
             state => state.PrepareChampionVote()),
         PresentationSlideDefinition.Create<ChosenChampionScene>(PresentationSlide.ChosenChampion,
             state => state.PrepareChampionReveal()),
-        PresentationSlideDefinition.Create<AddGameObjectScene>(PresentationSlide.AddGameObject),
-        PresentationSlideDefinition.Create<ChampionRevealScene>(
-            PresentationSlide.ChampionReveal,
-            state => state.PrepareChampionReveal()),
         PresentationSlideDefinition.Create<InputChapterScene>(PresentationSlide.InputChapter),
         PresentationSlideDefinition.Create<InputPackageScene>(PresentationSlide.InputPackage),
         PresentationSlideDefinition.Create<GameLoopScene>(

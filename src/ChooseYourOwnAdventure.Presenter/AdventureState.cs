@@ -73,8 +73,13 @@ public sealed class AdventureState
         CodeRevealTransitionProgress = 0f;
     }
 
+    public bool ChampionRenderingVisible { get; private set; }
+    public void ShowChampionRendering() => ChampionRenderingVisible = true;
+    public void HideChampionRendering() => ChampionRenderingVisible = false;
+
     public void PrepareChampionReveal()
     {
+        ChampionRenderingVisible = false;
         OpeningStage = OpeningStage.ChampionChosen;
         CodeRevealTransitionProgress = 0f;
     }

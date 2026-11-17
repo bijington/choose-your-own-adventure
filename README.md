@@ -229,21 +229,19 @@ Current order:
 9. `ChampionChapterScene`
 10. `OpeningScene`
 11. `ChosenChampionScene`
-12. `AddGameObjectScene`
-13. `ChampionRevealScene`
-14. `InputChapterScene`
-15. `InputPackageScene`
-16. `GameLoopScene`
-17. `VehicleControlScene`
-18. `SignalRChapterScene`
-19. `SignalRTransitionScene`
-20. `SignalRArchitectureScene`
-21. `AudienceRaceScene`
-22. `EpilogueChapterScene`
-23. `PodiumScene`
-24. `RecapScene`
+12. `InputChapterScene`
+13. `InputPackageScene`
+14. `GameLoopScene`
+15. `VehicleControlScene`
+16. `SignalRChapterScene`
+17. `SignalRTransitionScene`
+18. `SignalRArchitectureScene`
+19. `AudienceRaceScene`
+20. `EpilogueChapterScene`
+21. `PodiumScene`
+22. `RecapScene`
 
-The chapter introduction comes before voting. The chosen-champion summary follows voting, then Add GameObject. The normal route skips the optional page-404 joke.
+Chapter One opens before voting. The chosen-champion summary reveals its rendering code on the facing page, then continues to Take Control. The normal route skips the optional page-404 joke.
 
 ### Presenter controls
 
@@ -282,7 +280,7 @@ Code samples now use the same parchment visual language as the rest of the deck.
 
 ## Branch page numbers
 
-Printed pages follow the story order in `PresentationDeck`, excluding the cover and optional page-404 joke. `PresentationTheme.GetPageNumber` adds the selected champion offset (Driver 20, Charioteer 50, Space Pilot 80) from the chosen-champion summary onward. Enum identities no longer dictate printed page order. The winning card points to summary page 29, 59 or 89; Add GameObject follows at 30, 60 or 90. Presenter and web champion enum values and the browser numeric mapping still stay synchronized.
+Printed pages follow the story order in `PresentationDeck`, excluding the cover and optional page-404 joke. `PresentationTheme.GetPageNumber` adds the selected champion offset (Driver 20, Charioteer 50, Space Pilot 80) from the chosen-champion summary onward. Enum identities no longer dictate printed page order. The winning card points to summary page 29, 59 or 89; The rendering code appears within that same spread; Take Control follows on the next page. Presenter and web champion enum values and the browser numeric mapping still stay synchronized.
 
 Vehicle artwork lives in `ChampionVehicleGameObject`, shared by `LoopVehicle`, `AudienceRaceVehicle` and podium `StaticChampionVehicleGameObject`s.
 
@@ -302,7 +300,7 @@ On ordinary spreads, tap anywhere on the left page to turn back, or the right pa
 
 Champion selection uses the left page for voting instructions, QR code and live status. Three stacked cards on the right show the Driver, Charioteer and Space Pilot, with their derived destination pages (29, 59 and 89). Touch selection uses the same card bounds as rendering; voting lifecycle controls are unchanged.
 
-The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue opens a simple “OUR CHAMPION” summary with the selected name and real `ChampionGameObject`; the next turn opens Add GameObject. “MEET OUR CHAMPION” introduces Chapter One before voting, with the self-discovery lead-in and no selected character. On the vote spread, left-page taps and Escape go back; B/Shift resets voting. Offline selection uses the same reveal before continuing.
+The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue opens a simple “OUR CHAMPION” summary with the selected name and real `ChampionGameObject`; the next action reveals rendering code on the left while the champion stays on the right. A further action opens Take Control. “MEET OUR CHAMPION” introduces Chapter One before voting, with the self-discovery lead-in and no selected character. On the vote spread, left-page taps and Escape go back; B/Shift resets voting. Offline selection uses the same reveal before continuing.
 
 ## Opening decision and chapter structure
 
@@ -321,3 +319,7 @@ The opening is page 1 and the joke is page 404. The prologue opens on page 2. St
 The vote scene renders only voting content, independent of `OpeningStage`. Accepting a champion cannot switch its outgoing capture into the old character-reveal layout. The chapter scene reuses `ChampionGameObject` artwork without the dark panel or duplicate labels; its left leaf remains blank.
 
 Every section now has a dedicated right-page chapter opener: Prologue, Meet Our Champion, Take Control, An Adventure Together and Epilogue. Each has a short narrative lead-in and a blank left leaf. The champion opener adds: “A little self-discovery. A few lines of C#. Let’s find out what our champion is made of.” The selected name and shared GameObject appear on the separate post-vote summary.
+
+## Champion summary and rendering reveal
+
+The champion appears once in the post-vote summary. A/Enter or a right-page tap fades in the real `Render()` excerpt and a champion-specific drawing-primitives example on the left; the right-page character remains unchanged. The next action opens Take Control. Left-page tap / Escape first hides the code, then returns to voting. The redundant Add GameObject and second character-reveal scenes have been removed; scene loading remains covered in the prologue.
