@@ -121,24 +121,10 @@ public sealed class ChampionGameObject : GameObject
 
         }
 
-        var centerX = rect.X + rect.Width / 2f;
-        var groundY = rect.Y + rect.Height * (showLabels ? .75f : .60f);
-        var scale = showLabels
-            ? Math.Clamp(rect.Width * .045f, 10f, 18f)
-            : Math.Clamp(rect.Width * .065f, 16f, 28f);
-
-        switch (champion)
-        {
-            case Champion.Charioteer:
-                DrawCharioteer(canvas, centerX, groundY, scale);
-                break;
-            case Champion.SpacePilot:
-                DrawSpacePilot(canvas, centerX, groundY, scale);
-                break;
-            default:
-                DrawRacingDriver(canvas, centerX, groundY, scale);
-                break;
-        }
+        var artwork = showLabels
+            ? new RectF(rect.X + 24f, rect.Y + 78f, rect.Width - 48f, rect.Height - 154f)
+            : new RectF(rect.X + 16f, rect.Y + 8f, rect.Width - 32f, rect.Height - 16f);
+        ChampionSprites.DrawCharacter(canvas, champion ?? Champion.RacingDriver, artwork);
 
         if (!showLabels) return;
 
@@ -153,44 +139,6 @@ public sealed class ChampionGameObject : GameObject
             32,
             HorizontalAlignment.Center,
             VerticalAlignment.Center);
-    }
-
-    private static void DrawRacingDriver(ICanvas canvas, float x, float y, float p)
-    {
-        Pixel(canvas, x, y, p, -4.5f, -2.5f, 9f, 2.8f, Color.FromArgb("#EF4444"));
-        Pixel(canvas, x, y, p, -2.5f, -4.2f, 5f, 2f, Color.FromArgb("#F8FAFC"));
-        Pixel(canvas, x, y, p, -1.7f, -3.8f, 3.4f, 1.2f, Color.FromArgb("#38BDF8"));
-        Pixel(canvas, x, y, p, -3.8f, -0.4f, 2f, 1.5f, Color.FromArgb("#0F172A"));
-        Pixel(canvas, x, y, p, 1.8f, -0.4f, 2f, 1.5f, Color.FromArgb("#0F172A"));
-        Pixel(canvas, x, y, p, -0.6f, -5.7f, 1.2f, 1.5f, Color.FromArgb("#F8D866"));
-    }
-
-    private static void DrawCharioteer(ICanvas canvas, float x, float y, float p)
-    {
-        Pixel(canvas, x, y, p, -4.5f, -2.1f, 5.8f, 2.1f, Color.FromArgb("#D97706"));
-        Pixel(canvas, x, y, p, -3.8f, -4.6f, 1.7f, 2.6f, Color.FromArgb("#F1C7A5"));
-        Pixel(canvas, x, y, p, -4.1f, -5.5f, 2.3f, 1f, Color.FromArgb("#F8D866"));
-        Pixel(canvas, x, y, p, 1.0f, -2.7f, 4.7f, 1.7f, Color.FromArgb("#A16207"));
-        Pixel(canvas, x, y, p, 4.8f, -3.6f, 1.1f, 1.3f, Color.FromArgb("#A16207"));
-        Pixel(canvas, x, y, p, -3.6f, -0.4f, 1.8f, 1.8f, Color.FromArgb("#1E293B"));
-        Pixel(canvas, x, y, p, -0.5f, -0.4f, 1.8f, 1.8f, Color.FromArgb("#1E293B"));
-    }
-
-    private static void DrawSpacePilot(ICanvas canvas, float x, float y, float p)
-    {
-        Pixel(canvas, x, y, p, -4.5f, -2.2f, 9f, 2.2f, Color.FromArgb("#6366F1"));
-        Pixel(canvas, x, y, p, -2.6f, -4.1f, 5.2f, 2.2f, Color.FromArgb("#CBD5E1"));
-        Pixel(canvas, x, y, p, -1.8f, -3.7f, 3.6f, 1.2f, Color.FromArgb("#22D3EE"));
-        Pixel(canvas, x, y, p, -6f, -1.7f, 2.1f, 1.2f, Color.FromArgb("#A78BFA"));
-        Pixel(canvas, x, y, p, 3.9f, -1.7f, 2.1f, 1.2f, Color.FromArgb("#A78BFA"));
-        Pixel(canvas, x, y, p, -1.8f, 0f, 1.2f, 1.8f, Color.FromArgb("#F97316"));
-        Pixel(canvas, x, y, p, 0.6f, 0f, 1.2f, 1.8f, Color.FromArgb("#F97316"));
-    }
-
-    private static void Pixel(ICanvas canvas, float centerX, float groundY, float p, float x, float y, float w, float h, Color color)
-    {
-        canvas.FillColor = color;
-        canvas.FillRectangle(centerX + x * p, groundY + y * p, w * p, h * p);
     }
 
     private static string GetChampionName(Champion? champion) => champion switch

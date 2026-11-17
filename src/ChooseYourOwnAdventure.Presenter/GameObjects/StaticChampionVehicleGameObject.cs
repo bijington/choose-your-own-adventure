@@ -14,7 +14,7 @@ public sealed class StaticChampionVehicleGameObject : ChampionVehicleGameObject
         canvas.SaveState();
         canvas.Translate(Position.X, Position.Y);
         canvas.Scale(Scale, Scale);
-        DrawVehicle(canvas, Champion);
+        ChampionSprites.DrawSideVehicle(canvas, Champion, new RectF(-38f, -26f, 76f, 52f));
         canvas.RestoreState();
     }
 }

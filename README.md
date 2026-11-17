@@ -349,3 +349,33 @@ Mac Catalyst startup, automatic opening, live spread synchronization, return foc
 When the audience server is disconnected, the champion spread explicitly shows **OFFLINE · LOCAL SELECTION**. Move the left stick up/down (or use the arrow keys) to highlight a champion, then press South/Enter to reveal that local choice. A further confirmation continues after the reveal. Left/right selection and tapping a champion card also work. When connected, South runs the live voting sequence instead. A local winner remains selected if the server reconnects during its reveal; reset with East to return to live voting.
 
 The SignalR architecture spread follows one champion vote through four local stages: browser JavaScript → hub entry point → server state/group broadcast → MAUI subscriber and Orbit rendering. Focused code stays on the left; the right-hand route highlights the active component. South/Enter, Right shoulder/Page Down and right-page taps advance; Left shoulder/Page Up, East/Escape and left-page taps step back. Only after stage four does forward input open the audience race. Presenter notes follow the current stage. No extra printed pages, live hub calls or game loops are introduced by the explanation.
+
+## Champion sprite artwork
+
+The presenter now uses nine transparent PNG assets in
+`src/ChooseYourOwnAdventure.Presenter/Resources/Images/Champions`:
+
+| Prefix | `_character.png` | `_side.png` | `_top.png` |
+| --- | --- | --- | --- |
+| `driver` | Racing driver | Racing car | Overhead racing car |
+| `charioteer` | Charioteer | Horse and chariot | Overhead horse and chariot |
+| `pilot` | Space pilot | Spaceship | Overhead spaceship |
+
+`ChampionSprites` caches embedded images and preserves their aspect ratios.
+Characters are shared by the vote cards, champion reveals and game-loop marker.
+Moving vehicles use overhead artwork, rotated 90 degrees to match the existing
+right-facing heading convention. Podium vehicles use the side artwork. Steering
+now tilts the car sprite slightly; thrust enlarges the ship slightly. These static
+sprites replace the separately drawn steering wheels and exhaust primitives;
+control physics, race progress and voting behavior are unchanged.
+
+The assets were extracted from the approved generated concept sheets in
+`generated_images`. To reproduce the crops on macOS, run:
+
+```sh
+swift -module-cache-path /tmp/champion-swift-cache tools/split-champion-sprites.swift
+```
+
+The extraction trims transparent margins and removes faint alpha haze around the
+outlines, leaving a small transparent gutter. The PNGs retain the original artwork
+resolution; they are pixel-art illustrations rather than native 32×32 sprite grids.
