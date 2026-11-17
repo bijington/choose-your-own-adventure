@@ -94,7 +94,7 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (_presentationNavigator.Current == PresentationSlide.ChosenChampion)
+        if (_presentationNavigator.Current is PresentationSlide.ChosenChampion or PresentationSlide.SignalRArchitecture)
         {
             _inputRouter.Trigger(position.Value.X < GameView.Width / 2d
                 ? AdventureAction.Previous : AdventureAction.Confirm);
@@ -162,6 +162,8 @@ public partial class MainPage : ContentPage
         // Navigation never starts or resets a vote/race. Confirmation owns those commands.
         if (action == AdventureAction.Previous)
         {
+            if (_presentationNavigator.Current == PresentationSlide.SignalRArchitecture
+                && _adventureState.PreviousSignalRStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.ChosenChampion
                 && _adventureState.ChampionRenderingVisible)
                 _adventureState.HideChampionRendering();
@@ -214,6 +216,17 @@ public partial class MainPage : ContentPage
 
             case PresentationSlide.GameLoop:
                 HandleGameLoop(action);
+                return;
+
+            case PresentationSlide.SignalRArchitecture:
+                if (action == AdventureAction.Confirm)
+                {
+                    if (!_adventureState.AdvanceSignalRStage()) _presentationNavigator.Next();
+                }
+                else if (action == AdventureAction.Cancel)
+                {
+                    if (!_adventureState.PreviousSignalRStage()) _presentationNavigator.Previous();
+                }
                 return;
 
             case PresentationSlide.VehicleControl:

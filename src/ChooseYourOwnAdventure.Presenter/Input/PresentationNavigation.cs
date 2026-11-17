@@ -13,6 +13,7 @@ public static class PresentationNavigation
                 ? AdventureAction.Confirm : null,
         PresentationSlide.AudienceRace => race.Phase == RacePhase.Finished ? AdventureAction.Confirm : null,
         PresentationSlide.ChosenChampion => AdventureAction.Confirm,
+        PresentationSlide.SignalRArchitecture => AdventureAction.Confirm,
         PresentationSlide.GameLoop => AdventureAction.Right,
         _ => AdventureAction.Next
     };

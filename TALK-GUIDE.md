@@ -644,46 +644,26 @@ Conceptual transition from local controller intent to remote/audience intent.
 
 ### On screen
 
-```text
-AUDIENCE BROWSERS
-      ↓
- SIGNALR HUB
-      ↓
-SERVER-OWNED STATE
-      ↓
-  MAUI + ORBIT
-```
-
-### Reveal
-
-> “The champion vote at the start was already using SignalR.”
+One spread follows **one champion vote in four stages**. The left page shows focused code excerpts from this application; the right page keeps the complete route visible and highlights the component being explained. The printed page number stays the same throughout.
 
 ### Talking points
 
-Keep this to four ideas:
+1. **Audience browser:** JavaScript builds the connection to `/adventureHub`, starts it, joins the session and invokes `Vote` with the session, participant and selected champion. The connection setup and card-click call are shown together. The phone sends a choice; it does not calculate a winner.
+2. **ASP.NET Core hub:** Match `/adventureHub` to `MapHub<AdventureHub>` and `'Vote'` to `AdventureHub.Vote(...)`. Arguments arrive in order. Mention the omitted validation/normalization and that `JoinSession` puts each connection into the session group.
+3. **Server state and broadcast:** `VoteStore.CastVote` accepts votes while open, stores one choice per participant under a lock, and returns a snapshot. `Clients.Group(normalized).SendAsync("VoteUpdated", snapshot)` pushes it to the presenter and audience browsers in this session. A hub routes calls; the store owns the shared state.
+4. **MAUI client and Orbit:** `_connection.On<VoteSnapshot>("VoteUpdated", _voteState.Update)` receives the same event name. The callback updates shared state under a lock; `OpeningScene` reads it during the existing render loop. SignalR changes state and Orbit draws it. No extra rendering loop is needed.
 
-1. Audience joins through a browser; no app installation required.
-2. The browser sends **intent** through SignalR.
-3. The server owns/validates the shared state.
-4. The MAUI presenter receives that state and Orbit renders it.
-
-Key phrase:
-
-> **“The browser does not directly move a vehicle. It says: I want to boost my team.”**
-
-Mention batching briefly:
-
-- taps feel immediate in the browser
-- browser batches taps into fewer SignalR calls
-- avoids one network message per physical tap
+The presenter window follows each stage with its own talking points. The code is a teaching excerpt: validation, retry handling and surrounding methods are intentionally omitted where marked.
 
 ### Action
 
-`A / Enter` → audience race.
+South / Right shoulder / Enter / Page Down / right-page tap steps forward. After stage 4, the next action opens the race. Left shoulder / East / Page Up / Escape / left-page tap steps backward; from stage 1 it returns to the preceding spread. Entering this spread again starts at stage 1.
 
 ### Transition
 
-> “And because the server remembered who each of you voted for earlier, that first decision is about to matter again.”
+> “The race follows exactly the same route: Boost intent goes in, RaceUpdated state comes out. And the server remembered which team each of you chose.”
+
+Briefly mention that the browser batches boost taps into fewer calls. Then give control to the room.
 
 ---
 
@@ -889,7 +869,7 @@ If the clock is slipping, cut/compress in this order:
 1. **Firmware comparison** — reduce to one sentence and the two loops.
 2. **Orbit installation detail** — show the code, say “NuGet + builder extension,” move on.
 3. **Input package API explanation** — state what it provides; do not enumerate APIs.
-4. **SignalR implementation detail** — explain the architecture diagram, not hub code.
+4. **SignalR walkthrough** — spend one sentence on each of the four stages and move to the race.
 5. **Vehicle demo repetitions** — demonstrate the chosen mechanic once clearly.
 6. **Race** — keep it to one quick heat; do not restart.
 7. **Podium** — celebrate winner in 15–20 seconds and move to recap.

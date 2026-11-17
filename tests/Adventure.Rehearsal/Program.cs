@@ -56,6 +56,30 @@ foreach (var phase in Enum.GetValues<ChooseYourOwnAdventure.Live.RacePhase>())
         "Race navigation started or interrupted a race");
 Console.WriteLine("PASS: navigation waits for a revealed champion or finished race without starting live interactions.");
 
+// The architecture spread must finish all four steps before forward input can leave it.
+var walkthroughState = new ChooseYourOwnAdventure.AdventureState();
+Check(!walkthroughState.PreviousSignalRStage(), "Walkthrough underflowed its first step");
+foreach (var stage in Enum.GetValues<ChooseYourOwnAdventure.SignalRStage>())
+{
+    Check(walkthroughState.SignalRStage == stage, "Walkthrough skipped a component");
+    Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+        ChooseYourOwnAdventure.PresentationSlide.SignalRArchitecture, walkthroughState, navVote, navRace, false)
+        == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Shoulder navigation bypassed the walkthrough");
+    var stepCue = ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(
+        ChooseYourOwnAdventure.PresentationSlide.SignalRArchitecture, walkthroughState, navVote, navRace, false);
+    Check(stepCue.Beat.Contains($"{(int)stage + 1}/4") && stepCue.TalkingPoints.Length > 0,
+        "Presenter notes did not follow the SignalR stage");
+    Check(walkthroughState.AdvanceSignalRStage() == (stage != ChooseYourOwnAdventure.SignalRStage.Presenter),
+        "Walkthrough left early or advanced beyond the last step");
+}
+Check(walkthroughState.SignalRStage == ChooseYourOwnAdventure.SignalRStage.Presenter,
+    "Walkthrough changed after its final step");
+for (var i = 0; i < 3; i++) Check(walkthroughState.PreviousSignalRStage(), "Could not reverse through the walkthrough");
+walkthroughState.AdvanceSignalRStage();
+walkthroughState.ResetSignalRWalkthrough();
+Check(walkthroughState.SignalRStage == ChooseYourOwnAdventure.SignalRStage.Browser, "Re-entering did not reset the walkthrough");
+Console.WriteLine("PASS: four-stage SignalR walkthrough, forward/back bounds, shoulder navigation and presenter cues.");
+
 // Presenter notes must follow interactive beats, not just the scene index.
 var presenterState = new ChooseYourOwnAdventure.AdventureState();
 var readyVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("ORBIT", 0, 0, 0,

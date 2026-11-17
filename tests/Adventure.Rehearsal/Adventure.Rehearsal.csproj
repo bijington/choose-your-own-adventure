@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/AdventureAction.cs" Link="Presenter/AdventureAction.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/PresentationNavigation.cs" Link="Presenter/PresentationNavigation.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/SignalRWalkthrough.cs" Link="Presenter/SignalRWalkthrough.cs" />
     <ProjectReference Include="../../src/Adventure.Web/Adventure.Web.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/PresenterNotes/PresenterNotesGuide.cs" Link="Presenter/PresenterNotesGuide.cs" />

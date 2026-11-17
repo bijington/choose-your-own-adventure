@@ -35,6 +35,14 @@ public enum GameLoopStage
     FirmwareComparison
 }
 
+public enum SignalRStage
+{
+    Browser,
+    Hub,
+    Broadcast,
+    Presenter
+}
+
 public sealed class AdventureState
 {
     private static readonly Champion[] Champions =
@@ -49,6 +57,7 @@ public sealed class AdventureState
     public Champion HighlightedChampion { get; private set; } = ChooseYourOwnAdventure.Champion.RacingDriver;
     public GameLoopStage GameLoopStage { get; private set; } = GameLoopStage.Overview;
     public LoopStation GameLoopStation { get; private set; } = LoopStation.Input;
+    public SignalRStage SignalRStage { get; private set; }
     public float CodeRevealTransitionProgress { get; private set; }
 
     public int Health { get; set; } = 5;
@@ -138,6 +147,22 @@ public sealed class AdventureState
 
     public void ShowFirmwareComparison() =>
         GameLoopStage = GameLoopStage.FirmwareComparison;
+
+    public void ResetSignalRWalkthrough() => SignalRStage = SignalRStage.Browser;
+
+    public bool AdvanceSignalRStage()
+    {
+        if (SignalRStage == SignalRStage.Presenter) return false;
+        SignalRStage++;
+        return true;
+    }
+
+    public bool PreviousSignalRStage()
+    {
+        if (SignalRStage == SignalRStage.Browser) return false;
+        SignalRStage--;
+        return true;
+    }
 
     private void MoveChampionHighlight(int direction)
     {

@@ -11,43 +11,52 @@ public sealed class SignalRArchitectureScene : PresentationSceneBase
 
     public override void Render(ICanvas canvas, RectF dimensions)
     {
+        var stage = _state.SignalRStage;
+        var step = SignalRWalkthrough.ForStage(stage);
         DrawShell(canvas, dimensions);
-        DrawTitle(canvas, dimensions, "SIGNALR: THE ROOM BECOMES THE INPUT",
-            "You have actually been using this architecture since the champion vote.");
+        DrawTitle(canvas, dimensions, "ONE VOTE, FOUR STEPS",
+            $"{(int)stage + 1} / 4 · {step.Title}\nThe champion vote has already made this journey.");
 
-        var labels = new[] { "AUDIENCE BROWSERS", "SIGNALR HUB", "SERVER-OWNED STATE", "MAUI + ORBIT" };
-        var boxW = Math.Min(245f, dimensions.Width * 0.20f);
-        var boxH = 100f;
-        var gap = Math.Min(42f, dimensions.Width * 0.035f);
-        var total = labels.Length * boxW + (labels.Length - 1) * gap;
-        var x = dimensions.X + (dimensions.Width - total) / 2f;
-        var y = dimensions.Y + dimensions.Height * 0.38f;
+        var left = BookLayout.LeftPage(dimensions);
+        var right = BookLayout.RightPage(dimensions);
+        DrawCodeCard(canvas, new RectF(left.X, left.Y, left.Width, left.Height * .84f),
+            step.CodeTitle, step.Code);
 
-        for (var i = 0; i < labels.Length; i++)
+        // Keep the full route visible. The active component tracks the code on the left.
+        var stages = Enum.GetValues<SignalRStage>();
+        var boxHeight = dimensions.Height * .095f;
+        var gap = dimensions.Height * .035f;
+        for (var i = 0; i < stages.Length; i++)
         {
-            var rect = new RectF(x + i * (boxW + gap), y, boxW, boxH);
-            DrawPill(canvas, rect, labels[i], i == 1 || i == 2);
-            if (i < labels.Length - 1)
-            {
-                var lineX1 = rect.Right + 8;
-                var lineX2 = rect.Right + gap - 8;
-                var lineY = rect.Y + rect.Height / 2f;
-                canvas.StrokeColor = Muted;
-                canvas.StrokeSize = 2;
-                canvas.DrawLine(lineX1, lineY, lineX2, lineY);
-                canvas.DrawLine(lineX2 - 8, lineY - 6, lineX2, lineY);
-                canvas.DrawLine(lineX2 - 8, lineY + 6, lineX2, lineY);
-            }
+            var rect = new RectF(right.X, right.Y + i * (boxHeight + gap), right.Width, boxHeight);
+            DrawPill(canvas, rect, $"{i + 1}   {SignalRWalkthrough.ForStage(stages[i]).Component}", stages[i] == stage);
+            if (i == stages.Length - 1) continue;
+            canvas.StrokeColor = i == (int)stage ? Accent : Muted;
+            canvas.StrokeSize = 2;
+            var x = rect.Center.X;
+            var top = rect.Bottom + gap * .18f;
+            var bottom = rect.Bottom + gap * .82f;
+            canvas.DrawLine(x, top, x, bottom);
+            canvas.DrawLine(x - 5, bottom - 5, x, bottom);
+            canvas.DrawLine(x + 5, bottom - 5, x, bottom);
         }
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Accent;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.018f, 15f, 26f);
-        canvas.DrawString("Browser sends intent  •  server owns shared state  •  Orbit renders the result",
-            dimensions.X + 60, dimensions.Y + dimensions.Height * 0.63f, dimensions.Width - 120, 42,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.FontSize = Math.Clamp(dimensions.Width * .014f, 14f, 21f);
+        canvas.DrawString(step.Caption, left.X, left.Y + left.Height * .87f,
+            left.Width, left.Height * .13f, HorizontalAlignment.Left, VerticalAlignment.Center);
 
-        DrawPrompt(canvas, dimensions, "SOUTH / ENTER  ·  GIVE CONTROL TO THE ROOM");
+        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = Muted;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .014f, 14f, 21f);
+        canvas.DrawString("Browser sends intent.\nServer owns shared state.\nOrbit renders the result.",
+            right.X, dimensions.Y + dimensions.Height * .77f, right.Width, dimensions.Height * .09f,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+
+        DrawPrompt(canvas, dimensions, stage == SignalRStage.Presenter
+            ? "SOUTH / RB / ENTER / PGDN · THE AUDIENCE RACE"
+            : "SOUTH / RB / ENTER / PGDN · NEXT STEP");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.SignalRArchitecture, _state.Champion));
     }
 }

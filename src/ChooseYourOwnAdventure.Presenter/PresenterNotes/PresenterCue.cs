@@ -1,4 +1,5 @@
 using ChooseYourOwnAdventure.Live;
+using ChooseYourOwnAdventure.Presentation;
 
 namespace ChooseYourOwnAdventure.PresenterNotes;
 
@@ -96,6 +97,14 @@ public static class PresenterCueFactory
                 return new("Live control · " + (state.Champion?.ToString() ?? "RacingDriver"), model + "\nPoint out the active code branch and live values.",
                     "South / Enter: throttle, pull or thrust. East / Shift / Down: brake or down-thrust. Left/Right: driver steering. Right shoulder / Page Down / lower-right NEXT: next chapter.",
                     "Ask: ‘What if the input source changes?’ Then open An Adventure Together.");
+            case PresentationSlide.SignalRArchitecture:
+                var step = SignalRWalkthrough.ForStage(state.SignalRStage);
+                var nextStep = state.SignalRStage == SignalRStage.Presenter
+                    ? "Open the audience race."
+                    : "Show: " + SignalRWalkthrough.ForStage(state.SignalRStage + 1).Title + ".";
+                return new($"SignalR · {(int)state.SignalRStage + 1}/4 · {step.Title}", step.TalkingPoints,
+                    "South / Right shoulder / Enter / Page Down / right page: next step. " +
+                    "Left shoulder / East / Page Up / Escape / left page: previous step; from step 1, previous spread.", nextStep);
             case PresentationSlide.AudienceRace:
                 return new($"Audience race · {race.Phase}",
                     "Phones send boost intent. The server owns progress and normalizes boost by team size.\n" +
