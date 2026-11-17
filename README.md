@@ -345,3 +345,5 @@ Notes show the current spread/page, interactive beat, talking points, current co
 `TALK-GUIDE.md` is embedded at build time and supplies speaker prose. `PresenterCueFactory` adds concise cues for interactive beats. A notes-window dispatcher timer reads the existing shared state; there is no second Orbit loop or SignalR connection. Editing the guide requires rebuilding the presenter.
 
 Mac Catalyst startup, automatic opening, live spread synchronization, return focus and close/reopen have been checked locally. Rehearse actual projector placement and full-screen behavior on the conference setup; Windows has not been exercised here.
+
+When the audience server is disconnected, the champion spread explicitly shows **OFFLINE · LOCAL SELECTION**. Move the left stick up/down (or use the arrow keys) to highlight a champion, then press South/Enter to reveal that local choice. A further confirmation continues after the reveal. Left/right selection and tapping a champion card also work. When connected, South runs the live voting sequence instead. A local winner remains selected if the server reconnects during its reveal; reset with East to return to live voting.

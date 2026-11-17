@@ -111,8 +111,8 @@ public sealed class OrbitInputBridge : IDisposable
             var y = e.Value;
             var verticalDirection = y switch
             {
-                < -StickDeadZone => -1,
-                > StickDeadZone => 1,
+                < -StickDeadZone => 1,
+                > StickDeadZone => -1,
                 _ => 0
             };
 

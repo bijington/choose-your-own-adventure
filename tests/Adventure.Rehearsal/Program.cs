@@ -84,6 +84,18 @@ Check(Cue(ChooseYourOwnAdventure.PresentationSlide.AudienceRace,
     raceSnapshot: readyRace with { Phase = ChooseYourOwnAdventure.Live.RacePhase.Finished,
     Winner = ChooseYourOwnAdventure.Champion.SpacePilot }).NextAction.Contains("The Journey Home"),
     "Finished-race notes skipped the epilogue");
+var offlineCue = ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(
+    ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, new ChooseYourOwnAdventure.AdventureState(),
+    tiedVote, readyRace, false);
+Check(offlineCue.Beat == "Local champion selection" && offlineCue.Controls.Contains("Up/Down")
+    && offlineCue.NextAction.Contains("highlighted champion"),
+    "Offline notes showed stale live-vote state instead of vertical selection and local confirmation");
+var localSelection = new ChooseYourOwnAdventure.AdventureState();
+localSelection.HighlightNextChampion();
+localSelection.RevealLocalVote();
+Check(ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(
+    ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, localSelection, readyVote, readyRace, true)
+    .Beat == "Local champion selection", "Reconnecting discarded the local winner's presentation cue");
 var parsedGuide = new ChooseYourOwnAdventure.PresenterNotes.PresenterNotesGuide(
     "## Sample — `TitleScene`\n### Talking points\n- **Keep this point.**\n```csharp\nsecret code\n## Bogus — `OpeningScene`\n```\n## Another section\nDo not include this.");
 Check(parsedGuide.ForScene("TitleScene").Contains("Keep this point.")

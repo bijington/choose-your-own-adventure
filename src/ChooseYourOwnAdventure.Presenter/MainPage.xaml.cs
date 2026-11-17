@@ -251,13 +251,13 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (action == AdventureAction.Left)
+        if (action is AdventureAction.Left or AdventureAction.Up)
         {
             _adventureState.HighlightPreviousChampion();
             return;
         }
 
-        if (action == AdventureAction.Right)
+        if (action is AdventureAction.Right or AdventureAction.Down)
         {
             _adventureState.HighlightNextChampion();
             return;
@@ -268,7 +268,7 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (!_audienceVoteClient.IsConnected)
+        if (_adventureState.LocalVoteWinner is not null || !_audienceVoteClient.IsConnected)
         {
             if (_adventureState.LocalVoteWinner is not { } localWinner)
             {

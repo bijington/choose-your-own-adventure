@@ -51,11 +51,11 @@ public static class PresenterCueFactory
                 return new("After-party not found", "Pause for the joke. Then: ‘Please complete this adventure first.’",
                     "South / Enter / right page: prologue. " + back, "Begin Discovering Orbit.");
             case PresentationSlide.ChooseChampion:
-                var local = !connected;
+                var local = !connected || state.LocalVoteWinner is not null;
                 var phase = state.LocalVoteWinner is not null ? VotePhase.Revealed : vote.Phase;
-                var tie = state.LocalVoteWinner is null && phase == VotePhase.Revealed && vote.RevealedChampion is null;
+                var tie = !local && state.LocalVoteWinner is null && phase == VotePhase.Revealed && vote.RevealedChampion is null;
                 var next = local
-                    ? state.LocalVoteWinner is null ? "Select a right-page card to reveal a local champion." : "After the reveal, continue with the local champion."
+                    ? state.LocalVoteWinner is null ? "Confirm the highlighted champion locally." : "After the reveal, continue with the local champion."
                     : phase switch
                     {
                         VotePhase.Ready => "Open voting.",
@@ -66,7 +66,7 @@ public static class PresenterCueFactory
                 return new(tie ? "A tie — one more round" : local ? "Local champion selection" : $"Audience vote · {phase}",
                     "The winning vote themes the examples. Each participant’s original vote also decides their race team.\n" +
                     (tie ? "Keep all choices visible and invite another round." : "On reveal, the losing cards fade and the winner grows in place."),
-                    "South / Enter / right page: " + next + " East / Shift / Escape: reset. " + back, next);
+                    (local ? "Left stick Up/Down or arrow keys: select. " : string.Empty) + "South / Enter / right page: " + next + " East / Shift / Escape: reset. " + back, next);
             case PresentationSlide.ChosenChampion:
                 return state.ChampionRenderingVisible
                     ? new("Rendering code revealed", "Point to Render(ICanvas, RectF), then the drawing primitives.\nThe champion remains visible: this is the code responsible for drawing it. Scene setup was covered in the prologue.",

@@ -8,6 +8,7 @@ namespace ChooseYourOwnAdventure.Scenes;
 public sealed class OpeningScene : GameScene
 {
     private readonly AdventureState _state;
+    private readonly AudienceVoteClient _audience;
     private readonly LiveVoteState _liveVoteState;
     private readonly LiveAudienceOptions _liveAudienceOptions;
     private readonly QrCodeRenderer _qrCodeRenderer;
@@ -25,11 +26,13 @@ public sealed class OpeningScene : GameScene
 
     public OpeningScene(
         AdventureState state,
+        AudienceVoteClient audience,
         LiveVoteState liveVoteState,
         LiveAudienceOptions liveAudienceOptions,
         QrCodeRenderer qrCodeRenderer)
     {
         _state = state;
+        _audience = audience;
         _liveVoteState = liveVoteState;
         _liveAudienceOptions = liveAudienceOptions;
         _qrCodeRenderer = qrCodeRenderer;
@@ -37,7 +40,8 @@ public sealed class OpeningScene : GameScene
 
     private VoteSnapshot CurrentVotes => _state.LocalVoteWinner is { } local
         ? new VoteSnapshot(_liveAudienceOptions.SessionId, 0, 0, 0, VotePhase.Revealed, local)
-        : _liveVoteState.Snapshot;
+        : _audience.IsConnected ? _liveVoteState.Snapshot
+        : new VoteSnapshot(_liveAudienceOptions.SessionId, 0, 0, 0, VotePhase.Ready, null);
 
     public override void Update(double millisecondsSinceLastUpdate)
     {
@@ -88,7 +92,9 @@ public sealed class OpeningScene : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = PresentationTheme.Ink;
         canvas.FontSize = Math.Clamp(dimensions.Width * .017f, 16f, 25f);
-        canvas.DrawString("Scan the code and choose a champion on your phone.\n\nThe winning choice shapes our adventure.\nYour vote also chooses your team for the audience race.",
+        canvas.DrawString(_audience.IsConnected && _state.LocalVoteWinner is null
+            ? "Scan the code and choose a champion on your phone.\n\nThe winning choice shapes our adventure.\nYour vote also chooses your team for the audience race."
+            : "Choose a champion for our adventure.\n\nMove the left stick up or down to highlight a champion, then press South to confirm.\nYou can also use the arrow keys or tap a champion card.",
             left.X, dimensions.Y + dimensions.Height * .22f, left.Width, dimensions.Height * .25f,
             HorizontalAlignment.Left, VerticalAlignment.Top);
 
@@ -216,7 +222,10 @@ public sealed class OpeningScene : GameScene
         canvas.Alpha = 1f;
     }
 
-    private static string GetVotingSubtitle(VoteSnapshot votes) => votes.Phase switch
+    private string GetVotingSubtitle(VoteSnapshot votes) => _state.LocalVoteWinner is not null
+        ? "Our champion has been chosen locally."
+        : !_audience.IsConnected ? "AUDIENCE OFFLINE — choose a champion locally, or wait for reconnection."
+        : votes.Phase switch
     {
         VotePhase.Ready => "Scan the QR code now. Voting opens when the presenter starts the round.",
         VotePhase.Open => "Voting is OPEN — choose carefully. This decision themes the rest of the session.",
@@ -226,7 +235,10 @@ public sealed class OpeningScene : GameScene
         _ => string.Empty
     };
 
-    private static string GetVotingStatus(VoteSnapshot votes) => votes.Phase switch
+    private string GetVotingStatus(VoteSnapshot votes) => _state.LocalVoteWinner is not null
+        ? "LOCAL CHAMPION"
+        : !_audience.IsConnected ? "OFFLINE · LOCAL SELECTION"
+        : votes.Phase switch
     {
         VotePhase.Ready => "SCAN TO JOIN",
         VotePhase.Open => "● VOTING OPEN",
@@ -236,7 +248,10 @@ public sealed class OpeningScene : GameScene
         _ => "SCAN TO VOTE"
     };
 
-    private static string GetPresenterPrompt(VoteSnapshot votes, double phaseElapsedMilliseconds) => votes.Phase switch
+    private string GetPresenterPrompt(VoteSnapshot votes, double phaseElapsedMilliseconds) =>
+        !_audience.IsConnected && _state.LocalVoteWinner is null
+        ? "STICK UP / DOWN · SELECT   •   SOUTH / ENTER · CONFIRM   •   LB / PGUP · BACK"
+        : votes.Phase switch
     {
         VotePhase.Ready => "SOUTH / ENTER  ·  OPEN VOTING   •   EAST / SHIFT  ·  RESET   •   LB / PGUP / LEFT PAGE  ·  BACK",
         VotePhase.Open => "SOUTH / ENTER  ·  CLOSE VOTING   •   EAST / SHIFT  ·  RESET   •   LB / PGUP / LEFT PAGE  ·  BACK",
