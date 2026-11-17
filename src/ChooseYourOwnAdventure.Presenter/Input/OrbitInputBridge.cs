@@ -13,6 +13,7 @@ public sealed class OrbitInputBridge : IDisposable
 
     private readonly AdventureInputRouter _router;
     private readonly GameControllerManager _gameControllerManager;
+    private Orbit.Input.GameController? _gameController;
     private readonly KeyboardManager _keyboardManager;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
@@ -52,12 +53,8 @@ public sealed class OrbitInputBridge : IDisposable
     {
         try
         {
+            _gameControllerManager.GameControllerConnected += GameControllerManagerOnGameControllerConnected;
             await _gameControllerManager.StartDiscovery();
-
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                await PollControllerAsync(cancellationToken);
-            }
         }
         catch (OperationCanceledException)
         {
@@ -66,6 +63,89 @@ public sealed class OrbitInputBridge : IDisposable
         {
             // Controller support is optional. Keyboard/touch must remain usable
             // even if platform discovery is unavailable or fails.
+        }
+    }
+
+    private void GameControllerManagerOnGameControllerConnected(object? sender, GameControllerConnectedEventArgs e)
+    {
+        ResetControllerEdges();
+        _gameController = e.GameController;
+        
+        e.GameController.ButtonChanged += GameControllerOnButtonChanged;
+        e.GameController.ValueChanged += GameControllerOnValueChanged;
+    }
+
+    private void GameControllerOnValueChanged(object? sender, GameControllerValueChangedEventArgs e)
+    {
+        var gameController = _gameController;
+
+        if (gameController is null)
+        {
+            return;
+        }
+        
+        if (e.ButtonName == gameController.LeftStick.XAxis.Name)
+        {
+            var x = e.Value;
+            var horizontalDirection = x switch
+            {
+                < -StickDeadZone => -1,
+                > StickDeadZone => 1,
+                _ => 0
+            };
+
+            if (horizontalDirection != _horizontalDirection)
+            {
+                SetPressed(AdventureAction.Left, horizontalDirection < 0);
+                SetPressed(AdventureAction.Right, horizontalDirection > 0);
+                _horizontalDirection = horizontalDirection;
+            }
+        }
+
+        if (e.ButtonName == gameController.LeftStick.YAxis.Name)
+        {
+            var y = e.Value;
+            var verticalDirection = y switch
+            {
+                < -StickDeadZone => -1,
+                > StickDeadZone => 1,
+                _ => 0
+            };
+
+            if (verticalDirection != _verticalDirection)
+            {
+                SetPressed(AdventureAction.Up, verticalDirection < 0);
+                SetPressed(AdventureAction.Down, verticalDirection > 0);
+                _verticalDirection = verticalDirection;
+            }
+        }
+    }
+
+    private void GameControllerOnButtonChanged(object? sender, GameControllerButtonChangedEventArgs e)
+    {
+        var gameController = _gameController;
+        if (gameController is null)
+        {
+            return;
+        }
+
+        if (e.ButtonName == gameController.South.Name)
+        {
+            var southPressed = e.IsPressed;
+            if (southPressed != _southWasPressed)
+            {
+                SetPressed(AdventureAction.Primary, southPressed);
+                _southWasPressed = southPressed;
+            }
+        }
+        else if (e.ButtonName == gameController.East.Name)
+        {
+            var eastPressed = e.IsPressed;
+            if (eastPressed != _eastWasPressed)
+            {
+                SetPressed(AdventureAction.Secondary, eastPressed);
+                _eastWasPressed = eastPressed;
+            }
         }
     }
 
@@ -127,80 +207,6 @@ public sealed class OrbitInputBridge : IDisposable
         }
 
         return null;
-    }
-
-    private async Task PollControllerAsync(CancellationToken cancellationToken)
-    {
-        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(16));
-
-        try
-        {
-            while (await timer.WaitForNextTickAsync(cancellationToken))
-            {
-                var controller = _gameControllerManager.GameControllers.FirstOrDefault();
-                if (controller is null)
-                {
-                    ResetControllerEdges();
-                    continue;
-                }
-
-                PollButtons(controller);
-                PollLeftStick(controller);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-        }
-    }
-
-    private void PollButtons(Orbit.Input.GameController controller)
-    {
-        var southPressed = controller.South.Value;
-        if (southPressed != _southWasPressed)
-        {
-            SetPressed(AdventureAction.Primary, southPressed);
-            _southWasPressed = southPressed;
-        }
-
-        var eastPressed = controller.East.Value;
-        if (eastPressed != _eastWasPressed)
-        {
-            SetPressed(AdventureAction.Secondary, eastPressed);
-            _eastWasPressed = eastPressed;
-        }
-    }
-
-    private void PollLeftStick(Orbit.Input.GameController controller)
-    {
-        var x = controller.LeftStick.XAxis.Value;
-        var horizontalDirection = x switch
-        {
-            < -StickDeadZone => -1,
-            > StickDeadZone => 1,
-            _ => 0
-        };
-
-        if (horizontalDirection != _horizontalDirection)
-        {
-            SetPressed(AdventureAction.Left, horizontalDirection < 0);
-            SetPressed(AdventureAction.Right, horizontalDirection > 0);
-            _horizontalDirection = horizontalDirection;
-        }
-
-        var y = controller.LeftStick.YAxis.Value;
-        var verticalDirection = y switch
-        {
-            < -StickDeadZone => -1,
-            > StickDeadZone => 1,
-            _ => 0
-        };
-
-        if (verticalDirection != _verticalDirection)
-        {
-            SetPressed(AdventureAction.Up, verticalDirection < 0);
-            SetPressed(AdventureAction.Down, verticalDirection > 0);
-            _verticalDirection = verticalDirection;
-        }
     }
 
     private void SetPressed(AdventureAction action, bool isPressed)
