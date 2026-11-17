@@ -11,8 +11,8 @@ public static class PresentationTheme
     public static readonly Color Rule = Color.FromArgb("#A97835");
     public static readonly Color AccentRed = Color.FromArgb("#D84A1B");
     public static readonly Color AccentGold = Color.FromArgb("#E4B83E");
-    public static readonly Color DarkPanel = Color.FromArgb("#111827");
-    public static readonly Color DarkPanelBorder = Color.FromArgb("#4B5563");
+    public static readonly Color DarkPanel = Color.FromArgb("#38251C");
+    public static readonly Color DarkPanelBorder = Color.FromArgb("#7A6654");
 
     // Code is styled like an inset printed page rather than a dark IDE panel.
     public static readonly Color CodePanel = Color.FromArgb("#F8EDCF");
@@ -21,6 +21,13 @@ public static class PresentationTheme
     public static readonly Color CodeText = Color.FromArgb("#3B271C");
     public static readonly Color CodeMuted = Color.FromArgb("#866E59");
     public static readonly Color CodeActive = Color.FromArgb("#B63C18");
+    public const float InactiveCodeOpacity = .32f;
+
+    // Courses sit behind the sprite rather than competing with its dark outline.
+    public static readonly Color TrackSurface = Color.FromArgb("#E5D5AF");
+    public static readonly Color TrackEdge = Color.FromArgb("#B49A6F");
+    public static readonly Color TrackGuide = Color.FromArgb("#C9B48A");
+
     public static readonly Color CodeMetric = Color.FromArgb("#9A6816");
 
 

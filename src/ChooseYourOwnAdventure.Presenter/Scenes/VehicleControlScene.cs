@@ -78,27 +78,27 @@ public sealed class VehicleControlScene : GameScene
 
         if (_state.Champion == Champion.Charioteer)
         {
-            canvas.StrokeColor = Color.FromArgb("#92400E");
+            canvas.StrokeColor = PresentationTheme.TrackSurface;
             canvas.StrokeSize = 42;
             canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-            canvas.StrokeColor = Color.FromArgb("#F8D866");
+            canvas.StrokeColor = PresentationTheme.TrackEdge;
             canvas.StrokeSize = 2;
             canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
             return;
         }
 
         // Wider circuit with visible lane boundaries so steering has an obvious effect.
-        canvas.StrokeColor = Color.FromArgb("#334155");
+        canvas.StrokeColor = PresentationTheme.TrackSurface;
         canvas.StrokeSize = 54;
         canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
 
-        canvas.StrokeColor = Color.FromArgb("#CBD5E1");
+        canvas.StrokeColor = PresentationTheme.TrackEdge;
         canvas.StrokeSize = 2;
         canvas.DrawEllipse(track.X - 24, track.Y - 24, track.Width + 48, track.Height + 48);
         canvas.DrawEllipse(track.X + 24, track.Y + 24,
             Math.Max(1, track.Width - 48), Math.Max(1, track.Height - 48));
 
-        canvas.StrokeColor = Color.FromArgb("#64748B");
+        canvas.StrokeColor = PresentationTheme.TrackGuide;
         canvas.StrokeSize = 1;
         canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
     }
@@ -107,13 +107,13 @@ public sealed class VehicleControlScene : GameScene
     {
         var lane = VehicleControlLayout.GetFlightLane(dimensions);
 
-        canvas.FillColor = Color.FromArgb("#0B1026");
+        canvas.FillColor = PresentationTheme.CodePanel;
         canvas.FillRoundedRectangle(lane, 24);
-        canvas.StrokeColor = Color.FromArgb("#312E81");
+        canvas.StrokeColor = PresentationTheme.TrackEdge;
         canvas.StrokeSize = 3;
         canvas.DrawRoundedRectangle(lane, 24);
 
-        canvas.StrokeColor = Color.FromArgb("#6366F1");
+        canvas.StrokeColor = PresentationTheme.TrackGuide;
         canvas.StrokeSize = 2;
         for (var i = 1; i < 5; i++)
         {
@@ -122,7 +122,7 @@ public sealed class VehicleControlScene : GameScene
         }
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = Color.FromArgb("#64748B");
+        canvas.FontColor = PresentationTheme.MutedInk;
         canvas.FontSize = 12;
         canvas.DrawString("ALTITUDE", lane.X, lane.Y - 28, lane.Width, 20,
             HorizontalAlignment.Center, VerticalAlignment.Center);
@@ -163,7 +163,7 @@ public sealed class VehicleControlScene : GameScene
         DrawCodeSection(canvas, panel, ref y, "INPUT",
             vehicle.IsAccelerating || vehicle.IsBraking || vehicle.IsSteering,
         [
-            new("var throttle = input.IsPressed(Primary);", vehicle.IsAccelerating),
+            new("var throttle = input.IsPressed(Confirm);", vehicle.IsAccelerating),
             new("var steer = input.Horizontal;", vehicle.IsSteering)
         ]);
 
@@ -191,8 +191,8 @@ public sealed class VehicleControlScene : GameScene
         var y = panel.Y + 58;
         DrawCodeSection(canvas, panel, ref y, "INPUT", vehicle.IsPulling || vehicle.IsBraking,
         [
-            new("var pull = input.IsPressed(Primary);", vehicle.IsPulling),
-            new("var brake = input.IsPressed(Secondary);", vehicle.IsBraking)
+            new("var pull = input.IsPressed(Confirm);", vehicle.IsPulling),
+            new("var brake = input.IsPressed(Cancel);", vehicle.IsBraking)
         ]);
 
         y += 14;
@@ -218,8 +218,8 @@ public sealed class VehicleControlScene : GameScene
 
         DrawCodeSection(canvas, panel, ref y, "INPUT", vehicle.IsThrusting || vehicle.IsUsingDownThrust,
         [
-            new("var thrust = input.IsPressed(Primary);", vehicle.IsThrusting),
-            new("var down = input.IsPressed(Secondary);", vehicle.IsUsingDownThrust)
+            new("var thrust = input.IsPressed(Confirm);", vehicle.IsThrusting),
+            new("var down = input.IsPressed(Cancel);", vehicle.IsUsingDownThrust)
         ]);
 
         y += 14;
@@ -245,8 +245,10 @@ public sealed class VehicleControlScene : GameScene
     private static void DrawCodeSection(ICanvas canvas, RectF panel, ref float y,
         string title, bool active, IReadOnlyList<CodeLine> lines)
     {
+        canvas.SaveState();
+        canvas.Alpha = active ? 1f : PresentationTheme.InactiveCodeOpacity;
         canvas.Font = CodeFonts.SemiBold;
-        canvas.FontColor = active ? PresentationTheme.CodeActive : PresentationTheme.CodeMuted;
+        canvas.FontColor = active ? PresentationTheme.CodeActive : PresentationTheme.CodeText;
         canvas.FontSize = Math.Clamp(panel.Width * 0.039f, 14f, 20f);
         canvas.DrawString(title, panel.X + 22, y, panel.Width - 44, 24,
             HorizontalAlignment.Left, VerticalAlignment.Center);
@@ -254,15 +256,15 @@ public sealed class VehicleControlScene : GameScene
 
         foreach (var line in lines)
         {
-            canvas.Font = line.IsActive
-                ? CodeFonts.Bold
-                : CodeFonts.Regular;
+            canvas.Alpha = line.IsActive ? 1f : PresentationTheme.InactiveCodeOpacity;
+            canvas.Font = line.IsActive ? CodeFonts.Bold : CodeFonts.Regular;
             canvas.FontColor = line.IsActive ? PresentationTheme.CodeActive : PresentationTheme.CodeText;
             canvas.FontSize = Math.Clamp(panel.Width * 0.031f, 13f, 17f);
             canvas.DrawString(line.Text, panel.X + 30, y, panel.Width - 52, 24,
                 HorizontalAlignment.Left, VerticalAlignment.Center);
             y += 25;
         }
+        canvas.RestoreState();
     }
 
     private static void DrawMetric(ICanvas canvas, RectF panel, string text)
@@ -326,15 +328,15 @@ public sealed class VehicleControlScene : GameScene
     {
         var width = Math.Clamp(dimensions.Width * 0.19f, 190f, 300f);
         var bounds = new RectF(dimensions.Right - width - 44, dimensions.Bottom - 94, width, 34);
-        canvas.FillColor = Color.FromArgb("#172033");
+        canvas.FillColor = PresentationTheme.CodePanelHeader;
         canvas.FillRoundedRectangle(bounds, 12);
-        canvas.StrokeColor = Color.FromArgb("#F8D866");
+        canvas.StrokeColor = PresentationTheme.TrackEdge;
         canvas.StrokeSize = 1.5f;
         canvas.DrawRoundedRectangle(bounds, 12);
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = PresentationTheme.CodeMetric;
         canvas.FontSize = 12;
-        canvas.DrawString("W / STICK UP  ·  WHAT IF THE INPUT SOURCE CHANGES? →", bounds.X + 10, bounds.Y, bounds.Width - 20, bounds.Height,
+        canvas.DrawString("RB / PGDN  ·  NEXT CHAPTER →", bounds.X + 10, bounds.Y, bounds.Width - 20, bounds.Height,
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 

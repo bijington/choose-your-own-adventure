@@ -62,33 +62,12 @@ public sealed class GameLoopScene : GameScene
     {
         var track = LoopLayout.GetTrackBounds(dimensions);
 
-        switch (_state.Champion)
-        {
-            case Champion.Charioteer:
-                canvas.StrokeColor = Color.FromArgb("#D97706");
-                canvas.StrokeSize = 25;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = PresentationTheme.CodePanelBorder;
-                canvas.StrokeSize = 2;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                break;
-            case Champion.SpacePilot:
-                canvas.StrokeColor = Color.FromArgb("#312E81");
-                canvas.StrokeSize = 28;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = Color.FromArgb("#22D3EE");
-                canvas.StrokeSize = 3;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                break;
-            default:
-                canvas.StrokeColor = Color.FromArgb("#475569");
-                canvas.StrokeSize = 28;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                canvas.StrokeColor = Color.FromArgb("#CBD5E1");
-                canvas.StrokeSize = 2;
-                canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-                break;
-        }
+        canvas.StrokeColor = PresentationTheme.TrackSurface;
+        canvas.StrokeSize = _state.Champion == Champion.Charioteer ? 25 : 28;
+        canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
+        canvas.StrokeColor = PresentationTheme.TrackEdge;
+        canvas.StrokeSize = 2;
+        canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
     }
 
     private static void DrawStations(ICanvas canvas, RectF dimensions, LoopStation activeStation)

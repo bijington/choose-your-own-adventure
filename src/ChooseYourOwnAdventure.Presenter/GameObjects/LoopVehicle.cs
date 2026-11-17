@@ -1,4 +1,5 @@
 using ChooseYourOwnAdventure.Input;
+using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
 using Orbit.Engine;
 
@@ -217,6 +218,8 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
         canvas.SaveState();
         canvas.Translate(cx, cy);
         canvas.Rotate(headingDegrees);
+        DrawVehicleFocus(canvas);
+        canvas.Scale(1.25f, 1.25f);
 
         if (IsCharioteer)
         {
@@ -234,18 +237,25 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
     {
         var lane = VehicleControlLayout.GetFlightLane(dimensions);
         var x = lane.X + lane.Width / 2f;
-        var bottom = lane.Bottom - 34f;
-        var top = lane.Y + 34f;
+        var bottom = lane.Bottom - 52f;
+        var top = lane.Y + 52f;
         var y = bottom - (float)_altitude * (bottom - top);
 
         canvas.SaveState();
         canvas.Translate(x, y);
         canvas.Rotate(-90f);
+        DrawVehicleFocus(canvas);
+        canvas.Scale(1.25f, 1.25f);
         DrawShip(canvas, IsThrusting);
         canvas.RestoreState();
     }
 
-
+    private static void DrawVehicleFocus(ICanvas canvas)
+    {
+        // A paper-coloured backing keeps track lines out of the transparent sprite.
+        canvas.FillColor = PresentationTheme.ParchmentLight;
+        canvas.FillEllipse(-54f, -34f, 108f, 68f);
+    }
 }
 
 public static class VehicleControlLayout

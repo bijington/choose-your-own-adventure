@@ -88,11 +88,11 @@ public sealed class AudienceRaceScene : GameScene
     {
         var track = AudienceRaceLayout.GetTrackBounds(dimensions);
 
-        canvas.StrokeColor = Color.FromArgb("#7C5B3A");
+        canvas.StrokeColor = PresentationTheme.TrackSurface;
         canvas.StrokeSize = 112;
         canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
 
-        canvas.StrokeColor = Color.FromArgb("#D0A45E");
+        canvas.StrokeColor = PresentationTheme.TrackEdge;
         canvas.StrokeSize = 2;
         canvas.DrawEllipse(track.X - 26, track.Y - 16, track.Width + 52, track.Height + 32);
         canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);

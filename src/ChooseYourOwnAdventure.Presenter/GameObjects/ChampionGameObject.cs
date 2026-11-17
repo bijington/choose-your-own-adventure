@@ -96,9 +96,9 @@ public sealed class ChampionGameObject : GameObject
 
     private static void DrawPanel(ICanvas canvas, RectF rect)
     {
-        canvas.FillColor = Color.FromArgb("#111827");
+        canvas.FillColor = PresentationTheme.CodePanel;
         canvas.FillRoundedRectangle(rect, 18);
-        canvas.StrokeColor = Color.FromArgb("#334155");
+        canvas.StrokeColor = PresentationTheme.CodePanelBorder;
         canvas.StrokeSize = 2;
         canvas.DrawRoundedRectangle(rect, 18);
     }
@@ -108,7 +108,7 @@ public sealed class ChampionGameObject : GameObject
         if (showLabels)
         {
             canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-            canvas.FontColor = Colors.White;
+            canvas.FontColor = PresentationTheme.Ink;
             canvas.FontSize = Math.Clamp(rect.Width * 0.064f, 18f, 30f);
             canvas.DrawString(
                 GetChampionName(champion),
@@ -129,7 +129,7 @@ public sealed class ChampionGameObject : GameObject
         if (!showLabels) return;
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = Color.FromArgb("#94A3B8");
+        canvas.FontColor = PresentationTheme.MutedInk;
         canvas.FontSize = Math.Clamp(rect.Width * 0.038f, 12f, 18f);
         canvas.DrawString(
             "Rendered by this Orbit GameObject",
