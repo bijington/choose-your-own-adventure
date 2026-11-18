@@ -94,7 +94,8 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (_presentationNavigator.Current is PresentationSlide.ChosenChampion or PresentationSlide.SignalRArchitecture)
+        if (_presentationNavigator.Current is PresentationSlide.ChosenChampion
+            or PresentationSlide.SignalRArchitecture or PresentationSlide.OrbitOverview)
         {
             _inputRouter.Trigger(position.Value.X < GameView.Width / 2d
                 ? AdventureAction.Previous : AdventureAction.Confirm);
@@ -162,6 +163,8 @@ public partial class MainPage : ContentPage
         // Navigation never starts or resets a vote/race. Confirmation owns those commands.
         if (action == AdventureAction.Previous)
         {
+            if (_presentationNavigator.Current == PresentationSlide.OrbitOverview
+                && _adventureState.PreviousOrbitOverviewStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.SignalRArchitecture
                 && _adventureState.PreviousSignalRStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.ChosenChampion
@@ -216,6 +219,17 @@ public partial class MainPage : ContentPage
 
             case PresentationSlide.GameLoop:
                 HandleGameLoop(action);
+                return;
+
+            case PresentationSlide.OrbitOverview:
+                if (action == AdventureAction.Confirm)
+                {
+                    if (!_adventureState.AdvanceOrbitOverviewStage()) _presentationNavigator.Next();
+                }
+                else if (action == AdventureAction.Cancel)
+                {
+                    if (!_adventureState.PreviousOrbitOverviewStage()) _presentationNavigator.Previous();
+                }
                 return;
 
             case PresentationSlide.SignalRArchitecture:

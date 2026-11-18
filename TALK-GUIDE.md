@@ -210,38 +210,22 @@ A/Enter or right-page tap continues; left-page tap goes back.
 
 ### On screen
 
-```text
-.NET MAUI
-   ↓
-MAUI GRAPHICS
-   ↓
-ORBIT
-   ↓
-YOUR GAME
-```
-
-### Key message
-
-> **Orbit is a lightweight game engine built on .NET MAUI Graphics that adds game-oriented concepts while keeping you inside the MAUI ecosystem.**
+The same book spread has four talking points. The right page always shows `.NET MAUI → MAUI GRAPHICS → ORBIT → YOUR GAME`, highlighting one box at a time. The left page explains that building block and ends with one takeaway.
 
 ### Talking points
 
-- It is not Unity/Godot replacement positioning.
-- It is useful when you want game/game-like experiences in a MAUI application.
-- Concepts we will encounter today:
-  - scenes
-  - game objects
-  - update/render loop
-  - input
-- Point out that MAUI Graphics remains underneath the rendering.
+1. **.NET MAUI — Start with a MAUI app.** MAUI supplies the application, windows, pages and controls. The audience game view and the XAML presenter notes share this host. First ask: how could we make a game here?
+2. **MAUI Graphics — Give the world a canvas.** `ICanvas` draws shapes, text and images. We can build games directly with those tools, but still need to organize the world and arrange state updates and drawing. Graphics supplies the drawing tools.
+3. **Orbit — Add structure and a loop.** Scenes organize the world and GameObjects give its parts behaviour. The engine runs Update/Render; MAUI Graphics stays underneath. The separate Orbit.Input package comes later in the controls chapter.
+4. **Your Game — Write the rules.** Our code chooses the characters, state and response to input: steering, momentum or gravity. MAUI hosts it; Graphics draws; Orbit supplies structure and the loop; our code defines the experience.
 
 ### Action
 
-`A / Enter` → next.
+South / Right shoulder / Enter / Page Down / right-page tap advances one building block. Left shoulder / East / Page Up / Escape / left-page tap goes back one step; from step 1 it returns to the prologue. Only after Your Game does the next action open Install & Register Orbit. Re-entering the spread starts again at .NET MAUI. Presenter notes follow each step.
 
 ### Transition
 
-> “The nice part is that consuming Orbit still looks like a normal MAUI application.”
+> “Now let's see how little setup it takes to add Orbit to that MAUI app.”
 
 ---
 

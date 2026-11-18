@@ -99,6 +99,29 @@ walkthroughState.ResetSignalRWalkthrough();
 Check(walkthroughState.SignalRStage == ChooseYourOwnAdventure.SignalRStage.Browser, "Re-entering did not reset the walkthrough");
 Console.WriteLine("PASS: four-stage SignalR walkthrough, forward/back bounds, shoulder navigation and presenter cues.");
 
+// The overview teaches all four building blocks before moving to installation.
+var overviewState = new ChooseYourOwnAdventure.AdventureState();
+Check(!overviewState.PreviousOrbitOverviewStage(), "Orbit overview underflowed its first step");
+foreach (var stage in Enum.GetValues<ChooseYourOwnAdventure.OrbitOverviewStage>())
+{
+    Check(overviewState.OrbitOverviewStage == stage, "Orbit overview skipped a building block");
+    Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+        ChooseYourOwnAdventure.PresentationSlide.OrbitOverview, overviewState, navVote, navRace, false)
+        == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Shoulder navigation skipped the overview");
+    var cue = ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(
+        ChooseYourOwnAdventure.PresentationSlide.OrbitOverview, overviewState, navVote, navRace, false);
+    Check(cue.Beat.Contains($"{(int)stage + 1}/4") && cue.TalkingPoints.Length > 0,
+        "Overview notes did not track the building block");
+    Check(overviewState.AdvanceOrbitOverviewStage() == (stage != ChooseYourOwnAdventure.OrbitOverviewStage.Game),
+        "Orbit overview left early or overflowed its last step");
+}
+for (var i = 0; i < 3; i++) Check(overviewState.PreviousOrbitOverviewStage(), "Could not reverse the overview");
+overviewState.AdvanceOrbitOverviewStage();
+overviewState.ResetOrbitOverview();
+Check(overviewState.OrbitOverviewStage == ChooseYourOwnAdventure.OrbitOverviewStage.Maui,
+    "Re-entering did not reset the Orbit overview");
+Console.WriteLine("PASS: four-stage Orbit overview, navigation bounds and stage-specific presenter notes.");
+
 // Presenter notes must follow interactive beats, not just the scene index.
 var presenterState = new ChooseYourOwnAdventure.AdventureState();
 var readyVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("ORBIT", 0, 0, 0,

@@ -43,6 +43,14 @@ public enum SignalRStage
     Presenter
 }
 
+public enum OrbitOverviewStage
+{
+    Maui,
+    Graphics,
+    Orbit,
+    Game
+}
+
 public sealed class AdventureState
 {
     private static readonly Champion[] Champions =
@@ -58,6 +66,7 @@ public sealed class AdventureState
     public GameLoopStage GameLoopStage { get; private set; } = GameLoopStage.Overview;
     public LoopStation GameLoopStation { get; private set; } = LoopStation.Input;
     public SignalRStage SignalRStage { get; private set; }
+    public OrbitOverviewStage OrbitOverviewStage { get; private set; }
     public float CodeRevealTransitionProgress { get; private set; }
 
     public int Health { get; set; } = 5;
@@ -149,6 +158,22 @@ public sealed class AdventureState
         GameLoopStage = GameLoopStage.FirmwareComparison;
 
     public void ResetSignalRWalkthrough() => SignalRStage = SignalRStage.Browser;
+
+    public void ResetOrbitOverview() => OrbitOverviewStage = OrbitOverviewStage.Maui;
+
+    public bool AdvanceOrbitOverviewStage()
+    {
+        if (OrbitOverviewStage == OrbitOverviewStage.Game) return false;
+        OrbitOverviewStage++;
+        return true;
+    }
+
+    public bool PreviousOrbitOverviewStage()
+    {
+        if (OrbitOverviewStage == OrbitOverviewStage.Maui) return false;
+        OrbitOverviewStage--;
+        return true;
+    }
 
     public bool AdvanceSignalRStage()
     {

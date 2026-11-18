@@ -9,6 +9,7 @@
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/AdventureAction.cs" Link="Presenter/AdventureAction.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/PresentationNavigation.cs" Link="Presenter/PresentationNavigation.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/SignalRWalkthrough.cs" Link="Presenter/SignalRWalkthrough.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/OrbitOverviewWalkthrough.cs" Link="Presenter/OrbitOverviewWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/LiveAudienceOptions.cs" Link="Presenter/LiveAudienceOptions.cs" />
     <EmbeddedResource Include="../../src/ChooseYourOwnAdventure.Presenter/appsettings.json" LogicalName="Rehearsal.PresenterSettings.json" />
     <ProjectReference Include="../../src/Adventure.Web/Adventure.Web.csproj" />

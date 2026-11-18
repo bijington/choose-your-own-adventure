@@ -40,6 +40,15 @@ public static class PresenterCueFactory
         const string back = "Left shoulder / Page Up / left page: back.";
         switch (slide)
         {
+            case PresentationSlide.OrbitOverview:
+                var overview = OrbitOverviewWalkthrough.ForStage(state.OrbitOverviewStage);
+                var overviewNext = state.OrbitOverviewStage == OrbitOverviewStage.Game
+                    ? "Show how to install and register Orbit."
+                    : "Explain: " + OrbitOverviewWalkthrough.ForStage(state.OrbitOverviewStage + 1).Component + ".";
+                return new($"Orbit overview · {(int)state.OrbitOverviewStage + 1}/4 · {overview.Component}",
+                    overview.TalkingPoints,
+                    "South / Right shoulder / Enter / Page Down / right page: next building block. " +
+                    "Left shoulder / East / Page Up / Escape / left page: previous; from step 1, previous spread.", overviewNext);
             case PresentationSlide.Title:
                 return new("Cover · opening story", string.Empty,
                     "South / Enter or tap anywhere on the cover: begin.", "Open the first decision.");

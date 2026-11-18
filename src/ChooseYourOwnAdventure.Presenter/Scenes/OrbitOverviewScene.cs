@@ -5,41 +5,59 @@ namespace ChooseYourOwnAdventure.Scenes;
 
 public sealed class OrbitOverviewScene : PresentationSceneBase
 {
+    private readonly AdventureState _state;
+
+    public OrbitOverviewScene(AdventureState state) => _state = state;
+
     public override void Render(ICanvas canvas, RectF dimensions)
     {
+        var stage = _state.OrbitOverviewStage;
+        var step = OrbitOverviewWalkthrough.ForStage(stage);
         DrawShell(canvas, dimensions);
         DrawTitle(canvas, dimensions, "WHAT IS ORBIT?",
-            "A lightweight game engine built on .NET MAUI Graphics — game-oriented concepts without leaving MAUI.");
+            $"{(int)stage + 1} / 4 · {step.Component}\nHow do we build a game inside a MAUI app?");
 
         var left = BookLayout.LeftPage(dimensions);
         var right = BookLayout.RightPage(dimensions);
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Accent;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .023f, 22f, 34f);
+        canvas.DrawString(step.Title, left.X, left.Y, left.Width, left.Height * .16f,
+            HorizontalAlignment.Left, VerticalAlignment.Top);
+
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * .019f, 17f, 28f);
-        canvas.DrawString("A game engine inside a MAUI app.\n\nScenes hold the world.\nGameObjects bring it to life.\n\nUpdate changes state.\nRender makes it visible.",
-            left.X, left.Y + 20, left.Width, left.Height,
-            HorizontalAlignment.Left, VerticalAlignment.Top);
-        var w = Math.Min(340f, right.Width * .85f);
-        var h = 76f;
-        var x = right.X + (right.Width - w) / 2f;
-        var y = right.Y;
-        var labels = new[] { ".NET MAUI", "MAUI GRAPHICS", "ORBIT", "YOUR GAME" };
+        canvas.FontSize = Math.Clamp(dimensions.Width * .018f, 17f, 27f);
+        canvas.DrawString(step.Explanation, left.X, left.Y + left.Height * .20f,
+            left.Width, left.Height * .60f, HorizontalAlignment.Left, VerticalAlignment.Top);
 
-        for (var i = 0; i < labels.Length; i++)
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Accent;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .016f, 16f, 24f);
+        canvas.DrawString(step.Takeaway, left.X, left.Y + left.Height * .85f,
+            left.Width, left.Height * .15f, HorizontalAlignment.Left, VerticalAlignment.Center);
+
+        var stages = Enum.GetValues<OrbitOverviewStage>();
+        var height = dimensions.Height * .095f;
+        var gap = dimensions.Height * .035f;
+        for (var i = 0; i < stages.Length; i++)
         {
-            var rect = new RectF(x, y + i * 108f, w, h);
-            DrawPill(canvas, rect, labels[i], i == 2);
-            if (i < labels.Length - 1)
-            {
-                canvas.StrokeColor = Muted;
-                canvas.StrokeSize = 2;
-                canvas.DrawLine(x + w / 2f, rect.Bottom + 7, x + w / 2f, rect.Bottom + 30);
-                canvas.DrawLine(x + w / 2f - 7, rect.Bottom + 23, x + w / 2f, rect.Bottom + 30);
-                canvas.DrawLine(x + w / 2f + 7, rect.Bottom + 23, x + w / 2f, rect.Bottom + 30);
-            }
+            var rect = new RectF(right.X, right.Y + i * (height + gap), right.Width, height);
+            DrawPill(canvas, rect, $"{i + 1}   {OrbitOverviewWalkthrough.ForStage(stages[i]).Component}", stages[i] == stage);
+            if (i == stages.Length - 1) continue;
+            canvas.StrokeColor = i == (int)stage ? Accent : Muted;
+            canvas.StrokeSize = 2;
+            var x = rect.Center.X;
+            var top = rect.Bottom + gap * .18f;
+            var bottom = rect.Bottom + gap * .82f;
+            canvas.DrawLine(x, top, x, bottom);
+            canvas.DrawLine(x - 5, bottom - 5, x, bottom);
+            canvas.DrawLine(x + 5, bottom - 5, x, bottom);
         }
 
-        DrawPrompt(canvas, dimensions);
+        DrawPrompt(canvas, dimensions, stage == OrbitOverviewStage.Game
+            ? "SOUTH / RB / ENTER / PGDN · ADD ORBIT TO THE APP"
+            : "SOUTH / RB / ENTER / PGDN · NEXT BUILDING BLOCK");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.OrbitOverview));
     }
 }

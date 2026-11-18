@@ -390,3 +390,5 @@ swift -module-cache-path /tmp/champion-swift-cache tools/split-champion-sprites.
 The extraction trims transparent margins and removes faint alpha haze around the
 outlines, leaving a small transparent gutter. The PNGs retain the original artwork
 resolution; they are pixel-art illustrations rather than native 32×32 sprite grids.
+
+The What Is Orbit spread now explains four building blocks in place: .NET MAUI (app host), MAUI Graphics (drawing tools), Orbit (scenes, objects and game loop), and Your Game (state, input responses and rules). Each step highlights its right-page box and shows a focused explanation on the left. Navigation and presenter notes follow the same staged behavior as the SignalR walkthrough; installation follows the fourth step. Printed page numbers stay unchanged.
