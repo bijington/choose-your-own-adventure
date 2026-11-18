@@ -68,12 +68,23 @@ The MAUI app intentionally starts even if SignalR is unavailable and retries the
 
 ## Configure the audience URL
 
-Edit `Live/LiveAudienceOptions.cs`:
+The presenter uses [Shiny.Extensions.Configuration](https://shinylib.net/configuration/json/) with a `LiveAudience` configuration section. Edit `src/ChooseYourOwnAdventure.Presenter/appsettings.Development.json` for local Debug builds:
 
-```csharp
-public string BaseUrl { get; set; } = "https://YOUR-APP.azurewebsites.net";
-public string SessionId { get; set; } = "ORBIT";
+```json
+{
+  "LiveAudience": {
+    "BaseUrl": "https://YOUR-APP.azurewebsites.net",
+    "SessionId": "ORBIT",
+    "PresenterKey": "YOUR-PRESENTER-KEY"
+  }
+}
 ```
+
+The development file is ignored by Git. A fresh checkout can copy `appsettings.Development.example.json` in the same directory to `appsettings.Development.json`. The committed `appsettings.json` supplies local demo defaults; development values override them in Debug builds. Rebuild/restart after editing. Release builds neither package nor read the development file; supply release settings through `appsettings.json` when preparing a presenter build.
+
+The three settings configure both the SignalR connection and the generated join URL/QR code. `PresenterKey` must match the backend's `Presenter:Key`. Bundled JSON is readable inside the app: Git exclusion keeps it out of the repository, but does not encrypt it.
+
+Shiny's native bundle provider loads settings on Mac Catalyst, iOS and Android. Apple settings are `BundleResource` files; Android uses assets. Windows copies settings beside the app and uses the standard JSON provider.
 
 The presenter will then generate a QR code for:
 
@@ -139,7 +150,7 @@ Local development defaults to `orbit-local-presenter` on both apps. For Azure, s
 Presenter__Key=<your-secret-presenter-key>
 ```
 
-and set the same value in `LiveAudienceOptions.PresenterKey` for the presenter build. Do not expose the presenter key in the audience web page.
+and set the same value in `LiveAudience:PresenterKey` in the presenter configuration. Do not expose the presenter key in the audience web page.
 
 ## Voting show moment
 

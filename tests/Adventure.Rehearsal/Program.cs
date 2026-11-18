@@ -1,6 +1,7 @@
 using Adventure.Web.Models;
 using Adventure.Web.Services;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Configuration;
 
 static void Check(bool condition, string message)
 {
@@ -34,6 +35,24 @@ if (args.Length >= 2 && args[0] == "--demo")
 foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
 Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 23).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
+
+// Local development overrides must reach both the SignalR client and the QR code.
+using (var defaultSettings = typeof(ChooseYourOwnAdventure.Live.LiveAudienceOptions).Assembly
+    .GetManifestResourceStream("Rehearsal.PresenterSettings.json")!)
+using (var developmentSettings = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("""
+{"LiveAudience":{"BaseUrl":"https://audience.example.test/","PresenterKey":"test-only-key"}}
+""")))
+{
+    using var configuration = new ConfigurationManager();
+    configuration.AddJsonStream(defaultSettings).AddJsonStream(developmentSettings);
+    var options = ChooseYourOwnAdventure.Live.LiveAudienceOptions.FromConfiguration(configuration);
+    Check(options.BaseUrl == "https://audience.example.test/" && options.PresenterKey == "test-only-key",
+        "Development connection settings did not override defaults");
+    Check(options.SessionId == "ORBIT", "Partial development override lost the default session");
+    Check(options.HubUrl == "https://audience.example.test/adventureHub"
+        && options.JoinUrl == "https://audience.example.test/join/ORBIT", "Hub and QR URLs did not use configuration");
+}
+Console.WriteLine("PASS: presenter JSON overrides configure the hub, QR URL and presenter key.");
 
 // Navigation must not accidentally issue confirmation commands to live interactions.
 var navState = new ChooseYourOwnAdventure.AdventureState();

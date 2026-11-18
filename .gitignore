@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Presenter-local connection details and secrets (Debug builds only)
+/src/ChooseYourOwnAdventure.Presenter/appsettings.Development.json
