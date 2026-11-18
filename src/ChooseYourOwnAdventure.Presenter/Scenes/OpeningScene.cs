@@ -20,6 +20,8 @@ public sealed class OpeningScene : GameScene
     private float _displayedDriverVotes;
     private float _displayedCharioteerVotes;
     private float _displayedSpacePilotVotes;
+    private Champion? _celebratingChampion;
+    private Sprite? _winnerCelebration;
 
     private const double LockInDurationMilliseconds = 3000d;
     private const double RevealSuspenseMilliseconds = 1100d;
@@ -63,6 +65,23 @@ public sealed class OpeningScene : GameScene
         _displayedDriverVotes += (votes.RacingDriver - _displayedDriverVotes) * smoothing;
         _displayedCharioteerVotes += (votes.Charioteer - _displayedCharioteerVotes) * smoothing;
         _displayedSpacePilotVotes += (votes.SpacePilot - _displayedSpacePilotVotes) * smoothing;
+
+        // Start on frame zero when the winner becomes visible, after the suspense.
+        // Clearing this on reset/tie also makes a subsequent reveal start fresh.
+        var winner = votes.Phase == VotePhase.Revealed &&
+            _votePhaseElapsedMilliseconds > RevealSuspenseMilliseconds
+            ? votes.RevealedChampion : null;
+        if (winner != _celebratingChampion)
+        {
+            _winnerCelebration?.Stop();
+            _celebratingChampion = winner;
+            _winnerCelebration = winner is { } champion
+                ? ChampionSprites.CreateCelebration(champion) : null;
+        }
+        else
+        {
+            _winnerCelebration?.Update(millisecondsSinceLastUpdate);
+        }
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
@@ -187,22 +206,62 @@ public sealed class OpeningScene : GameScene
         canvas.DrawRoundedRectangle(rect, 18);
 
         var spriteWidth = rect.Width * .18f;
-        ChampionSprites.DrawCharacter(canvas, champion,
-            new RectF(rect.X + 16f, rect.Y + rect.Height * .06f, spriteWidth, rect.Height * .55f));
+        var artwork = new RectF(rect.X + 16f, rect.Y + rect.Height * .06f, spriteWidth, rect.Height * .55f);
         var textX = rect.X + spriteWidth + 28f;
         var textWidth = rect.Right - textX - 16f;
+        var titleHeight = rect.Height * .29f;
+        var descriptionY = rect.Y + rect.Height * .36f;
+        var descriptionHeight = rect.Height * .25f;
+        if (isWinner)
+        {
+            var t = EaseInOut(revealProgress);
+            var target = new RectF(rect.X + rect.Width * .20f, rect.Y + rect.Height * .30f,
+                rect.Width * .60f, rect.Height * .34f);
+            artwork = new RectF(artwork.X + (target.X - artwork.X) * t,
+                artwork.Y + (target.Y - artwork.Y) * t,
+                artwork.Width + (target.Width - artwork.Width) * t,
+                artwork.Height + (target.Height - artwork.Height) * t);
+            textX += (rect.X + 20f - textX) * t;
+            textWidth = rect.Right - textX - 20f;
+            // Shrink the heading's layout box as well as moving the description:
+            // vertically centering text in the old tall box made the two overlap.
+            titleHeight -= rect.Height * .17f * t;
+            descriptionY -= rect.Height * .16f * t;
+            descriptionHeight -= rect.Height * .175f * t;
+        }
+
+        if (isWinner && _celebratingChampion == champion && _winnerCelebration is { } celebration)
+        {
+            // Orbit renders into Sprite.Bounds rather than the Render dimensions.
+            // All celebration frames are 384 x 512; keep that fixed canvas ratio.
+            var height = Math.Min(artwork.Height, artwork.Width * 512f / 384f);
+            var width = height * 384f / 512f;
+            celebration.Bounds = new RectF(artwork.X + (artwork.Width - width) / 2f,
+                artwork.Y + (artwork.Height - height) / 2f, width, height);
+            canvas.SaveState();
+            try
+            {
+                canvas.Antialias = false;
+                celebration.Render(canvas, rect);
+            }
+            finally { canvas.RestoreState(); }
+        }
+        else
+        {
+            ChampionSprites.DrawCharacter(canvas, champion, artwork);
+        }
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = isWinner ? PresentationTheme.AccentRed : PresentationTheme.Ink;
         canvas.FontSize = Math.Clamp(Math.Min(rect.Width * (isWinner ? .065f : .044f), rect.Height * .13f), 16f, isWinner ? 38f : 26f);
         canvas.DrawString(isWinner ? $"★ {title}" : title, textX, rect.Y + rect.Height * .06f,
-            textWidth, rect.Height * .29f, HorizontalAlignment.Left, VerticalAlignment.Center);
+            textWidth, titleHeight, HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = PresentationTheme.MutedInk;
         canvas.FontSize = Math.Clamp(Math.Min(rect.Width * .031f, rect.Height * .10f), 12f, 18f);
-        canvas.DrawString($"{line1} {line2}", textX, rect.Y + rect.Height * .36f,
-            textWidth, rect.Height * .25f, HorizontalAlignment.Left, VerticalAlignment.Center);
+        canvas.DrawString($"{line1} {line2}", textX, descriptionY,
+            textWidth, descriptionHeight, HorizontalAlignment.Left, VerticalAlignment.Center);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = voteCount > 0 ? PresentationTheme.AccentRed : PresentationTheme.MutedInk;

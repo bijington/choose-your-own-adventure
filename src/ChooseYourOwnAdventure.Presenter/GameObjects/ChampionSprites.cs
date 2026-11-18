@@ -39,6 +39,13 @@ internal static class ChampionSprites
     public static void DrawCharacter(ICanvas canvas, Champion champion, RectF bounds) =>
         DrawFit(canvas, Get(champion, "character"), bounds);
 
+    // Each scene gets its own playback state; decoded frame images remain shared.
+    public static Orbit.Engine.Sprite CreateCelebration(Champion champion) => new(
+        Enumerable.Range(0, 8).Select(frame => Get(champion, $"celebrate_{frame:00}")).ToArray(),
+        imageDisplayDuration: 125d,
+        autoStart: true,
+        playMode: Orbit.Engine.Sprite.PlayModeType.Loop);
+
     public static void DrawSideVehicle(ICanvas canvas, Champion champion, RectF bounds) =>
         DrawFit(canvas, Get(champion, "side"), bounds);
 
