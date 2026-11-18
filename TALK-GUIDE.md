@@ -736,47 +736,21 @@ Celebrate the audience before switching back into recap mode.
 
 ### On screen
 
-Three summary cards:
+The closing spread thanks the audience and names **Shaun Lawrence**. The left page recaps three steps: start with MAUI, bring it to life with Orbit and input, and let the room play with SignalR. The right page offers the blog post and resources, with a QR code and the URL beneath it.
 
-**ORBIT**
+Configure `TalkSummary:ResourcesUrl` before the talk. An empty or invalid URL shows a “Resources coming soon” panel rather than a QR code. This link is separate from the live audience join URL. No credentials belong in the resources URL.
 
-- Scenes
-- GameObjects
-- Update + Render
+### Talking points
 
-**ORBIT.INPUT**
+- “We started with a normal MAUI application and a canvas.”
+- “Orbit gave us scenes, game objects and the Update/Render loop. Input let us control that world.”
+- “SignalR let the entire room become the input source.”
+- **“The input source changed. The game loop stayed the same.”**
+- When the blog URL is configured, invite the audience to scan the code for the post, code and further resources. Leave this page visible while taking questions.
 
-- Controller
-- Keyboard
-- Player intent
+### Transition
 
-**SIGNALR**
-
-- Audience input
-- Shared state
-- Real-time multiplayer
-
-### Recap script
-
-> “We started with a normal .NET MAUI application.”
-
-> “Orbit gave us scenes, game objects, and a game loop.”
-
-> “Orbit.Input let us control that world locally.”
-
-> “Then SignalR let us replace one local input source with an entire room.”
-
-Repeat:
-
-> **“The source of the input changed; the game loop didn't.”**
-
-Then:
-
-> “The biggest takeaway isn't that every MAUI app needs to become a video game — although obviously it should. It is that games use techniques like immediate feedback, continuous state, animation, and shared experiences to make software feel alive.”
-
-Suggested final line:
-
-> **“Thank you for choosing your own adventure.”**
+> “I'm Shaun Lawrence. Thank you for choosing your own adventure.”
 
 ---
 

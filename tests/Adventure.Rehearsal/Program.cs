@@ -54,6 +54,24 @@ using (var developmentSettings = new MemoryStream(System.Text.Encoding.UTF8.GetB
 }
 Console.WriteLine("PASS: presenter JSON overrides configure the hub, QR URL and presenter key.");
 
+// An unconfigured or invalid resources link must never become a misleading QR code.
+using (var summaryConfig = new ConfigurationManager())
+{
+    var summary = ChooseYourOwnAdventure.Presentation.TalkSummaryOptions.FromConfiguration(summaryConfig);
+    Check(summary.SpeakerName == "Shaun Lawrence" && summary.ResourcesUri is null,
+        "Unconfigured summary did not use the speaker name and empty-link state");
+    foreach (var invalid in new[] { "", "not a URL", "javascript:alert(1)", "ftp://example.test/resources" })
+    {
+        summary.ResourcesUrl = invalid;
+        Check(summary.ResourcesUri is null, "Invalid resources link would create a QR code");
+    }
+    summaryConfig["TalkSummary:ResourcesUrl"] = "https://example.test/talk-resources";
+    summary = ChooseYourOwnAdventure.Presentation.TalkSummaryOptions.FromConfiguration(summaryConfig);
+    Check(summary.ResourcesUri?.AbsoluteUri == "https://example.test/talk-resources",
+        "Configured blog URL did not reach the closing summary");
+}
+Console.WriteLine("PASS: summary configuration, speaker name, valid resources URL and empty/invalid-link fallback.");
+
 // Navigation must not accidentally issue confirmation commands to live interactions.
 var navState = new ChooseYourOwnAdventure.AdventureState();
 var navVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("ORBIT", 0, 0, 0,

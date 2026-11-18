@@ -120,6 +120,10 @@ public static class PresenterCueFactory
                     (race.Phase == RacePhase.Finished ? "Celebrate the winner before turning to The Journey Home." : "Remind everyone that they race for their original champion. Keep the QR code available for reconnects."),
                     "South / Enter: start race, or continue after the finish. East / Shift / Escape: reset race.",
                     race.Phase == RacePhase.Finished ? "Open The Journey Home, then the podium." : "Start the race, then encourage the audience to boost.");
+            case PresentationSlide.Recap:
+                return new("Closing summary · resources", string.Empty,
+                    "Leave this final spread visible for questions and the resources link. " + back,
+                    "Thank the audience and invite questions.");
             default:
                 return new("Main spread", string.Empty, "Right shoulder / Page Down / South / Enter / right page: continue. " + back,
                     "Turn the page when ready.");

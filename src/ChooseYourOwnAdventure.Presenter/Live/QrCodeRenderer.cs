@@ -7,10 +7,14 @@ public sealed class QrCodeRenderer : IDisposable
 {
     private readonly QRCodeData _data;
 
-    public QrCodeRenderer(LiveAudienceOptions options)
+    public QrCodeRenderer(LiveAudienceOptions options) : this(options.JoinUrl) { }
+
+    public static QrCodeRenderer ForUrl(string url) => new(url);
+
+    private QrCodeRenderer(string url)
     {
         using var generator = new QRCodeGenerator();
-        _data = generator.CreateQrCode(options.JoinUrl, QRCodeGenerator.ECCLevel.Q);
+        _data = generator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
     }
 
     public void Draw(ICanvas canvas, RectF bounds)

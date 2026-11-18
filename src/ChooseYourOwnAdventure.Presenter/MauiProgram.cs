@@ -47,6 +47,7 @@ public static class MauiProgram
         builder.Services.AddSingleton(KeyboardManager.Current);
         builder.Services.AddSingleton<OrbitInputBridge>();
         builder.Services.AddSingleton(LiveAudienceOptions.FromConfiguration(builder.Configuration));
+        builder.Services.AddSingleton(TalkSummaryOptions.FromConfiguration(builder.Configuration));
         builder.Services.AddSingleton<LiveVoteState>();
         builder.Services.AddSingleton<LiveRaceState>();
         builder.Services.AddSingleton<AudienceVoteClient>();

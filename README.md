@@ -392,3 +392,5 @@ outlines, leaving a small transparent gutter. The PNGs retain the original artwo
 resolution; they are pixel-art illustrations rather than native 32×32 sprite grids.
 
 The What Is Orbit spread now explains four building blocks in place: .NET MAUI (app host), MAUI Graphics (drawing tools), Orbit (scenes, objects and game loop), and Your Game (state, input responses and rules). Each step highlights its right-page box and shows a focused explanation on the left. Navigation and presenter notes follow the same staged behavior as the SignalR walkthrough; installation follows the fourth step. Printed page numbers stay unchanged.
+
+The final summary names Shaun Lawrence, recaps MAUI/Graphics, Orbit/input and SignalR, and offers a separate resources QR code. Set `TalkSummary:ResourcesUrl` to the blog post URL in the presenter configuration (`appsettings.Development.json` for Debug). `TalkSummary:SpeakerName` defaults to Shaun Lawrence. Leave the URL empty until the post is ready: the page shows “Resources coming soon” and no QR code. Only absolute HTTP/HTTPS URLs generate a code. The audience join QR code continues to use `LiveAudience:BaseUrl`.

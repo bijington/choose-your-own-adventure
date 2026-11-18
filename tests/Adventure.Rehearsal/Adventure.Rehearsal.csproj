@@ -12,6 +12,7 @@
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/OrbitOverviewWalkthrough.cs" Link="Presenter/OrbitOverviewWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/LiveAudienceOptions.cs" Link="Presenter/LiveAudienceOptions.cs" />
     <EmbeddedResource Include="../../src/ChooseYourOwnAdventure.Presenter/appsettings.json" LogicalName="Rehearsal.PresenterSettings.json" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/TalkSummaryOptions.cs" Link="Presenter/TalkSummaryOptions.cs" />
     <ProjectReference Include="../../src/Adventure.Web/Adventure.Web.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/PresenterNotes/PresenterNotesGuide.cs" Link="Presenter/PresenterNotesGuide.cs" />
