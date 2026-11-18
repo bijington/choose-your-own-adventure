@@ -31,13 +31,18 @@ public partial class MainPage : ContentPage
         AudienceVoteClient audienceVoteClient,
         LiveVoteState liveVoteState,
         LiveRaceState liveRaceState,
-        PresenterNotesWindow notes)
+        PresenterNotesWindow notes,
+        IReadOnlyList<PresentationSlideDefinition> slides)
     {
         InitializeComponent();
         _notes = notes;
 #if MACCATALYST || __MACCATALYST__ || WINDOWS
         var presenterMenu = new MenuBarItem { Text = "Presenter" };
         presenterMenu.Add(new MenuFlyoutItem { Text = "Show Presenter Notes", Command = new Command(_notes.Show) });
+        presenterMenu.Add(PresenterMenuItems.CreateSlideNavigation(slides, slide =>
+        {
+            if (_hasStarted) presentationNavigator.GoTo(slide);
+        }));
         MenuBarItems.Add(presenterMenu);
 #endif
         _presentationNavigator = presentationNavigator;

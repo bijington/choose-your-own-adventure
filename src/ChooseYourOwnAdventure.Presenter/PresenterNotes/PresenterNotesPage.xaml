@@ -24,7 +24,7 @@
     </ContentPage.Resources>
 
     <ContentPage.MenuBarItems>
-        <MenuBarItem Text="Presenter">
+        <MenuBarItem x:Name="PresenterMenu" Text="Presenter">
             <MenuFlyoutItem Text="Return to Presentation" Clicked="OnReturnToPresentation" />
         </MenuBarItem>
     </ContentPage.MenuBarItems>

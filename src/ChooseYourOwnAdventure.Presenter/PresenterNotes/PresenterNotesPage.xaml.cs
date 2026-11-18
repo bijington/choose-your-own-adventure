@@ -25,6 +25,12 @@ public sealed partial class PresenterNotesPage : ContentPage
         _navigator = navigator; _state = state; _vote = vote; _race = race;
         _audience = audience; _windows = windows; _guide = guide; _slides = slides;
         InitializeComponent();
+        PresenterMenu.Add(PresenterMenuItems.CreateSlideNavigation(slides, slide =>
+        {
+            if (_navigator.IsTurning) return;
+            if (_navigator.GoTo(slide) || _navigator.Current == slide)
+                _windows.FocusPresentation();
+        }));
         _timer = Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(250);
         _timer.Tick += (_, _) => RefreshNotes();
