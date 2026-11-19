@@ -1,257 +1,112 @@
 using ChooseYourOwnAdventure.GameObjects;
 using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
-using Orbit.Engine;
 
 namespace ChooseYourOwnAdventure.Scenes;
 
-public sealed class GameLoopScene : GameScene
+public sealed class GameLoopScene : PresentationSceneBase
 {
     private readonly AdventureState _state;
 
     public GameLoopScene(AdventureState state)
     {
         _state = state;
-        _state.CurrentLocation = GetLocationName(state.Champion);
         Add(new LoopChampionMarker(state));
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
     {
-        DrawBackground(canvas, dimensions);
-        DrawHeading(canvas, dimensions);
-        DrawTrack(canvas, dimensions);
-        DrawStations(canvas, dimensions, _state.GameLoopStation);
-
+        DrawShell(canvas, dimensions);
         if (_state.GameLoopStage == GameLoopStage.FirmwareComparison)
         {
-            DrawFirmwareComparison(canvas, dimensions);
+            DrawTitle(canvas, dimensions, "A FAMILIAR RHYTHM",
+                "Different world. The same read → update → output → repeat shape.");
+            var left = BookLayout.LeftPage(dimensions);
+            var right = BookLayout.RightPage(dimensions);
+            DrawCodeCard(canvas, new RectF(left.X, left.Y, left.Width, left.Height * .86f),
+                "FIRMWARE SUPERLOOP", "while (true)\n{\n    ReadInputs();\n    UpdateState();\n    WriteOutputs();\n    Delay();\n}");
+            DrawCodeCard(canvas, new RectF(right.X, right.Y, right.Width, right.Height * .86f),
+                "GAME LOOP · CONCEPTUALLY", "while (running)\n{\n    Input();\n    Update();\n    Render();\n    Wait();\n}");
+            DrawText(canvas, "Orbit runs the loop. Our GameObjects supply Update and Render.",
+                new RectF(left.X, dimensions.Height * .79f + dimensions.Y, left.Width, dimensions.Height * .08f), 16, true);
         }
         else
         {
-            DrawOverview(canvas, dimensions, _state.GameLoopStation);
+            DrawTitle(canvas, dimensions, "A FRAME IN THE LIFE\nOF OUR CHAMPION",
+                "We can draw our champion. How do we keep their world alive?");
+            DrawStory(canvas, dimensions);
+            DrawLoop(canvas, dimensions);
+            base.Render(canvas, dimensions);
         }
-
-        base.Render(canvas, dimensions);
-        DrawPrompt(canvas, dimensions);
-        PresentationTheme.DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.GameLoop, _state.Champion));
+        DrawPromptAndNext(canvas, dimensions);
+        DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.GameLoop, _state.Champion));
     }
 
-    private static void DrawBackground(ICanvas canvas, RectF dimensions)
+    private void DrawStory(ICanvas canvas, RectF dimensions)
     {
-        PresentationTheme.DrawParchment(canvas, dimensions);
+        var left = BookLayout.LeftPage(dimensions);
+        var beat = ChampionLoopStory.For(_state.Champion, _state.GameLoopStation);
+        DrawText(canvas, $"{(int)_state.GameLoopStation + 1} / 4 · {_state.GameLoopStation.ToString().ToUpperInvariant()}",
+            new RectF(left.X, left.Y, left.Width, dimensions.Height * .055f), 21, true);
+        DrawText(canvas, $"“{beat.Thought}”", new RectF(left.X, dimensions.Y + dimensions.Height * .33f,
+            left.Width, dimensions.Height * .15f), 28, true);
+        DrawText(canvas, beat.Explanation, new RectF(left.X, dimensions.Y + dimensions.Height * .51f,
+            left.Width, dimensions.Height * .23f), 21);
+        DrawText(canvas, beat.Takeaway, new RectF(left.X, dimensions.Y + dimensions.Height * .78f,
+            left.Width, dimensions.Height * .06f), 21, true);
     }
 
-    private void DrawHeading(ICanvas canvas, RectF dimensions)
-    {
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.Ink;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.031f, 24f, 46f);
-        canvas.DrawString(GetTitle(), dimensions.X + 40, dimensions.Y + dimensions.Height * 0.05f,
-            Math.Max(0, dimensions.Width - 80), 52, HorizontalAlignment.Center, VerticalAlignment.Center);
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = PresentationTheme.MutedInk;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.014f, 13f, 21f);
-        canvas.DrawString("Walk one iteration of the loop — one button press at a time.", dimensions.X + 40,
-            dimensions.Y + dimensions.Height * 0.11f, Math.Max(0, dimensions.Width - 80), 36,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-    }
-
-    private void DrawTrack(ICanvas canvas, RectF dimensions)
+    private void DrawLoop(ICanvas canvas, RectF dimensions)
     {
         var track = LoopLayout.GetTrackBounds(dimensions);
-
         canvas.StrokeColor = PresentationTheme.TrackSurface;
-        canvas.StrokeSize = _state.Champion == Champion.Charioteer ? 25 : 28;
-        canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
+        canvas.StrokeSize = 28;
+        canvas.DrawEllipse(track);
         canvas.StrokeColor = PresentationTheme.TrackEdge;
         canvas.StrokeSize = 2;
-        canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
-    }
-
-    private static void DrawStations(ICanvas canvas, RectF dimensions, LoopStation activeStation)
-    {
-        var track = LoopLayout.GetTrackBounds(dimensions);
-
+        canvas.DrawEllipse(track);
         foreach (var station in Enum.GetValues<LoopStation>())
         {
             var position = LoopLayout.GetStationPosition(track, station);
-            var active = station == activeStation;
+            var active = station == _state.GameLoopStation;
             var radius = active ? 31f : 27f;
-
-            if (active)
-            {
-                canvas.FillColor = Color.FromRgba(248, 216, 102, 72);
-                canvas.FillEllipse(position.X - radius - 8, position.Y - radius - 8,
-                    (radius + 8) * 2, (radius + 8) * 2);
-            }
-
-            canvas.FillColor = active ? Color.FromArgb("#FFF0C2") : PresentationTheme.CodePanel;
+            canvas.FillColor = active ? PresentationTheme.CodePanelHeader : PresentationTheme.CodePanel;
             canvas.FillEllipse(position.X - radius, position.Y - radius, radius * 2, radius * 2);
-            canvas.StrokeColor = Color.FromArgb("#F8D866");
-            canvas.StrokeSize = active ? 4 : 2;
+            canvas.StrokeColor = active ? Accent : PresentationTheme.TrackEdge;
+            canvas.StrokeSize = active ? 3 : 1.5f;
             canvas.DrawEllipse(position.X - radius, position.Y - radius, radius * 2, radius * 2);
-
             canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-            canvas.FontColor = active ? PresentationTheme.AccentRed : PresentationTheme.Ink;
+            canvas.FontColor = active ? Accent : Ink;
             canvas.FontSize = 13;
-            canvas.DrawString(GetStationName(station), position.X - 54, position.Y - 12, 108, 24,
+            canvas.DrawString(station.ToString().ToUpperInvariant(), position.X - 54, position.Y - 12, 108, 24,
                 HorizontalAlignment.Center, VerticalAlignment.Center);
         }
+        DrawText(canvas, "ONE FRAME.\nTHEN ANOTHER.", new RectF(track.X + 35, track.Y + track.Height * .32f,
+            track.Width - 70, track.Height * .36f), 20, true, HorizontalAlignment.Center);
     }
 
-    private static void DrawOverview(ICanvas canvas, RectF dimensions, LoopStation station)
+    private static void DrawText(ICanvas canvas, string text, RectF bounds, float size,
+        bool accent = false, HorizontalAlignment alignment = HorizontalAlignment.Left)
     {
-        DrawInfoPanel(canvas, dimensions,
-            "TYPICAL BUSINESS APP",
-            "event → command → state change → UI update → wait",
-            $"GAME LOOP · {GetStationName(station)}",
-            GetStationDescription(station));
+        canvas.Font = accent ? Microsoft.Maui.Graphics.Font.DefaultBold : Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = accent ? Accent : Ink;
+        canvas.FontSize = size;
+        canvas.DrawString(text, bounds, alignment, VerticalAlignment.Center);
     }
 
-    private static void DrawFirmwareComparison(ICanvas canvas, RectF dimensions)
+    private void DrawPromptAndNext(ICanvas canvas, RectF dimensions)
     {
-        DrawCodeComparisonPanel(canvas, dimensions,
-            "FIRMWARE SUPERLOOP",
-            "while (true)\n{\n    ReadInputs();\n    UpdateState();\n    WriteOutputs();\n    Delay();\n}",
-            "GAME LOOP",
-            "while (running)\n{\n    Input();\n    Update();\n    Render();\n    Wait();\n}");
+        DrawPrompt(canvas, dimensions, _state.GameLoopStage == GameLoopStage.Overview
+            ? "SOUTH / ENTER · NEXT STATION    EAST / LEFT · PREVIOUS"
+            : "RB / PGDN · TAKE CONTROL    EAST · BACK TO OUR CHAMPION");
+        var right = BookLayout.RightPage(dimensions);
+        var bounds = new RectF(right.Right - 220, dimensions.Bottom - 94, 220, 38);
+        canvas.FillColor = PresentationTheme.CodePanelHeader;
+        canvas.FillRoundedRectangle(bounds, 12);
+        canvas.StrokeColor = Accent;
+        canvas.StrokeSize = 1.5f;
+        canvas.DrawRoundedRectangle(bounds, 12);
+        DrawText(canvas, _state.GameLoopStage == GameLoopStage.Overview
+            ? "RB / PGDN · A FAMILIAR LOOP →" : "RB / PGDN · TAKE CONTROL →", bounds, 12, true, HorizontalAlignment.Center);
     }
-
-    private static void DrawCodeComparisonPanel(ICanvas canvas, RectF dimensions,
-        string leftTitle, string leftBody, string rightTitle, string rightBody)
-    {
-        var top = dimensions.Y + dimensions.Height * 0.735f;
-        var width = dimensions.Width * 0.40f;
-        var height = dimensions.Height * 0.18f;
-        var gap = dimensions.Width * 0.04f;
-        var left = new RectF((dimensions.X + dimensions.Width / 2f) - gap / 2f - width, top, width, height);
-        var right = new RectF((dimensions.X + dimensions.Width / 2f) + gap / 2f, top, width, height);
-        DrawCodeCard(canvas, left, leftTitle, leftBody);
-        DrawCodeCard(canvas, right, rightTitle, rightBody);
-    }
-
-    private static void DrawCodeCard(ICanvas canvas, RectF rect, string title, string code)
-    {
-        canvas.FillColor = PresentationTheme.CodePanel;
-        canvas.FillRoundedRectangle(rect, 14);
-        canvas.StrokeColor = PresentationTheme.CodePanelBorder;
-        canvas.StrokeSize = 2;
-        canvas.DrawRoundedRectangle(rect, 14);
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.AccentRed;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.040f, 15f, 22f);
-        canvas.DrawString(title, rect.X + 16, rect.Y + 2, rect.Width - 32, 44,
-            HorizontalAlignment.Left, VerticalAlignment.Center);
-
-        canvas.Font = CodeFonts.Regular;
-        canvas.FontColor = PresentationTheme.CodeText;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.031f, 13f, 18f);
-        canvas.DrawString(code, rect.X + 16, rect.Y + 50, rect.Width - 32, rect.Height - 62,
-            HorizontalAlignment.Left, VerticalAlignment.Top);
-    }
-
-    private static void DrawInfoPanel(ICanvas canvas, RectF dimensions,
-        string leftTitle, string leftBody, string rightTitle, string rightBody)
-    {
-        var top = dimensions.Y + dimensions.Height * 0.735f;
-        var width = dimensions.Width * 0.40f;
-        var height = dimensions.Height * 0.18f;
-        var gap = dimensions.Width * 0.04f;
-        var left = new RectF((dimensions.X + dimensions.Width / 2f) - gap / 2f - width, top, width, height);
-        var right = new RectF((dimensions.X + dimensions.Width / 2f) + gap / 2f, top, width, height);
-        DrawInfoCard(canvas, left, leftTitle, leftBody);
-        DrawInfoCard(canvas, right, rightTitle, rightBody);
-    }
-
-    private static void DrawInfoCard(ICanvas canvas, RectF rect, string title, string body)
-    {
-        canvas.FillColor = PresentationTheme.CodePanel;
-        canvas.FillRoundedRectangle(rect, 14);
-        canvas.StrokeColor = PresentationTheme.CodePanelBorder;
-        canvas.StrokeSize = 2;
-        canvas.DrawRoundedRectangle(rect, 14);
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.AccentRed;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.040f, 15f, 22f);
-        canvas.DrawString(title, rect.X + 16, rect.Y + 2, rect.Width - 32, 44,
-            HorizontalAlignment.Left, VerticalAlignment.Center);
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
-        canvas.FontColor = PresentationTheme.CodeText;
-        canvas.FontSize = Math.Clamp(rect.Width * 0.032f, 13f, 18f);
-        canvas.DrawString(body, rect.X + 16, rect.Y + 50, rect.Width - 32, rect.Height - 62,
-            HorizontalAlignment.Left, VerticalAlignment.Top);
-    }
-
-    private void DrawPrompt(ICanvas canvas, RectF dimensions)
-    {
-        var bottom = dimensions.Bottom - 94f;
-
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontColor = PresentationTheme.MutedInk;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.011f, 11f, 16f);
-        canvas.DrawString("TAP / SOUTH / ENTER · MOVE TO NEXT NODE",
-            dimensions.X + 40, bottom, dimensions.Width * 0.62f, 34,
-            HorizontalAlignment.Left, VerticalAlignment.Center);
-
-        var nextWidth = Math.Clamp(dimensions.Width * 0.20f, 150f, 240f);
-        var next = new RectF(
-            dimensions.Right - nextWidth - 40,
-            bottom - 2,
-            nextWidth,
-            38);
-
-        canvas.FillColor = Color.FromArgb("#FFF4D8");
-        canvas.FillRoundedRectangle(next, 12);
-        canvas.StrokeColor = PresentationTheme.AccentRed;
-        canvas.StrokeSize = 2;
-        canvas.DrawRoundedRectangle(next, 12);
-
-        canvas.FontColor = PresentationTheme.AccentRed;
-        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
-        canvas.FontSize = Math.Clamp(dimensions.Width * 0.0105f, 11f, 15f);
-
-        var nextLabel = _state.GameLoopStage == GameLoopStage.Overview
-            ? "NEXT →  FIRMWARE"
-            : "NEXT →  VEHICLE";
-
-        canvas.DrawString(nextLabel, next.X + 10, next.Y + 4, next.Width - 20, next.Height - 8,
-            HorizontalAlignment.Center, VerticalAlignment.Center);
-    }
-
-    private string GetTitle() => _state.Champion switch
-    {
-        Champion.Charioteer => "WALK THE LOOPING ARENA",
-        Champion.SpacePilot => "WALK THE ORBITAL LOOP",
-        _ => "WALK THE LOOPING SPEEDWAY"
-    };
-
-    private static string GetLocationName(Champion? champion) => champion switch
-    {
-        Champion.Charioteer => "The Looping Arena",
-        Champion.SpacePilot => "The Orbital Loop",
-        _ => "The Looping Speedway"
-    };
-
-    private static string GetStationName(LoopStation station) => station switch
-    {
-        LoopStation.Input => "INPUT",
-        LoopStation.Update => "UPDATE",
-        LoopStation.Render => "RENDER",
-        LoopStation.Wait => "WAIT",
-        _ => "LOOP"
-    };
-
-    private static string GetStationDescription(LoopStation station) => station switch
-    {
-        LoopStation.Input => "Read what the player wants to do. Controller, keyboard, touch — later, even SignalR.",
-        LoopStation.Update => "Advance the world. Move objects, run game logic, animate and check collisions.",
-        LoopStation.Render => "Draw the current world state. Rendering reflects state; it should not decide it.",
-        LoopStation.Wait => "Yield until the next frame, then start the cycle again.",
-        _ => string.Empty
-    };
 }

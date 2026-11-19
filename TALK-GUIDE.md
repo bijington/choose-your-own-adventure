@@ -194,7 +194,7 @@ Every section has a dedicated right-page opening and matching running headers. E
 | --- | --- |
 | Prologue · Discovering Orbit | Orbit overview through loading a scene |
 | Chapter One · Meet Our Champion | Champion vote, GameObject, character reveal |
-| Chapter Two · Take Control | Input, game loop, local driving/flying |
+| Chapter Two · Take Control | Input package and local driving/flying |
 | Chapter Three · An Adventure Together | SignalR explanation and audience race |
 | Epilogue · The Journey Home | Podium and recap |
 
@@ -385,20 +385,79 @@ The final result stays on this spread: the losing cards fade out while the winni
 1. Accept the final vote. The right page shows the chosen champion's name and GameObject; the left is blank.
 2. A/Enter or right-page tap reveals code on the left, without turning the page or redrawing a second champion reveal.
 3. Explain the `Render(ICanvas, RectF)` override and `DrawChampion` call, then the selected champion's canvas drawing primitives. The object remains visible on the right throughout.
-4. A/Enter or right-page tap continues to Take Control.
+4. South/Enter or right-page tap follows a frame in the life of our champion.
 
 Left-page tap / Escape hides the code first; another goes back to the final vote. Scene loading was covered in the prologue, so this section focuses on how the object renders. The separate Add GameObject and second character-reveal scenes are removed.
 
 
-## CHAPTER TWO · TAKE CONTROL — `InputChapterScene` — page 30 / 60 / 90
+## A Frame in the Life of Our Champion — `GameLoopScene` — page 30 / 60 / 90
+
+### Purpose
+
+Finish meeting the champion by discovering how their world stays alive. The audience has already seen the character and their Render code; now explain the rhythm that keeps that character changing. Teach intent conceptually before wiring up controller input in Chapter Two.
+
+### On screen
+
+The left page pairs a champion thought with the current engine responsibility. The right page walks the selected character around INPUT → UPDATE → RENDER → WAIT. No page turn occurs between stations. The same structure has different lines for the driver, charioteer and pilot.
+
+### Talking points
+
+1. **Input — ask what the player wants.** Imagine the intent before showing the input package. The pilot asks, “Thrusters, please. Preferably now.”
+2. **Update — evolve the world.** Use elapsed time. The pilot says, “No thrust? Gravity has opinions.” The charioteer notices momentum: “The reins are loose. I'm still rolling.” The driver keeps approaching the next corner between button presses.
+3. **Render — make the result visible.** Connect directly to the Render code we just saw. Rendering displays the state that Update produced.
+4. **Wait — do it again.** The engine yields until the next frame. This is a teaching step-through; Orbit runs the real loop continuously. Our GameObjects do not run a manual while loop or sleep.
+
+Repeat: **Input supplies intent. Update evolves state. Render makes state visible.**
+
+### Firmware comparison
+
+Right shoulder / Page Down / Right / D or the lower-right NEXT area reveals the familiar firmware superloop alongside conceptual game-loop pseudocode. These are now full-size cards on the facing pages. Read inputs → update state → write outputs → repeat. Keep this analogy brief; Orbit owns the actual loop.
+
+### Action
+
+South / Enter / right-page tap advances the champion around stations; East / Escape / Left / left-page tap reverses a station. Right shoulder / Page Down or NEXT shows the firmware comparison, then opens Chapter Two: Take Control. From the comparison, East / Escape / Left shoulder / Page Up / left-page tap returns to the same station. In the overview, Left shoulder / Page Up returns to the character summary.
+
+### Transition
+
+> “Now we know how their world runs. Let's put the controls in your hands.”
+
+---
+
+## CHAPTER TWO · TAKE CONTROL — `InputChapterScene` — page 31 / 61 / 91
 
 Right-page chapter opener. Left page blank.
 
-> Our champion has potential. A little input will set it in motion.
+> We know how their world runs. Now let’s put the controls in your hands.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## How Does It Move? — `InputPackageScene` — page 31 / 61 / 91
+## MAUI Already Has Input — `MauiInputScene` — page 32 / 62 / 92
+
+### On screen
+
+An ordinary XAML Button uses Pressed and Released. The facing page shows handlers that set/clear intent on our AdventureInputRouter. These are teaching excerpts for a game UI, not live buttons on this spread.
+
+### Talking points
+
+- We can already use normal MAUI controls with touch screens and a mouse.
+- Clicked or Command can represent an action; Pressed/Released can represent a held control.
+- The event handler sets intent. It does not directly move or draw the champion. Update evolves state and Render draws it.
+- Gestures and pointer events provide other interaction options.
+- Orbit.Input adds keyboard and game-controller support; it complements the MAUI UI we already have.
+
+### Action
+
+South / Enter / Right shoulder / Page Down / right-page tap opens the Orbit.Input package spread. Back returns to the Take Control chapter opener.
+
+### Transition
+
+> “Touch and mouse are already covered. What if we want a keyboard or a game controller?”
+
+The [MAUI Button documentation](https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/button?view=net-maui-10.0) describes touch/mouse activation and Pressed/Released behavior.
+
+---
+
+## How Does It Move? — `InputPackageScene` — page 33 / 63 / 93
 
 ### On screen
 
@@ -425,114 +484,15 @@ and a small controller-state example.
 
 ### Action
 
-`A / Enter` → game loop.
+`South / Enter` → live vehicle control.
 
 ### Transition
 
-> “We know what the player wants to do. But where does that input get processed, and how does the world keep changing?”
+> “We have seen the loop. Now watch real input change our champion’s state.”
 
 ---
 
-## Game Loop — `GameLoopScene` — page 32 / 62 / 92
-
-### On screen
-
-The chosen champion moves through:
-
-```text
-INPUT → UPDATE → RENDER → WAIT → repeat
-```
-
-The visual theme changes with the champion.
-
-### Core comparison
-
-**Typical business application:**
-
-```text
-event → command → state change → UI update → wait
-```
-
-**Game:**
-
-```text
-input → update → render → wait → repeat
-```
-
-### Presenter controls
-
-- `A / Enter` → move champion to the next loop node
-- `Left / A-key` → previous loop node
-- `Right / D-key` → reveal firmware comparison
-- `Right / D-key` again → continue to vehicle control
-
-### Talk through each node
-
-#### INPUT
-
-> “What does the player want to do?”
-
-Examples: controller, keyboard, touch — and later, the network.
-
-#### UPDATE
-
-> “Given the input and the time that passed, what changes in our world?”
-
-Examples: position, velocity, animation, timers, collisions.
-
-#### RENDER
-
-> “Draw the current state of the world.”
-
-Important distinction:
-
-> “Rendering ideally does not decide what happened; it displays the state that already says what happened.”
-
-#### WAIT
-
-> “Yield until the next frame, then do the whole thing again.”
-
-Repeat the central line:
-
-> **Input affects state. Update evolves state. Render displays state.**
-
-### Firmware comparison
-
-Keep this to roughly 30–60 seconds:
-
-```c
-while (true)
-{
-    ReadInputs();
-    UpdateState();
-    WriteOutputs();
-    Delay();
-}
-```
-
-versus:
-
-```csharp
-while (running)
-{
-    Input();
-    Update();
-    Render();
-    Wait();
-}
-```
-
-Suggested line:
-
-> “Different domain. Remarkably similar mental model.”
-
-### Transition
-
-> “That is the theory. Let's actually drive something through the loop.”
-
----
-
-## Now Drive It — `VehicleControlScene` — page 33 / 63 / 93
+## Now Drive It — `VehicleControlScene` — page 34 / 64 / 94
 
 ### Purpose
 
@@ -593,7 +553,7 @@ Current code uses `Up / W` to leave the interactive vehicle scene and move to th
 
 ---
 
-## CHAPTER THREE · AN ADVENTURE TOGETHER — `SignalRChapterScene` — page 34 / 64 / 94
+## CHAPTER THREE · AN ADVENTURE TOGETHER — `SignalRChapterScene` — page 35 / 65 / 95
 
 Right-page chapter opener. Left page blank.
 
@@ -601,7 +561,7 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## What If the Input Source Changes? — `SignalRTransitionScene` — page 35 / 65 / 95
+## What If the Input Source Changes? — `SignalRTransitionScene` — page 36 / 66 / 96
 
 ### On screen
 
@@ -624,7 +584,7 @@ Conceptual transition from local controller intent to remote/audience intent.
 
 ---
 
-## SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 36 / 66 / 96
+## SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 37 / 67 / 97
 
 ### On screen
 
@@ -651,7 +611,7 @@ Briefly mention that the browser batches boost taps into fewer calls. Then give 
 
 ---
 
-## Audience Grand Prix — `AudienceRaceScene` — page 37 / 67 / 97
+## Audience Grand Prix — `AudienceRaceScene` — page 38 / 68 / 98
 
 ### On screen
 
@@ -697,7 +657,7 @@ After the race finishes, press `A / Enter`.
 
 ---
 
-## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 38 / 68 / 98
+## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 39 / 69 / 99
 
 Right-page chapter opener. Left page blank.
 
@@ -705,7 +665,7 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## The Podium — `PodiumScene` — page 39 / 69 / 99
+## The Podium — `PodiumScene` — page 40 / 70 / 100
 
 ### On screen
 
@@ -732,7 +692,7 @@ Celebrate the audience before switching back into recap mode.
 
 ---
 
-## Adventure Complete — `RecapScene` — page 40 / 70 / 100
+## Adventure Complete — `RecapScene` — page 41 / 71 / 101
 
 ### On screen
 
@@ -761,17 +721,18 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 | Spread | Driver | Charioteer | Space Pilot |
 | --- | ---: | ---: | ---: |
 | ChosenChampion | 29 | 59 | 89 |
-| InputChapter | 30 | 60 | 90 |
-| InputPackage | 31 | 61 | 91 |
-| GameLoop | 32 | 62 | 92 |
-| VehicleControl | 33 | 63 | 93 |
-| SignalRChapter | 34 | 64 | 94 |
-| SignalRTransition | 35 | 65 | 95 |
-| SignalRArchitecture | 36 | 66 | 96 |
-| AudienceRace | 37 | 67 | 97 |
-| EpilogueChapter | 38 | 68 | 98 |
-| Podium | 39 | 69 | 99 |
-| Recap | 40 | 70 | 100 |
+| GameLoop | 30 | 60 | 90 |
+| InputChapter | 31 | 61 | 91 |
+| MauiInput | 32 | 62 | 92 |
+| InputPackage | 33 | 63 | 93 |
+| VehicleControl | 34 | 64 | 94 |
+| SignalRChapter | 35 | 65 | 95 |
+| SignalRTransition | 36 | 66 | 96 |
+| SignalRArchitecture | 37 | 67 | 97 |
+| AudienceRace | 38 | 68 | 98 |
+| EpilogueChapter | 39 | 69 | 99 |
+| Podium | 40 | 70 | 100 |
+| Recap | 41 | 71 | 101 |
 
 ---
 
@@ -806,7 +767,7 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 
 - Primary = advance node
 - Left = previous node
-- Right = firmware comparison / then continue to vehicle scene
+- Right = firmware comparison / then open Take Control
 
 ### Vehicle control
 

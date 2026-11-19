@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using ChooseYourOwnAdventure.Presentation;
 
 namespace ChooseYourOwnAdventure.GameObjects;
 
@@ -6,14 +7,9 @@ public static class LoopLayout
 {
     public static RectF GetTrackBounds(RectF dimensions)
     {
-        var width = dimensions.Width * 0.62f;
-        var height = dimensions.Height * 0.48f;
-
-        return new RectF(
-            dimensions.X + (dimensions.Width - width) / 2f,
-            dimensions.Y + dimensions.Height * 0.20f,
-            width,
-            height);
+        var right = BookLayout.RightPage(dimensions);
+        return new RectF(right.X + right.Width * .12f,
+            dimensions.Y + dimensions.Height * .34f, right.Width * .76f, dimensions.Height * .34f);
     }
 
     public static PointF GetStationPosition(RectF track, LoopStation station) => station switch

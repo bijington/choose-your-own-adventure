@@ -6,7 +6,7 @@ public sealed class PrologueChapterScene(AdventureState state) : ChapterOpeningS
 
 public sealed class InputChapterScene(AdventureState state) : ChapterOpeningScene(state,
     PresentationSlide.InputChapter, "CHAPTER TWO", "TAKE CONTROL",
-    "Our champion has potential.\nA little input will set it in motion.");
+    "We know how their world runs.\nNow let’s put the controls in your hands.");
 
 public sealed class SignalRChapterScene(AdventureState state) : ChapterOpeningScene(state,
     PresentationSlide.SignalRChapter, "CHAPTER THREE", "AN ADVENTURE TOGETHER",

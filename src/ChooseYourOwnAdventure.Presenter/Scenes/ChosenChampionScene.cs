@@ -17,7 +17,7 @@ public sealed class ChosenChampionScene : ChapterOpeningScene
     }
 
     protected override string ContinuePrompt => _state.ChampionRenderingVisible
-        ? "SOUTH / ENTER · HOW DO WE MAKE IT MOVE?"
+        ? "SOUTH / ENTER · HOW DOES THEIR WORLD STAY ALIVE?"
         : "SOUTH / ENTER · HOW IS OUR CHAMPION DRAWN?";
 
     public override void Update(double millisecondsSinceLastUpdate)

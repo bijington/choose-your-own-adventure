@@ -242,19 +242,20 @@ Current order:
 9. `ChampionChapterScene`
 10. `OpeningScene`
 11. `ChosenChampionScene`
-12. `InputChapterScene`
-13. `InputPackageScene`
-14. `GameLoopScene`
-15. `VehicleControlScene`
-16. `SignalRChapterScene`
-17. `SignalRTransitionScene`
-18. `SignalRArchitectureScene`
-19. `AudienceRaceScene`
-20. `EpilogueChapterScene`
-21. `PodiumScene`
-22. `RecapScene`
+12. `GameLoopScene`
+13. `InputChapterScene`
+14. `MauiInputScene`
+15. `InputPackageScene`
+16. `VehicleControlScene`
+17. `SignalRChapterScene`
+18. `SignalRTransitionScene`
+19. `SignalRArchitectureScene`
+20. `AudienceRaceScene`
+21. `EpilogueChapterScene`
+22. `PodiumScene`
+23. `RecapScene`
 
-Chapter One opens before voting. The chosen-champion summary reveals its rendering code on the facing page, then continues to Take Control. The normal route skips the optional page-404 joke.
+Chapter One opens before voting. The chosen-champion summary reveals its rendering code on the facing page, then follows a frame in the champion’s life before Take Control. The normal route skips the optional page-404 joke.
 
 ### Presenter controls
 
@@ -268,7 +269,7 @@ Chapter One opens before voting. The chosen-champion summary reveals its renderi
 
 Navigation and confirmation are separate semantic actions. On the champion vote, South runs Open → Close → Reveal → Continue; East resets the round. Right shoulder only continues after a winner has been revealed, respecting the reveal delay; it cannot open/close voting or accept a tie. Left shoulder always navigates back.
 
-On the game-loop spread, South advances loop nodes, East steps back a node, and Right shoulder reveals firmware then proceeds to driving. On the vehicle demo, South supplies throttle/thrust and East supplies brake/down-thrust; shoulders navigate without driving the vehicle. On the audience race, South starts the race, East resets it, and Right shoulder continues only after the finish. Touch targets retain their existing behavior. South also continues ordinary spreads.
+On the game-loop spread, South advances loop nodes, East steps back a node, and Right shoulder reveals firmware then proceeds to Chapter Two: Take Control. On the vehicle demo, South supplies throttle/thrust and East supplies brake/down-thrust; shoulders navigate without driving the vehicle. On the audience race, South starts the race, East resets it, and Right shoulder continues only after the finish. Touch targets retain their existing behavior. South also continues ordinary spreads.
 
 ## Central presentation registration
 
@@ -298,7 +299,7 @@ Code samples now use the same parchment visual language as the rest of the deck.
 
 ## Branch page numbers
 
-Printed pages follow the story order in `PresentationDeck`, excluding the cover and optional page-404 joke. `PresentationTheme.GetPageNumber` adds the selected champion offset (Driver 20, Charioteer 50, Space Pilot 80) from the chosen-champion summary onward. Enum identities no longer dictate printed page order. The winning card points to summary page 29, 59 or 89; The rendering code appears within that same spread; Take Control follows on the next page. Presenter and web champion enum values and the browser numeric mapping still stay synchronized.
+Printed pages follow the story order in `PresentationDeck`, excluding the cover and optional page-404 joke. `PresentationTheme.GetPageNumber` adds the selected champion offset (Driver 20, Charioteer 50, Space Pilot 80) from the chosen-champion summary onward. Enum identities no longer dictate printed page order. The winning card points to summary page 29, 59 or 89; The rendering code appears within that same spread; the game loop follows on the next page, before Take Control. Presenter and web champion enum values and the browser numeric mapping still stay synchronized.
 
 Vehicle artwork lives in `ChampionVehicleGameObject`, shared by `LoopVehicle`, `AudienceRaceVehicle` and podium `StaticChampionVehicleGameObject`s.
 
@@ -318,7 +319,7 @@ On ordinary spreads, tap anywhere on the left page to turn back, or the right pa
 
 Champion selection uses the left page for voting instructions, QR code and live status. Three stacked cards on the right show the Driver, Charioteer and Space Pilot, with their derived destination pages (29, 59 and 89). Touch selection uses the same card bounds as rendering; voting lifecycle controls are unchanged.
 
-The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue opens a simple “OUR CHAMPION” summary with the selected name and real `ChampionGameObject`; the next action reveals rendering code on the left while the champion stays on the right. A further action opens Take Control. “MEET OUR CHAMPION” introduces Chapter One before voting, with the self-discovery lead-in and no selected character. On the vote spread, left-page taps and Left shoulder / Page Up go back; East / Escape / Shift resets voting. Offline selection uses the same reveal before continuing.
+The champion vote reveals its winner in place: losing cards fade away and the winning card grows to fill the right page, retaining final vote counts and its destination. Continue opens a simple “OUR CHAMPION” summary with the selected name and real `ChampionGameObject`; the next action reveals rendering code on the left while the champion stays on the right. A further action opens the champion’s game-loop story. “MEET OUR CHAMPION” introduces Chapter One before voting, with the self-discovery lead-in and no selected character. On the vote spread, left-page taps and Left shoulder / Page Up go back; East / Escape / Shift resets voting. Offline selection uses the same reveal before continuing.
 
 ## Opening decision and chapter structure
 
@@ -327,8 +328,8 @@ After the cover, invite the room to shout a preference: **attend the talk → pa
 `PresentationChapter` supplies running labels on existing spreads, with a matching right-page opener for every section:
 
 - Prologue · Discovering Orbit — overview, install, view and scene loading.
-- Chapter One · Meet Your Champion — vote, GameObject and character reveal.
-- Chapter Two · Take Control — input, loop and vehicle demo.
+- Chapter One · Meet Our Champion — vote, character reveal, rendering and the game loop.
+- Chapter Two · Take Control — input package and live vehicle demo.
 - Chapter Three · An Adventure Together — SignalR and audience race.
 - Epilogue · The Journey Home — podium and recap.
 
@@ -340,7 +341,7 @@ Every section now has a dedicated right-page chapter opener: Prologue, Meet Our 
 
 ## Champion summary and rendering reveal
 
-The champion appears once in the post-vote summary. South/Enter or a right-page tap fades in the real `Render()` excerpt and a champion-specific drawing-primitives example on the left; the right-page character remains unchanged. The next action opens Take Control. Left-page tap / Left shoulder / Page Up first hides the code, then returns to voting. The redundant Add GameObject and second character-reveal scenes have been removed; scene loading remains covered in the prologue.
+The champion appears once in the post-vote summary. South/Enter or a right-page tap fades in the real `Render()` excerpt and a champion-specific drawing-primitives example on the left; the right-page character remains unchanged. The next action follows a frame in the champion’s life. Left-page tap / Left shoulder / Page Up first hides the code, then returns to voting. The redundant Add GameObject and second character-reveal scenes have been removed; scene loading remains covered in the prologue.
 
 ## Private presenter-notes window
 
@@ -396,3 +397,7 @@ The What Is Orbit spread now explains four building blocks in place: .NET MAUI (
 The final summary names Shaun Lawrence, recaps MAUI/Graphics, Orbit/input and SignalR, and offers a separate resources QR code. Set `TalkSummary:ResourcesUrl` to the blog post URL in the presenter configuration (`appsettings.Development.json` for Debug). `TalkSummary:SpeakerName` defaults to Shaun Lawrence. Leave the URL empty until the post is ready: the page shows “Resources coming soon” and no QR code. Only absolute HTTP/HTTPS URLs generate a code. The audience join QR code continues to use `LiveAudience:BaseUrl`.
 
 Both desktop windows offer **Presenter → Go to Slide**, populated in deck order from `PresentationDeck` with the same titles as presenter notes. It includes the cover, chapter openers, optional after-party page and final summary. Selection uses the existing navigator/page turn and scene-entry setup, so staged explanations restart at their first step. Selecting from notes brings the audience window forward. Jumping to a vote or race page does not start/reset the live interaction.
+
+Chapter One ends with **A Frame in the Life of Our Champion**: the selected character has a different thought at each Input/Update/Render/Wait station (for the pilot: “No thrust? Gravity has opinions.”). The left page explains that thought; the right shows the champion moving around the loop. The firmware analogy remains a separate beat with full-size code cards. It then opens Take Control, followed by the input package and vehicle demo. Firmware Back returns to the loop without losing the selected station. The game-loop page is now 30/60/90, Take Control 31/61/91, MAUI input 32/62/92, and the input package 33/63/93; subsequent pages advance by one.
+
+Chapter Two now starts with **MAUI Already Has Input**, before Orbit.Input. The spread pairs a touch/mouse XAML Button with Pressed/Released handlers that feed the existing input router. It explains ordinary MAUI UI first, then introduces keyboard and controller support. The spread is included automatically in the Presenter navigation menu and page numbering. See the [MAUI Button reference](https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/button?view=net-maui-10.0) for the touch/mouse events used in the teaching example.

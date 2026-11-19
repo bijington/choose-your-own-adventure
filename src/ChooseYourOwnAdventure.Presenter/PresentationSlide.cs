@@ -24,5 +24,6 @@ public enum PresentationSlide
     SignalRChapter = 21,
     EpilogueChapter = 22,
     ChosenChampion = 23,
+    MauiInput = 24,
     AfterParty = 404
 }

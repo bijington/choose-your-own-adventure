@@ -128,7 +128,8 @@ public partial class MainPage : ContentPage
         {
             var isNextArea = position.Value.X >= GameView.Width * 0.75d
                 && position.Value.Y >= GameView.Height * 0.88d;
-            _inputRouter.Trigger(isNextArea ? AdventureAction.Right : AdventureAction.Confirm);
+            _inputRouter.Trigger(position.Value.X < GameView.Width / 2d
+                ? AdventureAction.Cancel : isNextArea ? AdventureAction.Right : AdventureAction.Confirm);
             return;
         }
 
@@ -168,6 +169,12 @@ public partial class MainPage : ContentPage
         // Navigation never starts or resets a vote/race. Confirmation owns those commands.
         if (action == AdventureAction.Previous)
         {
+            if (_presentationNavigator.Current == PresentationSlide.GameLoop
+                && _adventureState.GameLoopStage == GameLoopStage.FirmwareComparison)
+            {
+                _adventureState.ShowGameLoopOverview();
+                return;
+            }
             if (_presentationNavigator.Current == PresentationSlide.OrbitOverview
                 && _adventureState.PreviousOrbitOverviewStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.SignalRArchitecture
@@ -342,6 +349,14 @@ public partial class MainPage : ContentPage
 
     private void HandleGameLoop(AdventureAction action)
     {
+        if (_adventureState.GameLoopStage == GameLoopStage.FirmwareComparison)
+        {
+            if (action is AdventureAction.Confirm or AdventureAction.Right)
+                _presentationNavigator.Next();
+            else if (action is AdventureAction.Cancel or AdventureAction.Left)
+                _adventureState.ShowGameLoopOverview();
+            return;
+        }
         if (action == AdventureAction.Confirm)
         {
             _adventureState.AdvanceLoopStation();
@@ -362,7 +377,7 @@ public partial class MainPage : ContentPage
             }
             else
             {
-                _presentationNavigator.GoTo(PresentationSlide.VehicleControl);
+                _presentationNavigator.Next();
             }
         }
     }

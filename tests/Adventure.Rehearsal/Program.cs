@@ -34,7 +34,7 @@ if (args.Length >= 2 && args[0] == "--demo")
 
 foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
-Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 23).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
+Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 24).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
 
 // Local development overrides must reach both the SignalR client and the QR code.
 using (var defaultSettings = typeof(ChooseYourOwnAdventure.Live.LiveAudienceOptions).Assembly
@@ -155,10 +155,10 @@ Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Co
     "Summary notes skipped the local rendering reveal");
 presenterState.ShowChampionRendering();
 Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).Beat == "Rendering code revealed"
-    && Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Contains("Take Control"),
+    && Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Contains("frame in the life"),
     "Notes did not track the rendering beat");
 presenterState.ShowFirmwareComparison();
-Check(Cue(ChooseYourOwnAdventure.PresentationSlide.GameLoop).NextAction.Contains("live control"),
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.GameLoop).NextAction.Contains("Take Control"),
     "Firmware notes did not describe the next action");
 var tiedVote = readyVote with { Phase = ChooseYourOwnAdventure.Live.VotePhase.Revealed,
     RacingDriver = 1, Charioteer = 1, SpacePilot = 1 };
@@ -180,6 +180,24 @@ localSelection.RevealLocalVote();
 Check(ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(
     ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, localSelection, readyVote, readyRace, true)
     .Beat == "Local champion selection", "Reconnecting discarded the local winner's presentation cue");
+Check(ChooseYourOwnAdventure.Presentation.PresentationChapter.LabelFor(ChooseYourOwnAdventure.PresentationSlide.GameLoop)
+    == "CHAPTER ONE · MEET OUR CHAMPION", "Game loop is still labelled Chapter Two");
+foreach (var champion in Enum.GetValues<ChooseYourOwnAdventure.Champion>())
+{
+    foreach (var station in Enum.GetValues<ChooseYourOwnAdventure.LoopStation>())
+    {
+        var beat = ChooseYourOwnAdventure.Presentation.ChampionLoopStory.For(champion, station);
+        Check(beat.Thought.Length > 0 && beat.Explanation.Length > 0, "Champion loop story is missing a beat");
+    }
+}
+presenterState.ShowGameLoopOverview();
+Check(presenterState.GameLoopStage == ChooseYourOwnAdventure.GameLoopStage.Overview,
+    "Could not return from firmware comparison to the champion loop");
+Check(ChooseYourOwnAdventure.Presentation.PresentationChapter.LabelFor(ChooseYourOwnAdventure.PresentationSlide.MauiInput)
+    == "CHAPTER TWO · TAKE CONTROL", "MAUI input spread lost its chapter label");
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.MauiInput).TalkingPoints.Contains("Pressed and Released")
+    && Cue(ChooseYourOwnAdventure.PresentationSlide.MauiInput).NextAction.Contains("Orbit.Input"),
+    "MAUI input notes do not explain existing controls before the input package");
 var parsedGuide = new ChooseYourOwnAdventure.PresenterNotes.PresenterNotesGuide(
     "## Sample — `TitleScene`\n### Talking points\n- **Keep this point.**\n```csharp\nsecret code\n## Bogus — `OpeningScene`\n```\n## Another section\nDo not include this.");
 Check(parsedGuide.ForScene("TitleScene").Contains("Keep this point.")

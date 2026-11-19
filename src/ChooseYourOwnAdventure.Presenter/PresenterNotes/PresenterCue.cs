@@ -21,8 +21,9 @@ public static class PresenterCueFactory
         PresentationSlide.ChooseChampion => "Choose Your Champion",
         PresentationSlide.ChosenChampion => "Our Champion",
         PresentationSlide.InputChapter => "Take Control",
+        PresentationSlide.MauiInput => "MAUI Already Has Input",
         PresentationSlide.InputPackage => "How Does It Move?",
-        PresentationSlide.GameLoop => "The Game Loop",
+        PresentationSlide.GameLoop => "A Frame in the Life of Our Champion",
         PresentationSlide.VehicleControl => "Drive Our Champion",
         PresentationSlide.SignalRChapter => "An Adventure Together",
         PresentationSlide.SignalRTransition => "What If the Input Source Changes?",
@@ -40,6 +41,13 @@ public static class PresenterCueFactory
         const string back = "Left shoulder / Page Up / left page: back.";
         switch (slide)
         {
+            case PresentationSlide.MauiInput:
+                return new("Touch and mouse · ordinary MAUI UI",
+                    "Start with what MAUI already gives us: a Button works with touch and mouse. Clicked or Command can represent a single action; Pressed and Released are useful for held controls.\n" +
+                    "The XAML and handlers are a teaching example. They feed our existing AdventureInputRouter: press sets intent, release clears it. The handler does not move or redraw the champion; Update and Render still do that.\n" +
+                    "Gestures and pointer events can support richer interactions. Orbit.Input is the next option when we want keyboard and game controllers; it does not replace normal MAUI UI.",
+                    "South / Enter / Right shoulder / Page Down / right page: keyboard and game-controller input. " + back,
+                    "Introduce the Orbit.Input package for keyboard and controllers.");
             case PresentationSlide.OrbitOverview:
                 var overview = OrbitOverviewWalkthrough.ForStage(state.OrbitOverviewStage);
                 var overviewNext = state.OrbitOverviewStage == OrbitOverviewStage.Game
@@ -80,21 +88,18 @@ public static class PresenterCueFactory
             case PresentationSlide.ChosenChampion:
                 return state.ChampionRenderingVisible
                     ? new("Rendering code revealed", "Point to Render(ICanvas, RectF), then the drawing primitives.\nThe champion remains visible: this is the code responsible for drawing it. Scene setup was covered in the prologue.",
-                        "South / Enter / right page: Take Control. Left shoulder / Page Up / left page: hide code.", "Turn to Take Control.")
+                        "South / Enter / right page: meet the game loop. Left shoulder / Page Up / left page: hide code.", "Follow a frame in the life of our champion.")
                     : new("Chosen champion · summary", "Introduce the chosen name and character once. Let the audience see it before explaining its implementation.",
                         "South / Enter / right page: reveal rendering code on the left. " + back, "Reveal Render() without turning the page.");
             case PresentationSlide.GameLoop:
                 return state.GameLoopStage == GameLoopStage.FirmwareComparison
                     ? new("Firmware / superloop comparison", "The same shape appears in firmware: read inputs, evolve state, draw outputs, wait.\nInput affects state. Update evolves state. Render displays state.",
-                        "Right shoulder / Page Down or lower-right NEXT: driving demo. South / Enter: loop station.", "Continue to the live control demo.")
+                        "South / Enter / Right shoulder / Page Down or lower-right NEXT: Take Control. East / Escape / left page: return to our champion’s loop.", "Open Chapter Two: Take Control, then start with MAUI touch and mouse input.")
                     : new($"Game loop · {state.GameLoopStation.ToString().ToUpperInvariant()}",
-                        state.GameLoopStation switch
-                        {
-                            LoopStation.Input => "Read intent. Input affects state; it does not directly draw the world.",
-                            LoopStation.Update => "Evolve state using elapsed time: movement, animation, physics and logic.",
-                            LoopStation.Render => "Draw the current state. The world can keep updating even when input stops.",
-                            _ => "Yield until the next frame, then repeat. This is the continuous game-loop mental model."
-                        }, "South / Enter / tap: next station. Left / East / Escape: previous station. Right shoulder / Page Down or NEXT: firmware comparison.",
+                        "Champion thought: “" + ChampionLoopStory.For(state.Champion, state.GameLoopStation).Thought + "”\n" +
+                        ChampionLoopStory.For(state.Champion, state.GameLoopStation).Explanation +
+                        "\nWe have met the champion and their Render method. This is how their world keeps changing between inputs.",
+                        "South / Enter / right-page tap: next station. Left / East / Escape / left-page tap: previous station. Right shoulder / Page Down or NEXT: a familiar firmware loop.",
                         "Step around INPUT → UPDATE → RENDER → WAIT, then show the firmware comparison.");
             case PresentationSlide.VehicleControl:
                 var model = state.Champion switch

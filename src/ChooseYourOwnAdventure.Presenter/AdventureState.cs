@@ -157,6 +157,8 @@ public sealed class AdventureState
     public void ShowFirmwareComparison() =>
         GameLoopStage = GameLoopStage.FirmwareComparison;
 
+    public void ShowGameLoopOverview() => GameLoopStage = GameLoopStage.Overview;
+
     public void ResetSignalRWalkthrough() => SignalRStage = SignalRStage.Browser;
 
     public void ResetOrbitOverview() => OrbitOverviewStage = OrbitOverviewStage.Maui;
