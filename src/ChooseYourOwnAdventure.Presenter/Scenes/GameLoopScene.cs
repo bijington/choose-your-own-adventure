@@ -98,7 +98,7 @@ public sealed class GameLoopScene : PresentationSceneBase
     {
         DrawPrompt(canvas, dimensions, _state.GameLoopStage == GameLoopStage.Overview
             ? "SOUTH / ENTER · NEXT STATION    EAST / LEFT · PREVIOUS"
-            : "RB / PGDN · TAKE CONTROL    EAST · BACK TO OUR CHAMPION");
+            : "SOUTH / RB / ENTER / PGDN · WALK A FRAME WITH OUR CHAMPION");
         var right = BookLayout.RightPage(dimensions);
         var bounds = new RectF(right.Right - 220, dimensions.Bottom - 94, 220, 38);
         canvas.FillColor = PresentationTheme.CodePanelHeader;
@@ -107,6 +107,6 @@ public sealed class GameLoopScene : PresentationSceneBase
         canvas.StrokeSize = 1.5f;
         canvas.DrawRoundedRectangle(bounds, 12);
         DrawText(canvas, _state.GameLoopStage == GameLoopStage.Overview
-            ? "RB / PGDN · A FAMILIAR LOOP →" : "RB / PGDN · TAKE CONTROL →", bounds, 12, true, HorizontalAlignment.Center);
+            ? "RB / PGDN · TAKE CONTROL →" : "RB / PGDN · MEET THE LOOP →", bounds, 12, true, HorizontalAlignment.Center);
     }
 }

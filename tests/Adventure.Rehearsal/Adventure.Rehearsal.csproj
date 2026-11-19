@@ -15,6 +15,7 @@
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/TalkSummaryOptions.cs" Link="Presenter/TalkSummaryOptions.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ChampionLoopStory.cs" Link="Presenter/ChampionLoopStory.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/PresentationChapter.cs" Link="Presenter/PresentationChapter.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ChampionRenderingWalkthrough.cs" Link="Presenter/ChampionRenderingWalkthrough.cs" />
     <ProjectReference Include="../../src/Adventure.Web/Adventure.Web.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/PresenterNotes/PresenterNotesGuide.cs" Link="Presenter/PresenterNotesGuide.cs" />

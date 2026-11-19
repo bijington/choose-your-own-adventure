@@ -382,13 +382,28 @@ The final result stays on this spread: the losing cards fade out while the winni
 
 ## Our chosen champion and rendering — `ChosenChampionScene` — page 29 / 59 / 89
 
-1. Accept the final vote. The right page shows the chosen champion's name and GameObject; the left is blank.
-2. A/Enter or right-page tap reveals code on the left, without turning the page or redrawing a second champion reveal.
-3. Explain the `Render(ICanvas, RectF)` override and `DrawChampion` call, then the selected champion's canvas drawing primitives. The object remains visible on the right throughout.
-4. South/Enter or right-page tap follows a frame in the life of our champion.
+### Talking points
 
-Left-page tap / Escape hides the code first; another goes back to the final vote. Scene loading was covered in the prologue, so this section focuses on how the object renders. The separate Add GameObject and second character-reveal scenes are removed.
+Introduce the champion on the right-hand summary page first. Then tell their visual origin story in four local stages:
 
+1. **Dot:** a filled ellipse. Every champion starts somewhere; a canvas and bounds are enough to show something.
+2. **Primitives:** combine circles, rectangles and lines into a simple figure. More handmade detail needs more instructions. The chosen champion influences the colour.
+3. **Image:** show the current static character PNG. Decode/cache it once, preserve its aspect ratio, and draw it with DrawImage through the existing helper. The asset carries the detail, so the rendering call stays small.
+4. **Animated Sprite:** play the real eight-frame Orbit celebration. Create it once, call Update with elapsed milliseconds and Render into its Bounds. The engine advances the frames. We are animating a sprite here; sprites do not have to be animated by definition.
+
+The Render canvas-and-bounds contract is displayed throughout. Say: **“The artwork gets richer. The rendering contract stays familiar.”** Primitive detail adds drawing instructions; image assets and the Sprite abstraction move that complexity out of the scene's drawing code.
+
+### Action
+
+South / Enter / Right shoulder / Page Down / right-page tap opens the dot, then advances through primitives, image and sprite. Only the next action after the sprite opens the champion's game-loop story. Left shoulder / East / Page Up / Escape / left-page tap steps backwards: sprite → image → primitives → dot → summary → vote. Re-entering the spread starts at the summary.
+
+### Transition
+
+> “We've given them more detail, and now a little life. How does their world keep changing from one frame to the next?”
+
+The four stages share one printed page. The celebration uses the existing cached frames and each scene's own Orbit Sprite playback state; it does not start another game loop.
+
+---
 
 ## A Frame in the Life of Our Champion — `GameLoopScene` — page 30 / 60 / 90
 
@@ -398,24 +413,26 @@ Finish meeting the champion by discovering how their world stays alive. The audi
 
 ### On screen
 
-The left page pairs a champion thought with the current engine responsibility. The right page walks the selected character around INPUT → UPDATE → RENDER → WAIT. No page turn occurs between stations. The same structure has different lines for the driver, charioteer and pilot.
+Start with **A Familiar Rhythm**: firmware superloop and conceptual game-loop code on the facing pages. Establish read → update → output → repeat first. Then apply the same idea to the selected champion, walking them through INPUT → UPDATE → RENDER → WAIT.
 
-### Talking points
+### Firmware comparison — first
+
+The spread opens on the familiar firmware superloop alongside conceptual game-loop pseudocode. Keep the analogy brief; Orbit owns the actual loop. South / Enter / Right shoulder / Page Down / right-page tap shows the champion walkthrough. Back from this first comparison returns to the character summary.
+
+### Talking points — then the champion
+
+The left page pairs a champion thought with the current engine responsibility. The right page walks the selected character around the loop. No page turn occurs between these beats.
 
 1. **Input — ask what the player wants.** Imagine the intent before showing the input package. The pilot asks, “Thrusters, please. Preferably now.”
-2. **Update — evolve the world.** Use elapsed time. The pilot says, “No thrust? Gravity has opinions.” The charioteer notices momentum: “The reins are loose. I'm still rolling.” The driver keeps approaching the next corner between button presses.
-3. **Render — make the result visible.** Connect directly to the Render code we just saw. Rendering displays the state that Update produced.
-4. **Wait — do it again.** The engine yields until the next frame. This is a teaching step-through; Orbit runs the real loop continuously. Our GameObjects do not run a manual while loop or sleep.
+2. **Update — evolve the world.** Use elapsed time. The pilot says, “No thrust? Gravity has opinions.” The charioteer notices momentum: “The reins are loose. I'm still rolling.”
+3. **Render — make the result visible.** Connect to the rendering evolution we just saw. Rendering displays the state that Update produced.
+4. **Wait — do it again.** The engine yields until the next frame. This is a teaching step-through; Orbit runs the real loop continuously.
 
 Repeat: **Input supplies intent. Update evolves state. Render makes state visible.**
 
-### Firmware comparison
-
-Right shoulder / Page Down / Right / D or the lower-right NEXT area reveals the familiar firmware superloop alongside conceptual game-loop pseudocode. These are now full-size cards on the facing pages. Read inputs → update state → write outputs → repeat. Keep this analogy brief; Orbit owns the actual loop.
-
 ### Action
 
-South / Enter / right-page tap advances the champion around stations; East / Escape / Left / left-page tap reverses a station. Right shoulder / Page Down or NEXT shows the firmware comparison, then opens Chapter Two: Take Control. From the comparison, East / Escape / Left shoulder / Page Up / left-page tap returns to the same station. In the overview, Left shoulder / Page Up returns to the character summary.
+On the champion walkthrough, South / Enter / right-page tap advances stations; East / Escape / Left / left-page tap reverses a station, returning to firmware before Input. Left shoulder / Page Up returns directly to the firmware comparison, preserving the selected station. Right shoulder / Page Down or the lower-right NEXT area opens Chapter Two: Take Control. Re-entering this spread starts with firmware and resets the station to Input.
 
 ### Transition
 
@@ -767,7 +784,7 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 
 - Primary = advance node
 - Left = previous node
-- Right = firmware comparison / then open Take Control
+- Right = firmware → champion walkthrough → Take Control
 
 ### Vehicle control
 

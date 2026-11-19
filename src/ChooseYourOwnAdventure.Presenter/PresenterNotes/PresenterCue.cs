@@ -86,21 +86,25 @@ public static class PresenterCueFactory
                     (tie ? "Keep all choices visible and invite another round." : "On reveal, the losing cards fade and the winner grows in place."),
                     (local ? "Left stick Up/Down or arrow keys: select. " : string.Empty) + "South / Enter / right page: " + next + " East / Shift / Escape: reset. " + back, next);
             case PresentationSlide.ChosenChampion:
-                return state.ChampionRenderingVisible
-                    ? new("Rendering code revealed", "Point to Render(ICanvas, RectF), then the drawing primitives.\nThe champion remains visible: this is the code responsible for drawing it. Scene setup was covered in the prologue.",
-                        "South / Enter / right page: meet the game loop. Left shoulder / Page Up / left page: hide code.", "Follow a frame in the life of our champion.")
-                    : new("Chosen champion · summary", "Introduce the chosen name and character once. Let the audience see it before explaining its implementation.",
-                        "South / Enter / right page: reveal rendering code on the left. " + back, "Reveal Render() without turning the page.");
+                if (state.ChampionRenderingStage is not { } renderStage)
+                    return new("Chosen champion · summary", "Introduce the chosen champion once. Then trace their visual evolution from a dot to an animated sprite.",
+                        "South / Enter / Right shoulder / Page Down / right page: begin with a dot. " + back,
+                        "Begin the four-stage rendering evolution.");
+                var rendering = ChampionRenderingWalkthrough.ForStage(renderStage);
+                return new($"Rendering evolution · {(int)renderStage + 1}/4 · {rendering.Title}", rendering.TalkingPoints,
+                    "South / Enter / Right shoulder / Page Down / right page: next stage. Left shoulder / East / Page Up / Escape / left page: previous stage; before the dot, the champion summary.",
+                    renderStage == ChampionRenderingStage.Sprite ? "Follow a frame in the life of our champion."
+                        : "Show: " + ChampionRenderingWalkthrough.ForStage(renderStage + 1).Title + ".");
             case PresentationSlide.GameLoop:
                 return state.GameLoopStage == GameLoopStage.FirmwareComparison
                     ? new("Firmware / superloop comparison", "The same shape appears in firmware: read inputs, evolve state, draw outputs, wait.\nInput affects state. Update evolves state. Render displays state.",
-                        "South / Enter / Right shoulder / Page Down or lower-right NEXT: Take Control. East / Escape / left page: return to our champion’s loop.", "Open Chapter Two: Take Control, then start with MAUI touch and mouse input.")
+                        "South / Enter / Right shoulder / Page Down or lower-right NEXT: walk our champion around the loop. East / Escape / left page: previous spread.", "Walk a frame in the life of our champion.")
                     : new($"Game loop · {state.GameLoopStation.ToString().ToUpperInvariant()}",
                         "Champion thought: “" + ChampionLoopStory.For(state.Champion, state.GameLoopStation).Thought + "”\n" +
                         ChampionLoopStory.For(state.Champion, state.GameLoopStation).Explanation +
                         "\nWe have met the champion and their Render method. This is how their world keeps changing between inputs.",
-                        "South / Enter / right-page tap: next station. Left / East / Escape / left-page tap: previous station. Right shoulder / Page Down or NEXT: a familiar firmware loop.",
-                        "Step around INPUT → UPDATE → RENDER → WAIT, then show the firmware comparison.");
+                        "South / Enter / right-page tap: next station. Left / East / Escape / left-page tap: previous station; before Input, firmware. Left shoulder / Page Up: firmware comparison. Right shoulder / Page Down or NEXT: Take Control.",
+                        "Step around INPUT → UPDATE → RENDER → WAIT, then open Chapter Two: Take Control.");
             case PresentationSlide.VehicleControl:
                 var model = state.Champion switch
                 {

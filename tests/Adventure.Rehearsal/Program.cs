@@ -151,15 +151,37 @@ ChooseYourOwnAdventure.PresenterNotes.PresenterCue Cue(ChooseYourOwnAdventure.Pr
     ChooseYourOwnAdventure.Live.RaceSnapshot? raceSnapshot = null) =>
     ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(slide, presenterState,
         vote ?? readyVote, raceSnapshot ?? readyRace, true);
-Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Contains("Reveal Render()"),
-    "Summary notes skipped the local rendering reveal");
-presenterState.ShowChampionRendering();
-Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).Beat == "Rendering code revealed"
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Contains("four-stage"),
+    "Summary notes skipped the rendering evolution");
+Check(!presenterState.PreviousChampionRendering(), "Rendering evolution underflowed the summary");
+foreach (var stage in Enum.GetValues<ChooseYourOwnAdventure.ChampionRenderingStage>())
+{
+    Check(presenterState.AdvanceChampionRendering(), "Rendering evolution left before the sprite stage");
+    Check(presenterState.ChampionRenderingStage == stage, "Rendering evolution skipped a stage");
+    Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).Beat.Contains($"{(int)stage+1}/4"),
+        "Notes did not follow the rendering stage");
+    Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+        ChooseYourOwnAdventure.PresentationSlide.ChosenChampion, presenterState, readyVote, readyRace, true)
+        == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Shoulder navigation skipped the evolution");
+}
+Check(!presenterState.AdvanceChampionRendering()
     && Cue(ChooseYourOwnAdventure.PresentationSlide.ChosenChampion).NextAction.Contains("frame in the life"),
-    "Notes did not track the rendering beat");
+    "Rendering evolution did not finish at the loop handoff");
+for (var i=0; i<4; i++) Check(presenterState.PreviousChampionRendering(), "Could not reverse the rendering evolution");
+Check(!presenterState.ChampionRenderingVisible, "Reversing past the dot did not restore the summary");
+presenterState.ShowChampionRendering();
+presenterState.PrepareChampionReveal();
+Check(!presenterState.ChampionRenderingVisible, "Re-entering the summary retained a rendering stage");
 presenterState.ShowFirmwareComparison();
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.GameLoop).NextAction.Contains("frame in the life"),
+    "Firmware should introduce the champion walking around the loop");
+presenterState.ShowGameLoopOverview();
 Check(Cue(ChooseYourOwnAdventure.PresentationSlide.GameLoop).NextAction.Contains("Take Control"),
-    "Firmware notes did not describe the next action");
+    "Character loop should lead into Chapter Two");
+presenterState.ResetGameLoop();
+Check(presenterState.GameLoopStage == ChooseYourOwnAdventure.GameLoopStage.FirmwareComparison
+    && presenterState.GameLoopStation == ChooseYourOwnAdventure.LoopStation.Input,
+    "Entering the game-loop spread should start with firmware before the champion walkthrough");
 var tiedVote = readyVote with { Phase = ChooseYourOwnAdventure.Live.VotePhase.Revealed,
     RacingDriver = 1, Charioteer = 1, SpacePilot = 1 };
 Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, tiedVote).NextAction.Contains("Reopen voting"),
@@ -209,7 +231,7 @@ using (var guideStream = typeof(ChooseYourOwnAdventure.PresenterNotes.PresenterN
 using (var guideReader = new StreamReader(guideStream))
 {
     var realGuide = new ChooseYourOwnAdventure.PresenterNotes.PresenterNotesGuide(guideReader.ReadToEnd());
-    Check(realGuide.ForScene("ChosenChampionScene").Contains("DrawChampion", StringComparison.Ordinal),
+    Check(realGuide.ForScene("ChosenChampionScene").Contains("Sprite", StringComparison.Ordinal),
         "Maintained guide no longer supplies champion-rendering notes");
 }
 Console.WriteLine("PASS: presenter notes track local rendering, firmware, vote ties and race finish; guide parser extracts prose and excludes code.");

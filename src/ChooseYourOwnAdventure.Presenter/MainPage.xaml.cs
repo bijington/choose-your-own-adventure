@@ -170,9 +170,9 @@ public partial class MainPage : ContentPage
         if (action == AdventureAction.Previous)
         {
             if (_presentationNavigator.Current == PresentationSlide.GameLoop
-                && _adventureState.GameLoopStage == GameLoopStage.FirmwareComparison)
+                && _adventureState.GameLoopStage == GameLoopStage.Overview)
             {
-                _adventureState.ShowGameLoopOverview();
+                _adventureState.ShowFirmwareComparison();
                 return;
             }
             if (_presentationNavigator.Current == PresentationSlide.OrbitOverview
@@ -180,8 +180,8 @@ public partial class MainPage : ContentPage
             if (_presentationNavigator.Current == PresentationSlide.SignalRArchitecture
                 && _adventureState.PreviousSignalRStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.ChosenChampion
-                && _adventureState.ChampionRenderingVisible)
-                _adventureState.HideChampionRendering();
+                && _adventureState.PreviousChampionRendering())
+                return;
             else
                 _presentationNavigator.Previous();
             return;
@@ -215,16 +215,12 @@ public partial class MainPage : ContentPage
             case PresentationSlide.ChosenChampion:
                 if (action == AdventureAction.Cancel)
                 {
-                    if (_adventureState.ChampionRenderingVisible)
-                        _adventureState.HideChampionRendering();
-                    else
+                    if (!_adventureState.PreviousChampionRendering())
                         _presentationNavigator.Previous();
                 }
                 else if (action == AdventureAction.Confirm)
                 {
-                    if (!_adventureState.ChampionRenderingVisible)
-                        _adventureState.ShowChampionRendering();
-                    else
+                    if (!_adventureState.AdvanceChampionRendering())
                         _presentationNavigator.Next();
                 }
                 return;
@@ -352,9 +348,9 @@ public partial class MainPage : ContentPage
         if (_adventureState.GameLoopStage == GameLoopStage.FirmwareComparison)
         {
             if (action is AdventureAction.Confirm or AdventureAction.Right)
-                _presentationNavigator.Next();
-            else if (action is AdventureAction.Cancel or AdventureAction.Left)
                 _adventureState.ShowGameLoopOverview();
+            else if (action is AdventureAction.Cancel or AdventureAction.Left)
+                _presentationNavigator.Previous();
             return;
         }
         if (action == AdventureAction.Confirm)
@@ -362,24 +358,16 @@ public partial class MainPage : ContentPage
             _adventureState.AdvanceLoopStation();
             return;
         }
-
         if (action is AdventureAction.Left or AdventureAction.Cancel)
         {
-            _adventureState.PreviousLoopStation();
+            if (_adventureState.GameLoopStation == LoopStation.Input)
+                _adventureState.ShowFirmwareComparison();
+            else
+                _adventureState.PreviousLoopStation();
             return;
         }
-
         if (action == AdventureAction.Right)
-        {
-            if (_adventureState.GameLoopStage == GameLoopStage.Overview)
-            {
-                _adventureState.ShowFirmwareComparison();
-            }
-            else
-            {
-                _presentationNavigator.Next();
-            }
-        }
+            _presentationNavigator.Next();
     }
 
     private async Task HandleAudienceRaceAsync(AdventureAction action)

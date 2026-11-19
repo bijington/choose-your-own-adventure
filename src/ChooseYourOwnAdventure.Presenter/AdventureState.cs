@@ -51,6 +51,14 @@ public enum OrbitOverviewStage
     Game
 }
 
+public enum ChampionRenderingStage
+{
+    Dot,
+    Primitives,
+    Image,
+    Sprite
+}
+
 public sealed class AdventureState
 {
     private static readonly Champion[] Champions =
@@ -91,20 +99,36 @@ public sealed class AdventureState
         CodeRevealTransitionProgress = 0f;
     }
 
-    public bool ChampionRenderingVisible { get; private set; }
-    public void ShowChampionRendering() => ChampionRenderingVisible = true;
-    public void HideChampionRendering() => ChampionRenderingVisible = false;
+    public ChampionRenderingStage? ChampionRenderingStage { get; private set; }
+    public bool ChampionRenderingVisible => ChampionRenderingStage is not null;
+    public void ShowChampionRendering() => ChampionRenderingStage = ChooseYourOwnAdventure.ChampionRenderingStage.Dot;
+    public void HideChampionRendering() => ChampionRenderingStage = null;
+
+    public bool AdvanceChampionRendering()
+    {
+        if (ChampionRenderingStage == ChooseYourOwnAdventure.ChampionRenderingStage.Sprite) return false;
+        ChampionRenderingStage = ChampionRenderingStage is { } stage
+            ? stage + 1 : ChooseYourOwnAdventure.ChampionRenderingStage.Dot;
+        return true;
+    }
+
+    public bool PreviousChampionRendering()
+    {
+        if (ChampionRenderingStage is not { } stage) return false;
+        ChampionRenderingStage = stage == ChooseYourOwnAdventure.ChampionRenderingStage.Dot ? null : stage - 1;
+        return true;
+    }
 
     public void PrepareChampionReveal()
     {
-        ChampionRenderingVisible = false;
+        HideChampionRendering();
         OpeningStage = OpeningStage.ChampionChosen;
         CodeRevealTransitionProgress = 0f;
     }
 
     public void ResetGameLoop()
     {
-        GameLoopStage = GameLoopStage.Overview;
+        GameLoopStage = GameLoopStage.FirmwareComparison;
         GameLoopStation = LoopStation.Input;
     }
 
