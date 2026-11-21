@@ -93,6 +93,13 @@ public sealed class RecapScene : PresentationSceneBase, IDisposable
         canvas.DrawString("The input source changed. The game loop stayed the same.",
             left.X, dimensions.Y + dimensions.Height * .85f, left.Width, dimensions.Height * .07f,
             HorizontalAlignment.Left, VerticalAlignment.Center);
+
+        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = Muted;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .011f, 12f, 17f);
+        canvas.DrawString("AI was used in the making of these slides,\nbut no agents were harmed in the process.",
+            right.X, dimensions.Y + dimensions.Height * .85f, right.Width, dimensions.Height * .07f,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.Recap, _state.Champion));
     }
 
