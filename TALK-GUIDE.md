@@ -210,6 +210,18 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
+## MAUI Already Has Some Magic — `MauiAnimationsScene`
+
+Before the Orbit overview, spend about 30 seconds showing three real MAUI animations: a bouncing control, a spinning/scaling star and a pulsing heart. Tap **Play it again** to restart or **Meet Orbit →** to continue. The examples run automatically and stop when leaving the spread.
+
+> “Before we reach for a game engine, MAUI already gives us a little magic. These are ordinary XAML controls. We can move, rotate, scale and fade them, and easing gives that movement personality.”
+
+> “That is great for playful UI and feedback. As our game grows, we want a shared game loop, scenes and game objects. That is where Orbit comes in.”
+
+The left page shows the same MAUI Animation approach used by the live controls. Continue with South / Enter / right-page tap / right shoulder; left-page tap goes back. Leave space around the controls to tap the page, or use keyboard/controller navigation.
+
+---
+
 ## What is Orbit? — `OrbitOverviewScene` — page 3
 
 ### On screen

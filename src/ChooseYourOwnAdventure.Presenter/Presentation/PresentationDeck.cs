@@ -13,6 +13,7 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<AfterPartyScene>(PresentationSlide.AfterParty),
         PresentationSlideDefinition.Create<PrologueChapterScene>(PresentationSlide.PrologueChapter,
             previous: PresentationSlide.FirstDecision),
+        PresentationSlideDefinition.Create<MauiAnimationsScene>(PresentationSlide.MauiAnimations),
         PresentationSlideDefinition.Create<OrbitOverviewScene>(PresentationSlide.OrbitOverview,
             state => state.ResetOrbitOverview()),
         PresentationSlideDefinition.Create<InstallOrbitScene>(PresentationSlide.InstallOrbit),

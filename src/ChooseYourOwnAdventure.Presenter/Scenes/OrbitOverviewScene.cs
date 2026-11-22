@@ -1,10 +1,17 @@
 using ChooseYourOwnAdventure.Presentation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
+using IImage = Microsoft.Maui.Graphics.IImage;
 
 namespace ChooseYourOwnAdventure.Scenes;
 
 public sealed class OrbitOverviewScene : PresentationSceneBase
 {
+    private static readonly Lazy<IImage?> Logo = new(() =>
+    {
+        using var stream = typeof(OrbitOverviewScene).Assembly.GetManifestResourceStream("ChooseYourOwnAdventure.OrbitLogo.png");
+        return stream is null ? null : PlatformImage.FromStream(stream);
+    });
     private readonly AdventureState _state;
 
     public OrbitOverviewScene(AdventureState state) => _state = state;
@@ -38,8 +45,8 @@ public sealed class OrbitOverviewScene : PresentationSceneBase
             left.Width, left.Height * .15f, HorizontalAlignment.Left, VerticalAlignment.Center);
 
         var stages = Enum.GetValues<OrbitOverviewStage>();
-        var height = dimensions.Height * .095f;
-        var gap = dimensions.Height * .035f;
+        var height = dimensions.Height * .075f;
+        var gap = dimensions.Height * .025f;
         for (var i = 0; i < stages.Length; i++)
         {
             var rect = new RectF(right.X, right.Y + i * (height + gap), right.Width, height);
@@ -53,6 +60,14 @@ public sealed class OrbitOverviewScene : PresentationSceneBase
             canvas.DrawLine(x, top, x, bottom);
             canvas.DrawLine(x - 5, bottom - 5, x, bottom);
             canvas.DrawLine(x + 5, bottom - 5, x, bottom);
+        }
+
+        if (Logo.Value is { } logo)
+        {
+            var logoHeight = dimensions.Height * .18f;
+            var logoWidth = logoHeight * logo.Width / logo.Height;
+            canvas.DrawImage(logo, right.Center.X - logoWidth / 2f,
+                dimensions.Y + dimensions.Height * .65f, logoWidth, logoHeight);
         }
 
         DrawPrompt(canvas, dimensions, stage == OrbitOverviewStage.Game

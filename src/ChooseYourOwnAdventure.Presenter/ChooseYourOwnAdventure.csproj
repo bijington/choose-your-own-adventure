@@ -65,6 +65,7 @@
     <EmbeddedResource Include="Resources/Images/Champions/*.png" LogicalName="ChooseYourOwnAdventure.Champions.%(Filename)%(Extension)" />
     <MauiFont Include="Resources/Fonts/CascadiaCode-VariableFont_wght.ttf" />
     <EmbeddedResource Include="../../TALK-GUIDE.md" LogicalName="ChooseYourOwnAdventure.TalkGuide.md" />
+    <EmbeddedResource Include="Resources/Images/orbit_logo.png" LogicalName="ChooseYourOwnAdventure.OrbitLogo.png" />
     <EmbeddedResource Include="Resources/Images/choose_your_own_adventure_title.png" LogicalName="ChooseYourOwnAdventure.TitleScreen.png" />
   </ItemGroup>
 

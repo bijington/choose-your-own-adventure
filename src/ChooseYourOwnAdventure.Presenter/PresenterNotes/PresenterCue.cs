@@ -13,6 +13,7 @@ public static class PresenterCueFactory
         PresentationSlide.FirstDecision => "Your First Decision",
         PresentationSlide.AfterParty => "After-Party Not Found",
         PresentationSlide.PrologueChapter => "Discovering Orbit",
+        PresentationSlide.MauiAnimations => "MAUI Already Has Some Magic",
         PresentationSlide.OrbitOverview => "What Is Orbit?",
         PresentationSlide.InstallOrbit => "Install & Register Orbit",
         PresentationSlide.GameSceneView => "Give Orbit Somewhere to Render",
@@ -41,6 +42,12 @@ public static class PresenterCueFactory
         const string back = "Left shoulder / Page Up / left page: back.";
         switch (slide)
         {
+            case PresentationSlide.MauiAnimations:
+                return new("MAUI animations · a little magic",
+                    "Before introducing Orbit, show what MAUI already provides. These are real XAML controls animated with MAUI’s Animation API: translation, rotation, scale and opacity. Easing changes the feel of the motion.\n" +
+                    "Tap Play it again if useful. These are great for transitions, feedback and playful UI. We can build games with MAUI; Orbit gives us a shared game loop, scenes and game objects as complexity grows. Keep this demonstration to about 30 seconds.",
+                    "Tap Play it again to replay. South / Enter / Right shoulder / Page Down: meet Orbit. " + back,
+                    "Introduce Orbit and the four building blocks.");
             case PresentationSlide.MauiInput:
                 return new("Touch and mouse · ordinary MAUI UI",
                     "Start with what MAUI already gives us: a Button works with touch and mouse. Clicked or Command can represent a single action; Pressed and Released are useful for held controls.\n" +

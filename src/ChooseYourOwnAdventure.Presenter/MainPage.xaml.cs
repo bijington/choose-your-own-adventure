@@ -65,6 +65,8 @@ public partial class MainPage : ContentPage
         _inputRouter.ActionTriggered += OnAdventureAction;
     }
 
+    private void OnAnimationContinueRequested(object? sender, EventArgs e) => _inputRouter.Trigger(AdventureAction.Confirm);
+
     private async void OnPracticeOptionsClicked(object? sender, EventArgs e) => await ShowPracticeOptionsAsync();
 
     private void UpdatePracticeButton()
@@ -135,6 +137,22 @@ public partial class MainPage : ContentPage
 
         _presentationNavigator.Start(GameView);
         _hasStarted = true;
+        var animationTimer = Dispatcher.CreateTimer();
+        animationTimer.Interval = TimeSpan.FromMilliseconds(100);
+        animationTimer.Tick += (_, _) =>
+        {
+            AnimationShowcase.Margin = new Thickness(GameView.Width * .54, GameView.Height * .25,
+                GameView.Width * .065, GameView.Height * .17);
+            AnimationShowcase.IsVisible = _presentationNavigator.Current == PresentationSlide.MauiAnimations
+                && !_presentationNavigator.IsTurning;
+        };
+        Loaded += (_, _) => animationTimer.Start();
+        Unloaded += (_, _) =>
+        {
+            animationTimer.Stop();
+            AnimationShowcase.IsVisible = false;
+        };
+        animationTimer.Start();
         _notes.StartSession();
 #if MACCATALYST || __MACCATALYST__ || WINDOWS
         // The audience scene is already running; opening notes cannot block startup.

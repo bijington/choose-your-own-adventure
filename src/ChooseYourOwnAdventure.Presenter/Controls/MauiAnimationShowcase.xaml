@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ChooseYourOwnAdventure.Controls.MauiAnimationShowcase">
+    <Grid RowDefinitions="*,*,*,Auto" RowSpacing="12" Padding="18">
+        <Grid ColumnDefinitions="100,*" ColumnSpacing="20">
+            <Border x:Name="Bouncer" BackgroundColor="#F7CE70" Stroke="#AD7932" WidthRequest="68" HeightRequest="68">
+                <Border.StrokeShape><RoundRectangle CornerRadius="20" /></Border.StrokeShape>
+                <Label Text="↑" FontSize="34" TextColor="#342116" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+            </Border>
+            <Label Grid.Column="1" Text="A little bounce&#10;Translation + easing" TextColor="#342116" FontSize="18" VerticalOptions="Center" />
+        </Grid>
+        <Grid Grid.Row="1" ColumnDefinitions="100,*" ColumnSpacing="20">
+            <Border x:Name="Spinner" BackgroundColor="#E96225" Stroke="#AD7932" WidthRequest="68" HeightRequest="68">
+                <Border.StrokeShape><RoundRectangle CornerRadius="16" /></Border.StrokeShape>
+                <Label Text="✦" FontSize="36" TextColor="#FFF7DF" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+            </Border>
+            <Label Grid.Column="1" Text="A dramatic entrance&#10;Rotation + scale" TextColor="#342116" FontSize="18" VerticalOptions="Center" />
+        </Grid>
+        <Grid Grid.Row="2" ColumnDefinitions="100,*" ColumnSpacing="20">
+            <Border x:Name="Pulse" BackgroundColor="#8C5538" Stroke="#AD7932" WidthRequest="68" HeightRequest="68">
+                <Border.StrokeShape><RoundRectangle CornerRadius="34" /></Border.StrokeShape>
+                <Label Text="♥" FontSize="32" TextColor="#FFF7DF" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+            </Border>
+            <Label Grid.Column="1" Text="A heartbeat&#10;Scale + opacity" TextColor="#342116" FontSize="18" VerticalOptions="Center" />
+        </Grid>
+        <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Button Text="Play it again" BackgroundColor="#F1DCA8" TextColor="#342116" Clicked="OnReplayClicked" />
+            <Button Grid.Column="1" Text="Meet Orbit →" BackgroundColor="#E96225" TextColor="#FFF7DF" Clicked="OnContinueClicked" />
+        </Grid>
+    </Grid>
+</ContentView>
