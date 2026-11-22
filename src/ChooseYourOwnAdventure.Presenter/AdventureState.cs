@@ -68,6 +68,8 @@ public sealed class AdventureState
         ChooseYourOwnAdventure.Champion.SpacePilot
     ];
 
+    public bool IsRehearsing { get; set; }
+
     public OpeningStage OpeningStage { get; private set; } = OpeningStage.Title;
     public Champion? Champion { get; private set; }
     public Champion HighlightedChampion { get; private set; } = ChooseYourOwnAdventure.Champion.RacingDriver;

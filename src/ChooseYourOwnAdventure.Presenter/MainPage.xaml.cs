@@ -3,6 +3,8 @@ using ChooseYourOwnAdventure.Live;
 using ChooseYourOwnAdventure.Presentation;
 using ChooseYourOwnAdventure.PresenterNotes;
 using Orbit.Engine;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 using ChooseYourOwnAdventure.Scenes;
 
 namespace ChooseYourOwnAdventure;
@@ -22,6 +24,8 @@ public partial class MainPage : ContentPage
 
     private readonly PresenterNotesWindow _notes;
     private bool _hasStarted;
+    private readonly bool _isMobile;
+    private readonly IReadOnlyList<PresentationSlideDefinition> _slides;
 
     public MainPage(
         IPresentationNavigator presentationNavigator,
@@ -36,6 +40,9 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
         _notes = notes;
+        _slides = slides;
+        _isMobile = DeviceInfo.Current.Idiom == DeviceIdiom.Phone || DeviceInfo.Current.Idiom == DeviceIdiom.Tablet;
+        adventureState.IsRehearsing = _isMobile && Preferences.Default.Get("MobilePracticeMode", true);
 #if MACCATALYST || __MACCATALYST__ || WINDOWS
         var presenterMenu = new MenuBarItem { Text = "Presenter" };
         presenterMenu.Add(new MenuFlyoutItem { Text = "Show Presenter Notes", Command = new Command(_notes.Show) });
@@ -43,6 +50,7 @@ public partial class MainPage : ContentPage
         {
             if (_hasStarted) presentationNavigator.GoTo(slide);
         }));
+        presenterMenu.Add(new MenuFlyoutItem { Text = "Practice Options", Command = new Command(async () => await ShowPracticeOptionsAsync()) });
         MenuBarItems.Add(presenterMenu);
 #endif
         _presentationNavigator = presentationNavigator;
@@ -52,8 +60,70 @@ public partial class MainPage : ContentPage
         _audienceVoteClient = audienceVoteClient;
         _liveVoteState = liveVoteState;
         _liveRaceState = liveRaceState;
+        UpdatePracticeButton();
 
         _inputRouter.ActionTriggered += OnAdventureAction;
+    }
+
+    private async void OnPracticeOptionsClicked(object? sender, EventArgs e) => await ShowPracticeOptionsAsync();
+
+    private void UpdatePracticeButton()
+    {
+        PracticeButton.IsVisible = _isMobile || _adventureState.IsRehearsing;
+        PracticeButton.Text = _adventureState.IsRehearsing ? "Practice · options" : "Live · options";
+    }
+
+    private async Task ShowPracticeOptionsAsync()
+    {
+        if (!_hasStarted || _presentationNavigator.IsTurning) return;
+        var choices = _adventureState.IsRehearsing
+            ? new[] { "Choose a champion", "Skip the audience race", "Go to slide", "Use live audience" }
+            : new[] { "Practise without the audience", "Go to slide" };
+        var choice = await DisplayActionSheet(_adventureState.IsRehearsing ? "Practice mode" : "Live audience mode",
+            "Cancel", null, choices);
+        switch (choice)
+        {
+            case "Practise without the audience":
+                _adventureState.IsRehearsing = true;
+                _adventureState.ResetLocalVote();
+                if (_isMobile) Preferences.Default.Set("MobilePracticeMode", true);
+                UpdatePracticeButton();
+                await _audienceVoteClient.PauseAsync();
+                break;
+            case "Use live audience":
+                _adventureState.IsRehearsing = false;
+                _adventureState.ResetLocalVote();
+                if (_isMobile) Preferences.Default.Set("MobilePracticeMode", false);
+                UpdatePracticeButton();
+                await _audienceVoteClient.StartAsync();
+                break;
+            case "Choose a champion":
+                var champion = await DisplayActionSheet("Practise with…", "Cancel", null,
+                    "The Driver", "The Charioteer", "The Space Pilot");
+                Champion? selected = champion switch
+                {
+                    "The Driver" => Champion.RacingDriver,
+                    "The Charioteer" => Champion.Charioteer,
+                    "The Space Pilot" => Champion.SpacePilot,
+                    _ => null
+                };
+                if (selected is { } local)
+                {
+                    _adventureState.ResetLocalVote();
+                    _adventureState.ChooseChampion(local);
+                    _presentationNavigator.GoTo(PresentationSlide.ChosenChampion);
+                }
+                break;
+            case "Skip the audience race":
+                _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+                break;
+            case "Go to slide":
+                var title = await DisplayActionSheet("Go to slide", "Cancel", null,
+                    _slides.Select(slide => PresenterCueFactory.TitleFor(slide.Slide)).ToArray());
+                var destination = _slides.FirstOrDefault(slide => PresenterCueFactory.TitleFor(slide.Slide) == title);
+                if (destination is not null) _presentationNavigator.GoTo(destination.Slide);
+                break;
+        }
     }
 
     private void OnGameViewLoaded(object? sender, EventArgs e)
@@ -83,6 +153,12 @@ public partial class MainPage : ContentPage
         var position = e.GetPosition(GameView);
         if (position is null)
         {
+            return;
+        }
+
+        if (_presentationNavigator.Current == PresentationSlide.AudienceRace && _adventureState.IsRehearsing)
+        {
+            _inputRouter.Trigger(position.Value.X < GameView.Width / 2d ? AdventureAction.Previous : AdventureAction.Confirm);
             return;
         }
 
@@ -372,6 +448,12 @@ public partial class MainPage : ContentPage
 
     private async Task HandleAudienceRaceAsync(AdventureAction action)
     {
+        if (_adventureState.IsRehearsing)
+        {
+            if (action == AdventureAction.Confirm) _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+            else if (action == AdventureAction.Cancel) _presentationNavigator.Previous();
+            return;
+        }
         if (action == AdventureAction.Cancel)
         {
             await _audienceVoteClient.ResetRaceAsync();

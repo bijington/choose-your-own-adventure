@@ -72,7 +72,9 @@ public sealed class AudienceRaceScene : GameScene
             _ => PresentationTheme.MutedInk
         };
 
-        var subtitle = snapshot.Phase switch
+        var subtitle = _state.IsRehearsing
+            ? "PRACTICE MODE · Tap the right page to skip the race, or the left page to go back."
+            : snapshot.Phase switch
         {
             RacePhase.Racing => "Every audience tap moves the champion they voted for. TAP! TAP! TAP!",
             RacePhase.Finished when snapshot.Winner is { } winner => $"{DisplayName(winner)} WINS!  ·  SOUTH / ENTER FOR THE PODIUM",

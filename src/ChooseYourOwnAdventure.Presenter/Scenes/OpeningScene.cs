@@ -290,7 +290,7 @@ public sealed class OpeningScene : GameScene
 
     private string GetVotingSubtitle(VoteSnapshot votes) => _state.LocalVoteWinner is not null
         ? "Our champion has been chosen locally."
-        : !_audience.IsConnected ? "AUDIENCE OFFLINE — choose a champion locally, or wait for reconnection."
+        : !_audience.IsConnected ? _state.IsRehearsing ? "PRACTICE MODE — choose a champion locally." : "AUDIENCE OFFLINE — choose a champion locally, or wait for reconnection."
         : votes.Phase switch
     {
         VotePhase.Ready => "Scan the QR code now. Voting opens when the presenter starts the round.",
@@ -303,7 +303,7 @@ public sealed class OpeningScene : GameScene
 
     private string GetVotingStatus(VoteSnapshot votes) => _state.LocalVoteWinner is not null
         ? "LOCAL CHAMPION"
-        : !_audience.IsConnected ? "OFFLINE · LOCAL SELECTION"
+        : !_audience.IsConnected ? _state.IsRehearsing ? "PRACTICE · LOCAL SELECTION" : "OFFLINE · LOCAL SELECTION"
         : votes.Phase switch
     {
         VotePhase.Ready => "SCAN TO JOIN",

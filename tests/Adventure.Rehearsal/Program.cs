@@ -72,6 +72,30 @@ using (var summaryConfig = new ConfigurationManager())
 }
 Console.WriteLine("PASS: summary configuration, speaker name, valid resources URL and empty/invalid-link fallback.");
 
+// Practice must not even construct a hub connection or send presenter commands.
+var practiceState = new ChooseYourOwnAdventure.AdventureState { IsRehearsing = true };
+var practiceVote = new ChooseYourOwnAdventure.Live.LiveVoteState();
+var practiceRace = new ChooseYourOwnAdventure.Live.LiveRaceState();
+await using (var practiceClient = new ChooseYourOwnAdventure.Live.AudienceVoteClient(
+    new ChooseYourOwnAdventure.Live.LiveAudienceOptions { BaseUrl = "not a usable connection URL" },
+    practiceVote, practiceRace, practiceState))
+{
+    await practiceClient.StartAsync();
+    await practiceClient.OpenVotingAsync();
+    await practiceClient.CloseVotingAsync();
+    await practiceClient.RevealWinnerAsync();
+    await practiceClient.ResetVotingAsync();
+    await practiceClient.StartRaceAsync();
+    await practiceClient.ResetRaceAsync();
+    Check(!practiceClient.IsConnected && practiceVote.Snapshot.Phase == ChooseYourOwnAdventure.Live.VotePhase.Ready
+        && practiceRace.Snapshot.Phase == ChooseYourOwnAdventure.Live.RacePhase.Ready,
+        "Practice connected to or changed the live session");
+}
+Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+    ChooseYourOwnAdventure.PresentationSlide.AudienceRace, practiceState, practiceVote.Snapshot, practiceRace.Snapshot, false)
+    == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Practice could not skip an unstarted race");
+Console.WriteLine("PASS: practice skips the race and suppresses connection setup and presenter commands.");
+
 // Navigation must not accidentally issue confirmation commands to live interactions.
 var navState = new ChooseYourOwnAdventure.AdventureState();
 var navVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("ORBIT", 0, 0, 0,

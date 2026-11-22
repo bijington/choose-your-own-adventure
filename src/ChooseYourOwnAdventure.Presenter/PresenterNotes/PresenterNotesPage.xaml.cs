@@ -56,7 +56,7 @@ public sealed partial class PresenterNotesPage : ContentPage
         var upcoming = next is { } nextSlide
             ? "Next spread: " + PresenterCueFactory.TitleFor(nextSlide)
             : "Final spread — thank the audience.";
-        var status = $"Audience: {(_audience.IsConnected ? "connected" : "offline")}   ·   Votes: {_vote.Snapshot.Total}   ·   Race: {_race.Snapshot.Phase}";
+        var status = _state.IsRehearsing ? "Practice mode · live audience commands disabled" : $"Audience: {(_audience.IsConnected ? "connected" : "offline")}   ·   Votes: {_vote.Snapshot.Total}   ·   Race: {_race.Snapshot.Phase}";
         var content = $"{title}|{section}|{cue}|{points}|{upcoming}|{status}|{_navigator.IsTurning}";
         if (_lastContent == content) return;
         _lastContent = content;

@@ -17,5 +17,16 @@
                 <TapGestureRecognizer Tapped="OnGameViewTapped" />
             </engine:GameSceneView.GestureRecognizers>
         </engine:GameSceneView>
+        <Button x:Name="PracticeButton"
+                Text="Practice · options"
+                IsVisible="False"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                Margin="12"
+                Padding="12,6"
+                FontSize="13"
+                BackgroundColor="#F1DCA8"
+                TextColor="#342116"
+                Clicked="OnPracticeOptionsClicked" />
     </Grid>
 </ContentPage>

@@ -87,11 +87,11 @@ public static class PresenterCueFactory
                     (local ? "Left stick Up/Down or arrow keys: select. " : string.Empty) + "South / Enter / right page: " + next + " East / Shift / Escape: reset. " + back, next);
             case PresentationSlide.ChosenChampion:
                 if (state.ChampionRenderingStage is not { } renderStage)
-                    return new("Chosen champion · summary", "Introduce the chosen champion once. Then trace their visual evolution from a dot to an animated sprite.",
+                    return new("Chosen champion · summary", "Introduce the chosen champion once. Then explore their backstory: from humble beginnings as a dot to an animated sprite.",
                         "South / Enter / Right shoulder / Page Down / right page: begin with a dot. " + back,
-                        "Begin the four-stage rendering evolution.");
+                        "Discover our champion’s origins in four stages.");
                 var rendering = ChampionRenderingWalkthrough.ForStage(renderStage);
-                return new($"Rendering evolution · {(int)renderStage + 1}/4 · {rendering.Title}", rendering.TalkingPoints,
+                return new($"Our champion’s origins · {(int)renderStage + 1}/4 · {rendering.Title}", rendering.TalkingPoints,
                     "South / Enter / Right shoulder / Page Down / right page: next stage. Left shoulder / East / Page Up / Escape / left page: previous stage; before the dot, the champion summary.",
                     renderStage == ChampionRenderingStage.Sprite ? "Follow a frame in the life of our champion."
                         : "Show: " + ChampionRenderingWalkthrough.ForStage(renderStage + 1).Title + ".");
@@ -124,6 +124,10 @@ public static class PresenterCueFactory
                     "South / Right shoulder / Enter / Page Down / right page: next step. " +
                     "Left shoulder / East / Page Up / Escape / left page: previous step; from step 1, previous spread.", nextStep);
             case PresentationSlide.AudienceRace:
+                if (state.IsRehearsing)
+                    return new("Practice · skip the audience race", "Describe the architecture or skip ahead. No race-start or reset command is sent in practice mode.",
+                        "Right page / South / Enter / Right shoulder: skip to The Journey Home. " + back,
+                        "Skip the live race and continue the ending.");
                 return new($"Audience race · {race.Phase}",
                     "Phones send boost intent. The server owns progress and normalizes boost by team size.\n" +
                     (race.Phase == RacePhase.Finished ? "Celebrate the winner before turning to The Journey Home." : "Remind everyone that they race for their original champion. Keep the QR code available for reconnects."),

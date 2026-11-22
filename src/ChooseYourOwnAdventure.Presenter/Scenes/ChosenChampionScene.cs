@@ -15,7 +15,7 @@ public sealed class ChosenChampionScene : ChapterOpeningScene
         PresentationSlide.ChosenChampion, "THE AUDIENCE HAS CHOSEN", "OUR CHAMPION",
         string.Empty, showChampion: true) => _state = state;
 
-    protected override string ContinuePrompt => "SOUTH / ENTER · HOW IS OUR CHAMPION DRAWN?";
+    protected override string ContinuePrompt => "SOUTH / ENTER · DISCOVER OUR CHAMPION’S ORIGINS";
 
     public override void Update(double millisecondsSinceLastUpdate)
     {
@@ -41,8 +41,8 @@ public sealed class ChosenChampionScene : ChapterOpeningScene
         // Do not render the chapter's static character underneath the evolution.
         var step = ChampionRenderingWalkthrough.ForStage(stage);
         DrawShell(canvas, dimensions);
-        DrawTitle(canvas, dimensions, "HOW OUR CHAMPION IS DRAWN",
-            $"{(int)stage + 1} / 4 · {step.Title}\nRicher artwork. The same Render contract.");
+        DrawTitle(canvas, dimensions, "OUR CHAMPION’S ORIGINS",
+            $"{(int)stage + 1} / 4 · {step.Title}\nEvery champion has a backstory. Ours begins with a dot.");
         var left = BookLayout.LeftPage(dimensions);
         var right = BookLayout.RightPage(dimensions);
         canvas.Font = CodeFonts.SemiBold;
@@ -66,7 +66,7 @@ public sealed class ChosenChampionScene : ChapterOpeningScene
             right.Width, dimensions.Height * .055f), stage);
         DrawPrompt(canvas, dimensions, stage == ChampionRenderingStage.Sprite
             ? "SOUTH / RB / ENTER / PGDN · FOLLOW A FRAME OF THEIR LIFE"
-            : "SOUTH / RB / ENTER / PGDN · EVOLVE OUR CHAMPION");
+            : "SOUTH / RB / ENTER / PGDN · CONTINUE THEIR ORIGIN STORY");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.ChosenChampion, _state.Champion));
     }
 

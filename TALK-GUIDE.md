@@ -31,6 +31,10 @@ If notes are closed, use **Presenter → Show Presenter Notes**. **Return to pre
 
 Speaker prose is extracted from this guide at build time; code blocks and audience-screen descriptions are omitted. Interactive cues are maintained in `PresenterNotes/PresenterCue.cs`. Rebuild after editing this guide.
 
+# Mobile rehearsal
+
+Phones and tablets default to Practice mode. Use the **Practice · options** button to choose a local champion, skip the race or jump to a slide. Card taps select the champion locally; the race's right page skips to the epilogue. No SignalR connection or presenter commands are used in practice. The mode is remembered on the device. Select **Use live audience** to reconnect and rehearse with real phones. Desktop offers **Presenter → Practice Options** as well.
+
 # Pre-flight checklist
 
 ## Presenter app
@@ -380,11 +384,11 @@ The final result stays on this spread: the losing cards fade out while the winni
 ---
 
 
-## Our chosen champion and rendering — `ChosenChampionScene` — page 29 / 59 / 89
+## Our champion’s origins — `ChosenChampionScene` — page 29 / 59 / 89
 
 ### Talking points
 
-Introduce the champion on the right-hand summary page first. Then tell their visual origin story in four local stages:
+Introduce the champion on the right-hand summary page first. Then invite the audience into their backstory: “Every champion has an origin story. Ours begins with a dot.” Trace their origins in four local stages:
 
 1. **Dot:** a filled ellipse. Every champion starts somewhere; a canvas and bounds are enough to show something.
 2. **Primitives:** combine circles, rectangles and lines into a simple figure. More handmade detail needs more instructions. The chosen champion influences the colour.

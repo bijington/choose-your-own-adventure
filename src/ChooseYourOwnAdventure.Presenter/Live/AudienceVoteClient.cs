@@ -5,25 +5,28 @@ namespace ChooseYourOwnAdventure.Live;
 public sealed class AudienceVoteClient : IAsyncDisposable
 {
     private readonly LiveAudienceOptions _options;
+    private readonly AdventureState _state;
     private readonly LiveVoteState _voteState;
     private readonly LiveRaceState _raceState;
     private HubConnection? _connection;
     private int _started;
 
-    public AudienceVoteClient(LiveAudienceOptions options, LiveVoteState voteState, LiveRaceState raceState)
+    public AudienceVoteClient(LiveAudienceOptions options, LiveVoteState voteState, LiveRaceState raceState, AdventureState state)
     {
         _options = options;
+        _state = state;
         _voteState = voteState;
         _raceState = raceState;
     }
 
-    public bool IsConnected => _connection?.State == HubConnectionState.Connected;
+    public bool IsConnected => !_state.IsRehearsing && _connection?.State == HubConnectionState.Connected;
 
     public Task StartAsync()
     {
+        if (_state.IsRehearsing) return Task.CompletedTask;
         if (Interlocked.Exchange(ref _started, 1) == 1)
         {
-            return Task.CompletedTask;
+            return IsConnected ? JoinSessionAsync() : Task.CompletedTask;
         }
 
         _connection = new HubConnectionBuilder()
@@ -31,12 +34,18 @@ public sealed class AudienceVoteClient : IAsyncDisposable
             .WithAutomaticReconnect()
             .Build();
 
-        _connection.On<VoteSnapshot>("VoteUpdated", _voteState.Update);
-        _connection.On<RaceSnapshot>("RaceUpdated", _raceState.Update);
+        _connection.On<VoteSnapshot>("VoteUpdated", snapshot =>
+        {
+            if (!_state.IsRehearsing) _voteState.Update(snapshot);
+        });
+        _connection.On<RaceSnapshot>("RaceUpdated", snapshot =>
+        {
+            if (!_state.IsRehearsing) _raceState.Update(snapshot);
+        });
         _connection.Reconnected += async _ => await JoinSessionAsync();
 
         // Never block the presentation while a network connection is established.
-        _ = ConnectUntilAvailableAsync();
+        _ = ConnectUntilAvailableAsync(_connection);
         return Task.CompletedTask;
     }
 
@@ -49,7 +58,7 @@ public sealed class AudienceVoteClient : IAsyncDisposable
 
     private async Task InvokePresenterCommandAsync(string methodName)
     {
-        if (_connection?.State != HubConnectionState.Connected)
+        if (_state.IsRehearsing || _connection?.State != HubConnectionState.Connected)
         {
             return;
         }
@@ -64,14 +73,23 @@ public sealed class AudienceVoteClient : IAsyncDisposable
         }
     }
 
-    private async Task ConnectUntilAvailableAsync()
+    public async Task PauseAsync()
     {
-        while (_connection is { State: HubConnectionState.Disconnected })
+        var connection = _connection;
+        _connection = null;
+        Interlocked.Exchange(ref _started, 0);
+        if (connection is not null) await connection.DisposeAsync();
+    }
+
+    private async Task ConnectUntilAvailableAsync(HubConnection connection)
+    {
+        while (ReferenceEquals(_connection, connection) && !_state.IsRehearsing
+            && connection.State == HubConnectionState.Disconnected)
         {
             try
             {
-                await _connection.StartAsync();
-                await JoinSessionAsync();
+                await connection.StartAsync();
+                if (ReferenceEquals(_connection, connection)) await JoinSessionAsync();
                 return;
             }
             catch
@@ -85,7 +103,7 @@ public sealed class AudienceVoteClient : IAsyncDisposable
 
     private async Task JoinSessionAsync()
     {
-        if (_connection?.State != HubConnectionState.Connected)
+        if (_state.IsRehearsing || _connection?.State != HubConnectionState.Connected)
         {
             return;
         }

@@ -11,7 +11,7 @@ public static class PresentationNavigation
         PresentationSlide.ChooseChampion => state.LocalVoteWinner is not null
             || (connected && vote.Phase == VotePhase.Revealed && vote.RevealedChampion is not null)
                 ? AdventureAction.Confirm : null,
-        PresentationSlide.AudienceRace => race.Phase == RacePhase.Finished ? AdventureAction.Confirm : null,
+        PresentationSlide.AudienceRace => state.IsRehearsing || race.Phase == RacePhase.Finished ? AdventureAction.Confirm : null,
         PresentationSlide.ChosenChampion => AdventureAction.Confirm,
         PresentationSlide.SignalRArchitecture => AdventureAction.Confirm,
         PresentationSlide.OrbitOverview => AdventureAction.Confirm,
