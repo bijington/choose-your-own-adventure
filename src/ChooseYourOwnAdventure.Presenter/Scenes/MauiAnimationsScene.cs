@@ -28,7 +28,7 @@ new Animation(t =>
         canvas.DrawString("Great for transitions, feedback and playful UI.\nNext: a shared game loop, scenes and game objects.",
             left.X, left.Y + left.Height * .74f, left.Width, left.Height * .26f,
             HorizontalAlignment.Left, VerticalAlignment.Top);
-        DrawPrompt(canvas, dimensions, "SOUTH / RB / ENTER / PGDN · MEET ORBIT");
+        DrawPrompt(canvas, dimensions, "SOUTH / RB / ENTER / PGDN · BUILDING A GAME IN MAUI");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.MauiAnimations));
     }
 }

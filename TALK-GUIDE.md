@@ -124,7 +124,7 @@ Do **not** let audience networking block the rest of the talk.
 | Approx. time | Scene | Goal |
 | --- | --- | --- |
 | 0:00–2:00 | Title | Why this talk exists |
-| 2:00–3:30 | What is Orbit? | Give Orbit a clear definition |
+| 2:00–3:30 | Building a Game in MAUI | From MAUI to Graphics, Orbit and our game |
 | 3:30–5:30 | Install/Register + `GameSceneView` + load scene | Show how little setup is required |
 | 5:30–9:00 | Choose Champion | Audience makes the first meaningful decision |
 | 9:00–11:30 | Add `GameObject` + Champion reveal | Show real Orbit code |
@@ -212,7 +212,7 @@ A/Enter or right-page tap continues; left-page tap goes back.
 
 ## MAUI Already Has Some Magic — `MauiAnimationsScene`
 
-Before the Orbit overview, spend about 30 seconds showing three real MAUI animations: a bouncing control, a spinning/scaling star and a pulsing heart. Tap **Play it again** to restart or **Meet Orbit →** to continue. The examples run automatically and stop when leaving the spread.
+Before the Orbit overview, spend about 30 seconds showing three real MAUI animations: a bouncing control, a spinning/scaling star and a pulsing heart. Tap **Play it again** to restart or **Build a game →** to continue. The examples run automatically and stop when leaving the spread.
 
 > “Before we reach for a game engine, MAUI already gives us a little magic. These are ordinary XAML controls. We can move, rotate, scale and fade them, and easing gives that movement personality.”
 
@@ -222,11 +222,11 @@ The left page shows the same MAUI Animation approach used by the live controls. 
 
 ---
 
-## What is Orbit? — `OrbitOverviewScene` — page 3
+## Building a Game in MAUI — `OrbitOverviewScene` — page 3
 
 ### On screen
 
-The same book spread has four talking points. The right page always shows `.NET MAUI → MAUI GRAPHICS → ORBIT → YOUR GAME`, highlighting one box at a time. The left page explains that building block and ends with one takeaway.
+The same book spread has four talking points. The right page always shows `.NET MAUI → MAUI GRAPHICS → ORBIT → YOUR GAME`, highlighting one box at a time. The left page explains that building block and ends with one takeaway. The Orbit logo is hidden for MAUI and MAUI Graphics, appears when Orbit is introduced at step three, and stays visible for Your Game.
 
 ### Talking points
 
@@ -237,7 +237,7 @@ The same book spread has four talking points. The right page always shows `.NET 
 
 ### Action
 
-South / Right shoulder / Enter / Page Down / right-page tap advances one building block. Left shoulder / East / Page Up / Escape / left-page tap goes back one step; from step 1 it returns to the prologue. Only after Your Game does the next action open Install & Register Orbit. Re-entering the spread starts again at .NET MAUI. Presenter notes follow each step.
+South / Right shoulder / Enter / Page Down / right-page tap advances one building block. Left shoulder / East / Page Up / Escape / left-page tap goes back one step; from step 1 it returns to the MAUI animation demo. Only after Your Game does the next action open Install & Register Orbit. Re-entering the spread starts again at .NET MAUI. Presenter notes follow each step.
 
 ### Transition
 

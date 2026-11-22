@@ -21,7 +21,7 @@ public static class OrbitOverviewWalkthrough
             "ORBIT", "Add structure and a loop",
             "Scenes organize the world.\n\nGameObjects give its parts behaviour.\n\nUpdate evolves state. Render draws it.",
             "Orbit gives the game a structure.",
-            "Orbit is the lightweight game engine between our drawing tools and our game. GameSceneView hosts it in MAUI; scenes and GameObjects organize it.\nThe engine runs the update/render loop. We put our state changes in Update and drawing in Render. MAUI Graphics stays underneath. We will add the separate Orbit.Input package when we reach the controls chapter."),
+            "Reveal the logo here: this is where Orbit enters the picture. Orbit is the lightweight game engine between our drawing tools and our game. GameSceneView hosts it in MAUI; scenes and GameObjects organize it.\nThe engine runs the update/render loop. We put our state changes in Update and drawing in Render. MAUI Graphics stays underneath. We will add the separate Orbit.Input package when we reach the controls chapter."),
         OrbitOverviewStage.Game => new(
             "YOUR GAME", "Write the rules of the world",
             "Choose the characters and their state.\n\nDecide how input changes that state.\n\nMake every change visible to the player.",

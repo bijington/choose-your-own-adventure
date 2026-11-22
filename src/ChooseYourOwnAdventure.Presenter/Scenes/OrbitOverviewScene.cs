@@ -21,8 +21,8 @@ public sealed class OrbitOverviewScene : PresentationSceneBase
         var stage = _state.OrbitOverviewStage;
         var step = OrbitOverviewWalkthrough.ForStage(stage);
         DrawShell(canvas, dimensions);
-        DrawTitle(canvas, dimensions, "WHAT IS ORBIT?",
-            $"{(int)stage + 1} / 4 · {step.Component}\nHow do we build a game inside a MAUI app?");
+        DrawTitle(canvas, dimensions, "BUILDING A GAME IN MAUI",
+            $"{(int)stage + 1} / 4 · {step.Component}\nFrom the app to the drawing tools, the engine and our game.");
 
         var left = BookLayout.LeftPage(dimensions);
         var right = BookLayout.RightPage(dimensions);
@@ -62,7 +62,7 @@ public sealed class OrbitOverviewScene : PresentationSceneBase
             canvas.DrawLine(x + 5, bottom - 5, x, bottom);
         }
 
-        if (Logo.Value is { } logo)
+        if (stage is (OrbitOverviewStage.Orbit or OrbitOverviewStage.Game) && Logo.Value is { } logo)
         {
             var logoHeight = dimensions.Height * .18f;
             var logoWidth = logoHeight * logo.Width / logo.Height;

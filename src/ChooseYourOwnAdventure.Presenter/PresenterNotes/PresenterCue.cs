@@ -14,7 +14,7 @@ public static class PresenterCueFactory
         PresentationSlide.AfterParty => "After-Party Not Found",
         PresentationSlide.PrologueChapter => "Discovering Orbit",
         PresentationSlide.MauiAnimations => "MAUI Already Has Some Magic",
-        PresentationSlide.OrbitOverview => "What Is Orbit?",
+        PresentationSlide.OrbitOverview => "Building a Game in MAUI",
         PresentationSlide.InstallOrbit => "Install & Register Orbit",
         PresentationSlide.GameSceneView => "Give Orbit Somewhere to Render",
         PresentationSlide.LoadGameScene => "Load a Game Scene",
@@ -46,8 +46,8 @@ public static class PresenterCueFactory
                 return new("MAUI animations · a little magic",
                     "Before introducing Orbit, show what MAUI already provides. These are real XAML controls animated with MAUI’s Animation API: translation, rotation, scale and opacity. Easing changes the feel of the motion.\n" +
                     "Tap Play it again if useful. These are great for transitions, feedback and playful UI. We can build games with MAUI; Orbit gives us a shared game loop, scenes and game objects as complexity grows. Keep this demonstration to about 30 seconds.",
-                    "Tap Play it again to replay. South / Enter / Right shoulder / Page Down: meet Orbit. " + back,
-                    "Introduce Orbit and the four building blocks.");
+                    "Tap Play it again to replay. South / Enter / Right shoulder / Page Down: building a game in MAUI. " + back,
+                    "Walk through the four building blocks, introducing Orbit at step three.");
             case PresentationSlide.MauiInput:
                 return new("Touch and mouse · ordinary MAUI UI",
                     "Start with what MAUI already gives us: a Button works with touch and mouse. Clicked or Command can represent a single action; Pressed and Released are useful for held controls.\n" +
@@ -60,7 +60,7 @@ public static class PresenterCueFactory
                 var overviewNext = state.OrbitOverviewStage == OrbitOverviewStage.Game
                     ? "Show how to install and register Orbit."
                     : "Explain: " + OrbitOverviewWalkthrough.ForStage(state.OrbitOverviewStage + 1).Component + ".";
-                return new($"Orbit overview · {(int)state.OrbitOverviewStage + 1}/4 · {overview.Component}",
+                return new($"Building a game in MAUI · {(int)state.OrbitOverviewStage + 1}/4 · {overview.Component}",
                     overview.TalkingPoints,
                     "South / Right shoulder / Enter / Page Down / right page: next building block. " +
                     "Left shoulder / East / Page Up / Escape / left page: previous; from step 1, previous spread.", overviewNext);

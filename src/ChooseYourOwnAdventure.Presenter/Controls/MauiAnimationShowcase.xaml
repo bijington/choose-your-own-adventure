@@ -26,7 +26,7 @@
         </Grid>
         <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="12">
             <Button Text="Play it again" BackgroundColor="#F1DCA8" TextColor="#342116" Clicked="OnReplayClicked" />
-            <Button Grid.Column="1" Text="Meet Orbit →" BackgroundColor="#E96225" TextColor="#FFF7DF" Clicked="OnContinueClicked" />
+            <Button Grid.Column="1" Text="Build a game →" BackgroundColor="#E96225" TextColor="#FFF7DF" Clicked="OnContinueClicked" />
         </Grid>
     </Grid>
 </ContentView>
