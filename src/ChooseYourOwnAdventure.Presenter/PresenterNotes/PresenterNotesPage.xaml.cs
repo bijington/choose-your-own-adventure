@@ -20,7 +20,7 @@ public sealed partial class PresenterNotesPage : ContentPage
     public PresenterNotesPage(IPresentationNavigator navigator, AdventureState state,
         LiveVoteState vote, LiveRaceState race, AudienceVoteClient audience,
         PresenterNotesWindow windows, PresenterNotesGuide guide,
-        IReadOnlyList<PresentationSlideDefinition> slides)
+        IReadOnlyList<PresentationSlideDefinition> slides, LiveAudienceOptions liveOptions)
     {
         _navigator = navigator; _state = state; _vote = vote; _race = race;
         _audience = audience; _windows = windows; _guide = guide; _slides = slides;
@@ -31,6 +31,19 @@ public sealed partial class PresenterNotesPage : ContentPage
             if (_navigator.GoTo(slide) || _navigator.Current == slide)
                 _windows.FocusPresentation();
         }));
+        PresenterMenu.Add(new MenuFlyoutItem
+        {
+            Text = "New Audience Session",
+            Command = new Command(async () =>
+            {
+                if (_navigator.IsTurning) return;
+                var session = await _audience.CreateSessionAsync();
+                Microsoft.Maui.Storage.Preferences.Default.Set("AudienceSessionId", session);
+                _state.PrepareChampionVote();
+                await DisplayAlert("New audience session", $"{session}\n\n{liveOptions.JoinUrl}\n\nAsk everyone to scan the new QR code. The session is remembered on this device."
+                    + (_state.IsRehearsing ? "\n\nPractice mode is still on." : ""), "OK");
+            })
+        });
         _timer = Dispatcher.CreateTimer();
         _timer.Interval = TimeSpan.FromMilliseconds(250);
         _timer.Tick += (_, _) => RefreshNotes();

@@ -30,6 +30,9 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
     private readonly AdventureState _state;
     private readonly AdventureInputRouter _input;
 
+    private Sprite? _motion;
+    private Champion? _motionChampion;
+
     private double _progress;
     private double _speed;
     private double _laneOffset;
@@ -79,6 +82,10 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
     public override void Update(double millisecondsSinceLastUpdate)
     {
         base.Update(millisecondsSinceLastUpdate);
+
+        EnsureMotion();
+        if (IsSpacePilot ? IsThrusting : IsMoving)
+            _motion!.Update(millisecondsSinceLastUpdate);
 
         var elapsed = millisecondsSinceLastUpdate / 1000d;
 
@@ -218,17 +225,11 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
         canvas.SaveState();
         canvas.Translate(cx, cy);
         canvas.Rotate(headingDegrees);
-        DrawVehicleFocus(canvas);
         canvas.Scale(1.25f, 1.25f);
 
-        if (IsCharioteer)
-        {
-            DrawChariot(canvas);
-        }
-        else
-        {
-            DrawCar(canvas, (float)SteeringInput);
-        }
+        if (IsMoving) DrawMotion(canvas);
+        else if (IsCharioteer) DrawChariot(canvas);
+        else DrawCar(canvas, (float)SteeringInput);
 
         canvas.RestoreState();
     }
@@ -244,18 +245,30 @@ public sealed class LoopVehicle : ChampionVehicleGameObject
         canvas.SaveState();
         canvas.Translate(x, y);
         canvas.Rotate(-90f);
-        DrawVehicleFocus(canvas);
         canvas.Scale(1.25f, 1.25f);
-        DrawShip(canvas, IsThrusting);
+        if (IsThrusting) DrawMotion(canvas);
+        else DrawShip(canvas, false);
         canvas.RestoreState();
     }
 
-    private static void DrawVehicleFocus(ICanvas canvas)
+    private void EnsureMotion()
     {
-        // A paper-coloured backing keeps track lines out of the transparent sprite.
-        canvas.FillColor = PresentationTheme.ParchmentLight;
-        canvas.FillEllipse(-54f, -34f, 108f, 68f);
+        var champion = _state.Champion ?? Champion.RacingDriver;
+        if (_motionChampion == champion) return;
+        _motionChampion = champion;
+        _motion = ChampionSprites.CreateMotion(champion);
     }
+
+    private void DrawMotion(ICanvas canvas)
+    {
+        EnsureMotion();
+        canvas.SaveState();
+        canvas.Rotate(90f + (IsRacingDriver ? (float)SteeringInput * 8f : 0));
+        _motion!.Bounds = new RectF(-64, -80, 128, 160);
+        _motion.Render(canvas, _motion.Bounds);
+        canvas.RestoreState();
+    }
+
 }
 
 public static class VehicleControlLayout

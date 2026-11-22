@@ -5,20 +5,31 @@ namespace ChooseYourOwnAdventure.Live;
 
 public sealed class QrCodeRenderer : IDisposable
 {
-    private readonly QRCodeData _data;
+    private QRCodeData _data;
+    private readonly LiveAudienceOptions? _options;
+    private string _url;
 
-    public QrCodeRenderer(LiveAudienceOptions options) : this(options.JoinUrl) { }
+    public QrCodeRenderer(LiveAudienceOptions options) : this(options.JoinUrl) => _options = options;
 
     public static QrCodeRenderer ForUrl(string url) => new(url);
 
     private QrCodeRenderer(string url)
     {
+        _url = url;
         using var generator = new QRCodeGenerator();
         _data = generator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
     }
 
     public void Draw(ICanvas canvas, RectF bounds)
     {
+        if (_options is not null && _url != _options.JoinUrl)
+        {
+            using var generator = new QRCodeGenerator();
+            var data = generator.CreateQrCode(_options.JoinUrl, QRCodeGenerator.ECCLevel.Q);
+            _data.Dispose();
+            _data = data;
+            _url = _options.JoinUrl;
+        }
         var modules = _data.ModuleMatrix;
         if (modules.Count == 0)
         {

@@ -21,6 +21,7 @@ public partial class MainPage : ContentPage
     private readonly AudienceVoteClient _audienceVoteClient;
     private readonly LiveVoteState _liveVoteState;
     private readonly LiveRaceState _liveRaceState;
+    private readonly LiveAudienceOptions _liveOptions;
 
     private readonly PresenterNotesWindow _notes;
     private bool _hasStarted;
@@ -35,12 +36,15 @@ public partial class MainPage : ContentPage
         AudienceVoteClient audienceVoteClient,
         LiveVoteState liveVoteState,
         LiveRaceState liveRaceState,
+        LiveAudienceOptions liveOptions,
         PresenterNotesWindow notes,
         IReadOnlyList<PresentationSlideDefinition> slides)
     {
         InitializeComponent();
         _notes = notes;
         _slides = slides;
+        _liveOptions = liveOptions;
+        liveOptions.SessionId = Preferences.Default.Get("AudienceSessionId", liveOptions.SessionId);
         _isMobile = DeviceInfo.Current.Idiom == DeviceIdiom.Phone || DeviceInfo.Current.Idiom == DeviceIdiom.Tablet;
         adventureState.IsRehearsing = _isMobile && Preferences.Default.Get("MobilePracticeMode", true);
 #if MACCATALYST || __MACCATALYST__ || WINDOWS
@@ -50,6 +54,7 @@ public partial class MainPage : ContentPage
         {
             if (_hasStarted) presentationNavigator.GoTo(slide);
         }));
+        presenterMenu.Add(new MenuFlyoutItem { Text = "New Audience Session", Command = new Command(async () => await CreateAudienceSessionAsync()) });
         presenterMenu.Add(new MenuFlyoutItem { Text = "Practice Options", Command = new Command(async () => await ShowPracticeOptionsAsync()) });
         MenuBarItems.Add(presenterMenu);
 #endif
@@ -79,12 +84,15 @@ public partial class MainPage : ContentPage
     {
         if (!_hasStarted || _presentationNavigator.IsTurning) return;
         var choices = _adventureState.IsRehearsing
-            ? new[] { "Choose a champion", "Skip the audience race", "Go to slide", "Use live audience" }
-            : new[] { "Practise without the audience", "Go to slide" };
+            ? new[] { "New audience session", "Choose a champion", "Skip the audience race", "Go to slide", "Use live audience" }
+            : new[] { "New audience session", "Practise without the audience", "Go to slide" };
         var choice = await DisplayActionSheet(_adventureState.IsRehearsing ? "Practice mode" : "Live audience mode",
             "Cancel", null, choices);
         switch (choice)
         {
+            case "New audience session":
+                await CreateAudienceSessionAsync();
+                break;
             case "Practise without the audience":
                 _adventureState.IsRehearsing = true;
                 _adventureState.ResetLocalVote();
@@ -126,6 +134,16 @@ public partial class MainPage : ContentPage
                 if (destination is not null) _presentationNavigator.GoTo(destination.Slide);
                 break;
         }
+    }
+
+    private async Task CreateAudienceSessionAsync()
+    {
+        if (!_hasStarted || _presentationNavigator.IsTurning) return;
+        var session = await _audienceVoteClient.CreateSessionAsync();
+        Preferences.Default.Set("AudienceSessionId", session);
+        _adventureState.PrepareChampionVote();
+        await DisplayAlert("New audience session", $"{session}\n\n{_liveOptions.JoinUrl}\n\nThe vote and race start fresh. Ask everyone to scan the new QR code. This session is remembered on this device."
+            + (_adventureState.IsRehearsing ? "\n\nPractice mode is still on; select Use live audience when ready." : ""), "OK");
     }
 
     private void OnGameViewLoaded(object? sender, EventArgs e)

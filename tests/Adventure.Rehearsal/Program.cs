@@ -75,8 +75,9 @@ Console.WriteLine("PASS: summary configuration, speaker name, valid resources UR
 var practiceState = new ChooseYourOwnAdventure.AdventureState { IsRehearsing = true };
 var practiceVote = new ChooseYourOwnAdventure.Live.LiveVoteState();
 var practiceRace = new ChooseYourOwnAdventure.Live.LiveRaceState();
+var practiceOptions = new ChooseYourOwnAdventure.Live.LiveAudienceOptions { BaseUrl = "not a usable connection URL" };
 await using (var practiceClient = new ChooseYourOwnAdventure.Live.AudienceVoteClient(
-    new ChooseYourOwnAdventure.Live.LiveAudienceOptions { BaseUrl = "not a usable connection URL" },
+    practiceOptions,
     practiceVote, practiceRace, practiceState))
 {
     await practiceClient.StartAsync();
@@ -89,6 +90,22 @@ await using (var practiceClient = new ChooseYourOwnAdventure.Live.AudienceVoteCl
     Check(!practiceClient.IsConnected && practiceVote.Snapshot.Phase == ChooseYourOwnAdventure.Live.VotePhase.Ready
         && practiceRace.Snapshot.Phase == ChooseYourOwnAdventure.Live.RacePhase.Ready,
         "Practice connected to or changed the live session");
+    practiceVote.Update(new("ORBIT", 20, 10, 5, ChooseYourOwnAdventure.Live.VotePhase.Revealed,
+        ChooseYourOwnAdventure.Champion.RacingDriver));
+    practiceRace.Update(new("ORBIT", 1, .5, .2, 20, 10, 5, ChooseYourOwnAdventure.Live.RacePhase.Finished,
+        ChooseYourOwnAdventure.Champion.RacingDriver));
+    practiceState.RevealLocalVote();
+    var freshSession = await practiceClient.CreateSessionAsync();
+    Check(freshSession != "ORBIT" && freshSession == practiceOptions.SessionId
+        && practiceOptions.JoinUrl.EndsWith("/join/" + freshSession), "New session did not update the audience link");
+    Check(practiceVote.Snapshot.SessionId == freshSession && practiceVote.Snapshot.Total == 0
+        && practiceVote.Snapshot.Phase == ChooseYourOwnAdventure.Live.VotePhase.Ready
+        && practiceRace.Snapshot.SessionId == freshSession
+        && practiceRace.Snapshot.Phase == ChooseYourOwnAdventure.Live.RacePhase.Ready
+        && practiceRace.Snapshot.RacingDriverProgress == 0 && practiceState.LocalVoteWinner is null,
+        "New session retained the previous vote or race");
+    Check(await practiceClient.CreateSessionAsync() != freshSession, "New sessions reused an identifier");
+    Console.WriteLine("PASS: fresh audience sessions replace stale state and refresh the join URL without connecting in practice.");
 }
 Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
     ChooseYourOwnAdventure.PresentationSlide.AudienceRace, practiceState, practiceVote.Snapshot, practiceRace.Snapshot, false)

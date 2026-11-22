@@ -46,6 +46,70 @@ internal static class ChampionSprites
         autoStart: true,
         playMode: Orbit.Engine.Sprite.PlayModeType.Loop);
 
+    private static readonly Dictionary<Champion, IImage[]> MotionFrames = new();
+
+    public static Orbit.Engine.Sprite CreateMotion(Champion champion)
+    {
+        if (!MotionFrames.TryGetValue(champion, out var frames))
+        {
+            frames = Enumerable.Range(0, 4).Select(frame => CreateMotionFrame(champion, frame)).ToArray();
+            MotionFrames.Add(champion, frames);
+        }
+        return new Orbit.Engine.Sprite(frames, imageDisplayDuration: 90d, autoStart: true,
+            playMode: Orbit.Engine.Sprite.PlayModeType.Loop);
+    }
+
+    private static IImage CreateMotionFrame(Champion champion, int frame)
+    {
+        // Build transparent animation frames once from the existing artwork and pixel details.
+        using var context = new PlatformBitmapExportService().CreateContext(128, 160, 1);
+        var canvas = context.Canvas;
+        canvas.Translate(64, 80);
+        canvas.Antialias = false;
+        var length = champion == Champion.Charioteer ? 76f : 64f;
+        if (champion == Champion.SpacePilot)
+        {
+            var flame = new PathF();
+            flame.MoveTo(-7, 25);
+            flame.LineTo(frame % 2 == 0 ? -3 : 2, 47 + frame * 3);
+            flame.LineTo(7, 25);
+            flame.Close();
+            canvas.FillColor = Color.FromArgb("#E96225");
+            canvas.FillPath(flame);
+            canvas.FillColor = Color.FromArgb("#FFCE56");
+            canvas.FillRectangle(-3, 27, 6, 13 + frame * 2);
+        }
+        if (champion == Champion.Charioteer)
+        {
+            canvas.FillColor = Color.FromArgb("#BC9862");
+            for (var puff = 0; puff < 3; puff++)
+            {
+                var y = 40 + (frame * 4 + puff * 6) % 20;
+                canvas.FillRectangle(-12 + puff * 9, y, 3, 3);
+            }
+        }
+        DrawFit(canvas, Get(champion, "top"), new RectF(-22, -length / 2, 44, length));
+        if (champion == Champion.RacingDriver)
+        {
+            canvas.FillColor = Color.FromArgb("#ADA4A3");
+            foreach (var x in new[] { -18f, 11f })
+            foreach (var y in new[] { -17f, 17f })
+            for (var tread = 0; tread < 3; tread++)
+                canvas.FillRectangle(x, y + (tread * 3 + frame * 2) % 9, 7, 1);
+        }
+        if (champion == Champion.Charioteer)
+        {
+            canvas.FillColor = Color.FromArgb("#E2AD58");
+            foreach (var x in new[] { -17f, 14f })
+            for (var spoke = 0; spoke < 3; spoke++)
+                canvas.FillRectangle(x, 22 + (spoke * 4 + frame * 2) % 12, 3, 1);
+        }
+        using var stream = new MemoryStream();
+        context.WriteToStream(stream);
+        stream.Position = 0;
+        return PlatformImage.FromStream(stream);
+    }
+
     public static void DrawSideVehicle(ICanvas canvas, Champion champion, RectF bounds) =>
         DrawFit(canvas, Get(champion, "side"), bounds);
 

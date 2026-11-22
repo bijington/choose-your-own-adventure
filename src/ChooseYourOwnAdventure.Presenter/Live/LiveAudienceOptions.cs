@@ -21,6 +21,12 @@ public sealed class LiveAudienceOptions
         };
     }
 
+    public string CreateSession()
+    {
+        SessionId = $"ORBIT-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
+        return SessionId;
+    }
+
     public string JoinUrl => $"{BaseUrl.TrimEnd('/')}/join/{SessionId}";
     public string HubUrl => $"{BaseUrl.TrimEnd('/')}/adventureHub";
 }

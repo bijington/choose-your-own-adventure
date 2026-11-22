@@ -31,6 +31,10 @@ If notes are closed, use **Presenter → Show Presenter Notes**. **Return to pre
 
 Speaker prose is extracted from this guide at build time; code blocks and audience-screen descriptions are omitted. Interactive cues are maintained in `PresenterNotes/PresenterCue.cs`. Rebuild after editing this guide.
 
+# Fresh audience sessions
+
+Before the audience joins, choose **Presenter → New Audience Session** in either desktop window (or **New audience session** in the mobile options menu). This creates a unique session ID and updates the audience QR code/link without server changes. Old test votes stay in the old session. Ask everyone to scan the new code; people already in the old session will not move automatically. The session is remembered across restarts on this device. Practice mode stays enabled if already on, so switch to live audience when ready.
+
 # Mobile rehearsal
 
 Phones and tablets default to Practice mode. Use the **Practice · options** button to choose a local champion, skip the race or jump to a slide. Card taps select the champion locally; the race's right page skips to the epilogue. No SignalR connection or presenter commands are used in practice. The mode is remembered on the device. Select **Use live audience** to reconnect and rehearse with real phones. Desktop offers **Presenter → Practice Options** as well.
@@ -658,7 +662,7 @@ Briefly mention that the browser batches boost taps into fewer calls. Then give 
 
 ### On screen
 
-All three champions race simultaneously. Audience phones automatically become team-specific boost controls.
+All three champions race simultaneously. Audience phones automatically become team-specific boost controls. Moving vehicles use the same animated sprites as the control demo: rolling tyres, chariot wheels and dust, and rocket exhaust. Each has independent playback and returns to the static artwork while idle or after the finish.
 
 ### Before starting
 
@@ -886,3 +890,5 @@ Orbit runs one `BookScene`, which hosts the current scene and captures outgoing 
 ### Controller navigation and confirmation
 
 Use Left/Right shoulder for previous/next page or presentation beat (Page Up/Page Down on keyboard). South confirms the current action (Enter/Space); East cancels or resets it (Escape/Shift). The left stick and arrows/WASD select champions or control the vehicle. Navigation cannot open/close/reveal a vote or start a race: use confirmation for those commands. Forward navigation continues once a champion is revealed or a race has finished. In the vehicle demo South/East remain throttle/brake or thrust/down-thrust.
+
+The live vehicle-control demonstration uses transparent motion sprites: rolling tyre treads for the driver, exhaust while the pilot applies thrust, and wheel movement with a dust trail for the chariot. Ground animation stops at rest; rocket exhaust stops when thrust is released. The paper-coloured oval backing has been removed.

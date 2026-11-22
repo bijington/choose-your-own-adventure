@@ -34,19 +34,31 @@ public sealed class AudienceVoteClient : IAsyncDisposable
             .WithAutomaticReconnect()
             .Build();
 
+        var connection = _connection;
         _connection.On<VoteSnapshot>("VoteUpdated", snapshot =>
         {
-            if (!_state.IsRehearsing) _voteState.Update(snapshot);
+            if (!_state.IsRehearsing && ReferenceEquals(_connection, connection) && string.Equals(snapshot.SessionId, _options.SessionId, StringComparison.OrdinalIgnoreCase)) _voteState.Update(snapshot);
         });
         _connection.On<RaceSnapshot>("RaceUpdated", snapshot =>
         {
-            if (!_state.IsRehearsing) _raceState.Update(snapshot);
+            if (!_state.IsRehearsing && ReferenceEquals(_connection, connection) && string.Equals(snapshot.SessionId, _options.SessionId, StringComparison.OrdinalIgnoreCase)) _raceState.Update(snapshot);
         });
         _connection.Reconnected += async _ => await JoinSessionAsync();
 
         // Never block the presentation while a network connection is established.
         _ = ConnectUntilAvailableAsync(_connection);
         return Task.CompletedTask;
+    }
+
+    public async Task<string> CreateSessionAsync()
+    {
+        await PauseAsync();
+        var session = _options.CreateSession();
+        _state.ResetLocalVote();
+        _voteState.Update(new VoteSnapshot(session, 0, 0, 0, VotePhase.Ready, null));
+        _raceState.Update(new RaceSnapshot(session, 0, 0, 0, 0, 0, 0, RacePhase.Ready, null));
+        await StartAsync();
+        return session;
     }
 
     public Task OpenVotingAsync() => InvokePresenterCommandAsync("OpenVoting");
