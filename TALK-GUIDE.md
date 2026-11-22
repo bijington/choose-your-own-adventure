@@ -111,6 +111,10 @@ Before presenting, run through this minimum path:
 
 ### Failure fallback
 
+Optional aside **only if setup or connectivity misbehaves**: “There were going to be goblins. This one lives in the conference Wi-Fi.” Keep this in reserve; there is no planned goblin reveal.
+
+For connection recovery, the client reconnects, rejoins the session and receives the latest vote/race snapshot. Keep the same browser identity to retain the team. This restores current state, not every missed tap. Use the reconnect/QR flow or practice mode to keep moving.
+
 If SignalR is unavailable during the talk:
 
 - The champion screen falls back to local selection.
@@ -351,7 +355,7 @@ Voting instructions, QR code and live status on the left page. Three stacked cha
 
 ### Purpose
 
-First major audience interaction and the choice that themes later examples.
+First major audience interaction: the winning champion selects the movement model explored later, and each participant’s vote determines their race team.
 
 ### Talking points before opening voting
 
@@ -404,7 +408,13 @@ The final result stays on this spread: the losing cards fade out while the winni
 
 ### Talking points
 
-Introduce the champion on the right-hand summary page first. Then invite the audience into their backstory: “Every champion has an origin story. Ours begins with a dot.” Trace their origins in four local stages:
+Introduce the champion on the right-hand summary page first. Point to the consequence on the facing page:
+
+> “You’ve chosen more than our hero — you’ve chosen the physics we’ll have to live with.”
+
+Name the chosen path: **Driver — precision, steering and braking; Charioteer — building and taming momentum; Space Pilot — thrust against gravity.** Return to this consequence in the control demo: “This is the challenge you chose for us.” The choice changes the working example and the controls, while everyone’s original vote keeps their race team.
+
+Then invite the audience into their backstory: “Every champion has an origin story. Ours begins with a dot.” Trace their origins in four local stages:
 
 1. **Dot:** a filled ellipse. Every champion starts somewhere; a canvas and bounds are enough to show something.
 2. **Primitives:** combine circles, rectangles and lines into a simple figure. More handmade detail needs more instructions. The chosen champion influences the colour.
@@ -668,11 +678,15 @@ All three champions race simultaneously. Audience phones automatically become te
 
 Say:
 
-> “You chose your champion earlier. You have been on that team ever since.”
+> “This is our final challenge. You chose your champion earlier, and you have been on that team ever since. Now power them through the last stretch.”
 
-Explain fairness in one sentence:
+Before starting, expose the design bug (about 20 seconds):
 
-> “Boost strength is normalised by team size, so having more people does not automatically guarantee a win.”
+> “What happens if one champion has twice as many people? Have we built a race — or a headcount?”
+
+Pause for an answer. Explain that raw tap totals would reward team size. The fix is already in our server: each tap advances progress by `1 / (team size × 84)`, so average effort per registered team member determines progress. More people do not automatically guarantee a win; inactive team members still count. This is a design challenge we have solved, not a staged live failure.
+
+> “We divide tap strength by team size. A small party can still win this adventure. Ready?”
 
 ### Presenter controls
 
@@ -700,7 +714,7 @@ Optional commentary:
 
 After the race finishes, press `A / Enter`.
 
-> “Every adventure deserves an ending… and every race deserves a podium.”
+> “You chose the heroes, shaped their journey and powered the final challenge. The room wrote the ending — now let’s see our podium.”
 
 ---
 

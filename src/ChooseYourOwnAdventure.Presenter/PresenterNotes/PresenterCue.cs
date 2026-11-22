@@ -94,7 +94,7 @@ public static class PresenterCueFactory
                     (local ? "Left stick Up/Down or arrow keys: select. " : string.Empty) + "South / Enter / right page: " + next + " East / Shift / Escape: reset. " + back, next);
             case PresentationSlide.ChosenChampion:
                 if (state.ChampionRenderingStage is not { } renderStage)
-                    return new("Chosen champion · summary", "Introduce the chosen champion once. Then explore their backstory: from humble beginnings as a dot to an animated sprite.",
+                    return new("Chosen champion · summary", "Say: ‘You’ve chosen more than our hero — you’ve chosen the physics we’ll have to live with.’ Name the chosen challenge: driver = precision and braking; charioteer = momentum; pilot = gravity and thrust. Then explore their backstory: from humble beginnings as a dot to an animated sprite.",
                         "South / Enter / Right shoulder / Page Down / right page: begin with a dot. " + back,
                         "Begin our champion’s four-stage origin story.");
                 var rendering = ChampionRenderingWalkthrough.ForStage(renderStage);
@@ -122,6 +122,12 @@ public static class PresenterCueFactory
                 return new("Live control · " + (state.Champion?.ToString() ?? "RacingDriver"), model + "\nPoint out the active code branch and live values.",
                     "South / Enter: throttle, pull or thrust. East / Shift / Down: brake or down-thrust. Left/Right: driver steering. Right shoulder / Page Down / lower-right NEXT: next chapter.",
                     "Ask: ‘What if the input source changes?’ Then open An Adventure Together.");
+            case PresentationSlide.SignalRTransition:
+                return new("From one controller to the room",
+                    "Ask: ‘What if the input came from all of you?’ The game still consumes intent; the source changes.\n" +
+                    "The audience already used this route for the champion vote. Now reveal how phones, the server and the presentation share the experience.",
+                    "South / Enter / right page: follow one vote. " + back,
+                    "Explain SignalR, then follow a vote from phone to screen.");
             case PresentationSlide.SignalRArchitecture:
                 var step = SignalRWalkthrough.ForStage(state.SignalRStage);
                 var nextStep = state.SignalRStage == SignalRStage.Presenter
@@ -141,6 +147,8 @@ public static class PresenterCueFactory
                         "Right page / South / Enter / Right shoulder: skip to The Journey Home. " + back,
                         "Skip the live race and continue the ending.");
                 return new($"Audience race · {race.Phase}",
+                    "Frame this as our final challenge: power your champion through the last stretch. Your original vote chose your team.\n" +
+                    "Before starting, ask: ‘What if one champion has twice as many people? Have we built a race — or a headcount?’ Pause for answers. The design bug is rewarding headcount; divide tap strength by team size so average effort decides progress. The fix is already implemented.\n" +
                     "Phones send boost intent. The server owns progress and normalizes boost by team size.\n" +
                     (race.Phase == RacePhase.Finished ? "Celebrate the winner before turning to The Journey Home." : "Remind everyone that they race for their original champion. Keep the QR code available for reconnects."),
                     "South / Enter: start race, or continue after the finish. East / Shift / Escape: reset race.",

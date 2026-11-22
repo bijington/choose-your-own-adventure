@@ -42,6 +42,7 @@ public sealed class AudienceRaceScene : GameScene
         DrawBackground(canvas, dimensions);
         DrawHeading(canvas, dimensions);
         DrawTrack(canvas, dimensions);
+        DrawChallenge(canvas, dimensions);
         DrawStandings(canvas, dimensions);
         DrawJoinPrompt(canvas, dimensions);
 
@@ -125,6 +126,28 @@ public sealed class AudienceRaceScene : GameScene
         canvas.FontColor = PresentationTheme.AccentRed;
         canvas.FontSize = 12;
         canvas.DrawString("FINISH", centreX - 48, stripY - 26, 96, 20,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
+    }
+
+    private void DrawChallenge(ICanvas canvas, RectF dimensions)
+    {
+        var track = AudienceRaceLayout.GetTrackBounds(dimensions);
+        var phase = _raceState.Snapshot.Phase;
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = PresentationTheme.AccentRed;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .019f, 18f, 28f);
+        canvas.DrawString(phase == RacePhase.Finished ? "THE ROOM WROTE THE ENDING" : "THE FINAL CHALLENGE",
+            track.X + track.Width * .16f, track.Center.Y - 44, track.Width * .68f, 40,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = PresentationTheme.Ink;
+        canvas.FontSize = Math.Clamp(dimensions.Width * .014f, 14f, 21f);
+        canvas.DrawString(phase switch
+        {
+            RacePhase.Ready => "A race… or a headcount?\nWhat if one team has twice as many people?",
+            RacePhase.Racing => "Power your champion through the last stretch!",
+            _ => "Your choices. Your teams. Your finish."
+        }, track.X + track.Width * .18f, track.Center.Y, track.Width * .64f, 68,
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 

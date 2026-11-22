@@ -35,6 +35,23 @@ public sealed class ChosenChampionScene : ChapterOpeningScene
         if (_state.ChampionRenderingStage is not { } stage)
         {
             base.Render(canvas, dimensions);
+            var page = BookLayout.LeftPage(dimensions);
+            canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+            canvas.FontColor = Accent;
+            canvas.FontSize = Math.Clamp(dimensions.Width * .022f, 20f, 32f);
+            canvas.DrawString("YOUR CHOICE CHANGED\nTHE JOURNEY", page.X, dimensions.Y + dimensions.Height * .34f,
+                page.Width, dimensions.Height * .14f, HorizontalAlignment.Left, VerticalAlignment.Center);
+            var consequence = _state.Champion switch
+            {
+                Champion.Charioteer => "You chose momentum.\nPull to build speed. Brake to tame it.",
+                Champion.SpacePilot => "You chose gravity.\nThrust to rise. Release to fall.",
+                _ => "You chose precision.\nAccelerate, steer and know when to brake."
+            };
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+            canvas.FontColor = Ink;
+            canvas.FontSize = Math.Clamp(dimensions.Width * .018f, 17f, 27f);
+            canvas.DrawString(consequence, page.X, dimensions.Y + dimensions.Height * .51f,
+                page.Width, dimensions.Height * .18f, HorizontalAlignment.Left, VerticalAlignment.Top);
             return;
         }
 
