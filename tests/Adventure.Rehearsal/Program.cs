@@ -15,10 +15,9 @@ if (args.Length >= 2 && args[0] == "--demo")
     await demo.StartAsync();
     if (args[1] == "boost")
     {
-        await demo.InvokeAsync("Boost", "ORBIT", "demo-SpacePilot", 20);
-        await demo.InvokeAsync("Boost", "ORBIT", "demo-SpacePilot", 4);
-        await demo.InvokeAsync("Boost", "ORBIT", "demo-extra", 20);
-        await demo.InvokeAsync("Boost", "ORBIT", "demo-extra", 4);
+        foreach (var participant in new[] { "demo-SpacePilot", "demo-extra" })
+        foreach (var taps in new[] { 20, 20, 20, 20, 4 })
+            await demo.InvokeAsync("Boost", "ORBIT", participant, taps);
     }
     else
     {
@@ -268,7 +267,10 @@ await Task.WhenAll(Enumerable.Range(0, 600).Select(i => Task.Run(() =>
 Check(store.CloseVoting(loadSession).Total == 600, "Concurrent votes lost");
 Check(store.RevealWinner(loadSession).RevealedChampion is null, "Tie picked a winner");
 store.StartRace(loadSession);
-await Task.WhenAll(Enumerable.Range(0, 600).Select(i => Task.Run(() => store.Boost(loadSession, $"p{i}", 12))));
+await Task.WhenAll(Enumerable.Range(0, 600).Select(i => Task.Run(() =>
+{
+    foreach (var taps in new[] { 20, 20, 2 }) store.Boost(loadSession, $"p{i}", taps);
+})));
 var race = store.GetRaceSnapshot(loadSession);
 Check(new[] {race.RacingDriverProgress, race.CharioteerProgress, race.SpacePilotProgress}.All(x => Math.Abs(x - .5) < .00001), "Team normalization incorrect");
 Check(store.Boost(loadSession, "unknown", 20) == race, "Unregistered boost accepted");
@@ -282,7 +284,7 @@ store.CloseVoting("BATCHED");
 store.StartRace("BATCHED");
 foreach (var participant in new[] { "a", "b" })
 {
-    store.Boost("BATCHED", participant, 20);
+    for (var batch = 0; batch < 4; batch++) store.Boost("BATCHED", participant, 20);
     store.Boost("BATCHED", participant, 4);
 }
 Check(store.GetRaceSnapshot("BATCHED").Phase == RacePhase.Finished, "Batched roundoff prevented race finish");
@@ -335,12 +337,14 @@ try
     await Until(() => HasVote(x => x.RevealedChampion == Champion.RacingDriver), "Live winner failed");
     await presenter.InvokeAsync("StartRace", session, key);
     await clients[2].InvokeAsync("Vote", session, "p2", "RacingDriver");
-    await clients[2].InvokeAsync("Boost", session, "p2", 12);
+    foreach (var taps in new[] { 20, 20, 2 })
+        await clients[2].InvokeAsync("Boost", session, "p2", taps);
     await Until(() => HasRace(x => Math.Abs(x.SpacePilotProgress - .5) < .00001 && x.RacingDriverProgress == 0), "Original race team lost");
     await clients[2].StopAsync();
     await clients[2].StartAsync();
     await clients[2].InvokeAsync("JoinSession", session);
-    await clients[2].InvokeAsync("Boost", session, "p2", 12);
+    foreach (var taps in new[] { 20, 20, 2 })
+        await clients[2].InvokeAsync("Boost", session, "p2", taps);
     await Until(() => HasRace(x => x.Phase == RacePhase.Finished && x.Winner == Champion.SpacePilot), "Reconnect/finish failed");
     using var http = new HttpClient();
     Check((await http.GetAsync(url + "/join/ORBIT")).IsSuccessStatusCode, "Join page failed");

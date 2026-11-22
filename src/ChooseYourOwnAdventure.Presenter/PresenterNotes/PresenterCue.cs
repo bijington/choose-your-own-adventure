@@ -89,7 +89,7 @@ public static class PresenterCueFactory
                 if (state.ChampionRenderingStage is not { } renderStage)
                     return new("Chosen champion · summary", "Introduce the chosen champion once. Then explore their backstory: from humble beginnings as a dot to an animated sprite.",
                         "South / Enter / Right shoulder / Page Down / right page: begin with a dot. " + back,
-                        "Discover our champion’s origins in four stages.");
+                        "Begin our champion’s four-stage origin story.");
                 var rendering = ChampionRenderingWalkthrough.ForStage(renderStage);
                 return new($"Our champion’s origins · {(int)renderStage + 1}/4 · {rendering.Title}", rendering.TalkingPoints,
                     "South / Enter / Right shoulder / Page Down / right page: next stage. Left shoulder / East / Page Up / Escape / left page: previous stage; before the dot, the champion summary.",
@@ -120,7 +120,12 @@ public static class PresenterCueFactory
                 var nextStep = state.SignalRStage == SignalRStage.Presenter
                     ? "Open the audience race."
                     : "Show: " + SignalRWalkthrough.ForStage(state.SignalRStage + 1).Title + ".";
-                return new($"SignalR · {(int)state.SignalRStage + 1}/4 · {step.Title}", step.TalkingPoints,
+                var concept = state.SignalRStage == SignalRStage.Browser
+                    ? "SignalR is ASP.NET Core’s library for real-time communication. The server can push updates to connected clients without each client repeatedly asking for news.\n" +
+                      "Think of the hub as the room’s switchboard: phones send intent; our server stores the shared state and broadcasts an update to phones and the MAUI app. SignalR carries messages; Orbit renders the result.\n" +
+                      "Let’s follow one vote from your phone to this screen.\n\n"
+                    : string.Empty;
+                return new($"SignalR · {(int)state.SignalRStage + 1}/4 · {step.Title}", concept + step.TalkingPoints,
                     "South / Right shoulder / Enter / Page Down / right page: next step. " +
                     "Left shoulder / East / Page Up / Escape / left page: previous step; from step 1, previous spread.", nextStep);
             case PresentationSlide.AudienceRace:

@@ -5,7 +5,8 @@ namespace Adventure.Web.Services;
 
 public sealed class VoteStore
 {
-    private const double AverageTapsPerPlayerToFinish = 24d;
+    // About 28 seconds at three taps per second from each team member.
+    private const double AverageTapsPerPlayerToFinish = 84d;
 
     private sealed class SessionVotes
     {
@@ -130,7 +131,7 @@ public sealed class VoteStore
             var acceptedTaps = Math.Clamp(taps, 1, 20);
             var boostPerTap = 1d / (teamSize * AverageTapsPerPlayerToFinish);
             var progress = Math.Clamp(session.RaceProgress[champion] + boostPerTap * acceptedTaps, 0d, 1d);
-            // Batched fractions can land just below 1 (for example 20 + 4 taps
+            // Batched fractions can land just below 1 (for example four batches of 20 + 4 taps
             // from each of two racers). Snap numerical roundoff to the finish.
             if (progress >= 1d - 1e-9d) progress = 1d;
             session.RaceProgress[champion] = progress;

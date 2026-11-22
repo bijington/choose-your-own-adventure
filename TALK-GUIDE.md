@@ -613,6 +613,16 @@ One spread follows **one champion vote in four stages**. The left page shows foc
 
 ### Talking points
 
+Start with the concept before following the code (about 30 seconds):
+
+> “SignalR is ASP.NET Core’s library for real-time communication between a server and connected clients. Normally a browser asks for something and the server replies. Here, the server can also push an update when something changes, without every phone repeatedly asking whether there is news.”
+
+> “Think of our hub as the room’s switchboard. Your phone sends ‘I choose this champion’. The server records that choice, then announces the updated result to the connected clients in our session — including this MAUI app. The phones and the presentation are clients of the same server.”
+
+Keep the responsibilities clear: **SignalR carries messages; our application decides what those messages mean.** The hub routes calls, our vote/race stores own the shared state, and Orbit renders the latest state. SignalR is useful for live dashboards, chat and collaborative experiences as well as audience games. It does not replace the game loop.
+
+Then say: **“Let’s follow one vote all the way from your phone to this screen.”**
+
 1. **Audience browser:** JavaScript builds the connection to `/adventureHub`, starts it, joins the session and invokes `Vote` with the session, participant and selected champion. The connection setup and card-click call are shown together. The phone sends a choice; it does not calculate a winner.
 2. **ASP.NET Core hub:** Match `/adventureHub` to `MapHub<AdventureHub>` and `'Vote'` to `AdventureHub.Vote(...)`. Arguments arrive in order. Mention the omitted validation/normalization and that `JoinSession` puts each connection into the session group.
 3. **Server state and broadcast:** `VoteStore.CastVote` accepts votes while open, stores one choice per participant under a lock, and returns a snapshot. `Clients.Group(normalized).SendAsync("VoteUpdated", snapshot)` pushes it to the presenter and audience browsers in this session. A hub routes calls; the store owns the shared state.
@@ -658,7 +668,7 @@ Explain fairness in one sentence:
 
 Do not over-explain. Let the room play.
 
-Aim for **60–90 seconds**.
+Allow **60–90 seconds** for instructions, the race and the reaction. The race itself targets about **28 seconds** at three taps per second per person: 84 taps per registered team member, or 1,680 taps for a team of 20. This is an effort target, not a timer; faster tapping finishes sooner, and inactive team members slow their team down.
 
 Optional commentary:
 
