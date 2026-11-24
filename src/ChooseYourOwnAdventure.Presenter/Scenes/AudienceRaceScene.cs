@@ -43,6 +43,7 @@ public sealed class AudienceRaceScene : GameScene
         DrawHeading(canvas, dimensions);
         DrawTrack(canvas, dimensions);
         DrawChallenge(canvas, dimensions);
+        DrawChargeMeters(canvas, dimensions);
         DrawStandings(canvas, dimensions);
         DrawJoinPrompt(canvas, dimensions);
 
@@ -77,7 +78,9 @@ public sealed class AudienceRaceScene : GameScene
             ? "PRACTICE MODE · Tap the right page to skip the race, or the left page to go back."
             : snapshot.Phase switch
         {
-            RacePhase.Racing => "Every audience tap moves the champion they voted for. TAP! TAP! TAP!",
+            RacePhase.Racing => snapshot.Mode == BoostMode.ChargeAndRelease
+                ? "CHARGE & RELEASE · Tap to fill your team meter. Full meters burst automatically!"
+                : "STEADY EFFORT · Every audience tap moves their original champion!",
             RacePhase.Finished when snapshot.Winner is { } winner => $"{DisplayName(winner)} WINS!  ·  SOUTH / ENTER FOR THE PODIUM",
             _ => "SOUTH / ENTER starts the race · EAST / ESC resets · teams are remembered from the opening vote"
         };
@@ -149,6 +152,35 @@ public sealed class AudienceRaceScene : GameScene
             _ => "Your choices. Your teams. Your finish."
         }, track.X + track.Width * .18f, track.Center.Y, track.Width * .64f, 68,
             HorizontalAlignment.Center, VerticalAlignment.Center);
+    }
+
+    private void DrawChargeMeters(ICanvas canvas, RectF dimensions)
+    {
+        var snapshot = _raceState.Snapshot;
+        if (snapshot.Mode != BoostMode.ChargeAndRelease) return;
+        var track = AudienceRaceLayout.GetTrackBounds(dimensions);
+        var x = track.X + track.Width * .25f;
+        var width = track.Width * .5f;
+        var y = track.Center.Y + 80;
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = PresentationTheme.AccentRed;
+        canvas.FontSize = 14;
+        canvas.DrawString("TEAM CHARGE · AUTO-RELEASE AT 100%", x, y - 26, width, 24,
+            HorizontalAlignment.Center, VerticalAlignment.Center);
+        var rows = new[] { ("DRIVER", snapshot.RacingDriverCharge),
+            ("CHARIOT", snapshot.CharioteerCharge), ("PILOT", snapshot.SpacePilotCharge) };
+        foreach (var (label, charge) in rows)
+        {
+            canvas.FontColor = PresentationTheme.Ink;
+            canvas.DrawString(label, x, y, 86, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
+            var meter = new RectF(x + 90, y + 6, Math.Max(10, width - 140), 12);
+            canvas.FillColor = PresentationTheme.TrackSurface;
+            canvas.FillRoundedRectangle(meter, 6);
+            canvas.FillColor = PresentationTheme.AccentRed;
+            canvas.FillRoundedRectangle(new RectF(meter.X, meter.Y, meter.Width * (float)Math.Clamp(charge, 0, 1), meter.Height), 6);
+            canvas.DrawString($"{charge:P0}", meter.Right + 5, y, 45, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
+            y += 28;
+        }
     }
 
     private void DrawStandings(ICanvas canvas, RectF dimensions)

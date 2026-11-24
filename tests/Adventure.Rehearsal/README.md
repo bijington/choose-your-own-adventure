@@ -39,3 +39,22 @@ dotnet run --project tests/Adventure.Rehearsal -- --check-presenter-xaml src/Cho
 ```
 
 This detects missing runtime XAML resources even when the build succeeds. The presenter explicitly keeps its XAML resources so Debug initialization and Hot Reload can load them after XamlC processing.
+
+## Boost-style branch prototype
+
+On `codex/boost-style-prototype`, **You Write the Rules** follows the vehicle-control demonstration and precedes Chapter Three. The audience votes for one mode shared by all teams. South/Enter opens voting, closes and reveals the choice, then continues. East reopens the vote before racing. Left shoulder/Page Up goes back. In Practice mode, Up/Down (or the right-page cards) chooses a local preview; confirm to reveal, then confirm again to continue. A new audience session clears the choice.
+
+- **Steady effort:** each accepted tap advances progress immediately.
+- **Charge & release:** taps fill a shared team meter. Every quarter lap of earned progress releases automatically; excess charge carries forward. Each champion bursts four times to finish. The presenter and phone both show charge.
+- Both modes keep 84 average taps per team member (1,680 for a 20-person team), roughly 28 seconds at three taps/second/person. The first team to finish ends the race. Ties, including no votes, select steady effort as stated on screen. Original champion votes still determine race teams.
+
+**This prototype needs its matching backend and audience web client.** It adds `OpenBoostVoting`, `VoteBoostMode` and `CloseBoostVoting`, plus race-snapshot fields. Nothing has been deployed. Run it locally or on a separate test deployment; the existing deployed backend cannot run the new vote.
+
+To run an isolated local test host:
+
+```bash
+dotnet run --no-launch-profile --project src/Adventure.Web -- --urls http://localhost:5199 --Azure:SignalR:ConnectionString=
+dotnet run --project tests/Adventure.Rehearsal -- http://localhost:5199
+```
+
+Point `LiveAudience:BaseUrl` in your local presenter settings at that host to rehearse live. Physical phones need a reachable LAN/deployed URL, not `localhost`. The localhost checks cover both normal and burst finishes, registration/phase guards, presenter authorization, reconnect and matching 20-person team effort.

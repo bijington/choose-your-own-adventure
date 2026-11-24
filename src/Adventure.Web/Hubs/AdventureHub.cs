@@ -44,6 +44,21 @@ public sealed class AdventureHub : Hub
         await Clients.Group(normalized).SendAsync("RaceUpdated", snapshot);
     }
 
+    public async Task VoteBoostMode(string sessionId, string participantId, string modeName)
+    {
+        if (!Enum.TryParse<BoostMode>(modeName, true, out var mode) || !Enum.IsDefined(mode))
+            throw new HubException("Unknown boost mode.");
+        var normalized = Normalize(sessionId);
+        var snapshot = _voteStore.CastBoostVote(normalized, NormalizeParticipant(participantId), mode);
+        await Clients.Group(normalized).SendAsync("RaceUpdated", snapshot);
+    }
+
+    public Task OpenBoostVoting(string sessionId, string presenterKey) =>
+        PresenterRaceBroadcast(sessionId, presenterKey, _voteStore.OpenBoostVoting);
+
+    public Task CloseBoostVoting(string sessionId, string presenterKey) =>
+        PresenterRaceBroadcast(sessionId, presenterKey, _voteStore.CloseBoostVoting);
+
     public Task OpenVoting(string sessionId, string presenterKey) =>
         PresenterVoteBroadcast(sessionId, presenterKey, _voteStore.OpenVoting);
 

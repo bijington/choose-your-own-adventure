@@ -198,6 +198,18 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        if (_presentationNavigator.Current == PresentationSlide.BoostChoice)
+        {
+            if (position.Value.X < GameView.Width / 2d) _presentationNavigator.Previous();
+            else
+            {
+                _adventureState.HighlightedBoostMode = position.Value.Y < GameView.Height * .48
+                    ? BoostMode.Steady : BoostMode.ChargeAndRelease;
+                _inputRouter.Trigger(AdventureAction.Confirm);
+            }
+            return;
+        }
+
         if (_presentationNavigator.Current == PresentationSlide.FirstDecision)
         {
             if (position.Value.X < GameView.Width / 2d)
@@ -252,7 +264,7 @@ public partial class MainPage : ContentPage
 
             if (isNextArea)
             {
-                _presentationNavigator.GoTo(PresentationSlide.SignalRChapter);
+                _presentationNavigator.GoTo(PresentationSlide.BoostChoice);
             }
             else
             {
@@ -313,6 +325,27 @@ public partial class MainPage : ContentPage
 
         switch (_presentationNavigator.Current)
         {
+            case PresentationSlide.BoostChoice:
+                var boostVote = _liveRaceState.Snapshot;
+                if (action is AdventureAction.Up or AdventureAction.Left)
+                    _adventureState.HighlightedBoostMode = BoostMode.Steady;
+                else if (action is AdventureAction.Down or AdventureAction.Right)
+                    _adventureState.HighlightedBoostMode = BoostMode.ChargeAndRelease;
+                else if (action == AdventureAction.Confirm)
+                {
+                    if (boostVote.BoostVotePhase == VotePhase.Closed) _presentationNavigator.Next();
+                    else if (!_audienceVoteClient.IsConnected)
+                        _liveRaceState.Update(boostVote with { Mode = _adventureState.HighlightedBoostMode, BoostVotePhase = VotePhase.Closed });
+                    else if (boostVote.BoostVotePhase == VotePhase.Open) await _audienceVoteClient.CloseBoostVotingAsync();
+                    else await _audienceVoteClient.OpenBoostVotingAsync();
+                }
+                else if (action == AdventureAction.Cancel)
+                {
+                    if (_audienceVoteClient.IsConnected) await _audienceVoteClient.OpenBoostVotingAsync();
+                    else _liveRaceState.Update(boostVote with { BoostVotePhase = VotePhase.Ready });
+                }
+                return;
+
             case PresentationSlide.FirstDecision:
                 if (action == AdventureAction.Cancel)
                     _presentationNavigator.GoTo(PresentationSlide.AfterParty);
@@ -366,7 +399,7 @@ public partial class MainPage : ContentPage
             case PresentationSlide.VehicleControl:
                 if (action == AdventureAction.Up)
                 {
-                    _presentationNavigator.GoTo(PresentationSlide.SignalRChapter);
+                    _presentationNavigator.GoTo(PresentationSlide.BoostChoice);
                 }
                 return;
 

@@ -32,6 +32,7 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<MauiInputScene>(PresentationSlide.MauiInput),
         PresentationSlideDefinition.Create<InputPackageScene>(PresentationSlide.InputPackage),
         PresentationSlideDefinition.Create<VehicleControlScene>(PresentationSlide.VehicleControl),
+        PresentationSlideDefinition.Create<BoostChoiceScene>(PresentationSlide.BoostChoice),
         PresentationSlideDefinition.Create<SignalRChapterScene>(PresentationSlide.SignalRChapter),
         PresentationSlideDefinition.Create<SignalRTransitionScene>(PresentationSlide.SignalRTransition),
         PresentationSlideDefinition.Create<SignalRArchitectureScene>(PresentationSlide.SignalRArchitecture,

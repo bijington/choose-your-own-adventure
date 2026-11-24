@@ -53,7 +53,21 @@ if (args.Length >= 2 && args[0] == "--demo")
 
 foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
-Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 26).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
+Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 27).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
+
+foreach (var mode in Enum.GetValues<BoostMode>())
+    Check((int)mode == (int)Enum.Parse<ChooseYourOwnAdventure.Live.BoostMode>(mode.ToString()),
+        "Boost mode contract mismatch");
+var ruleNavState = new ChooseYourOwnAdventure.AdventureState();
+var ruleVote = new ChooseYourOwnAdventure.Live.VoteSnapshot("RULES", 1, 0, 0, ChooseYourOwnAdventure.Live.VotePhase.Closed, null);
+var ruleRace = new ChooseYourOwnAdventure.Live.RaceSnapshot("RULES", 0, 0, 0, 1, 0, 0, ChooseYourOwnAdventure.Live.RacePhase.Ready, null);
+foreach (var phase in new[] { ChooseYourOwnAdventure.Live.VotePhase.Ready, ChooseYourOwnAdventure.Live.VotePhase.Open })
+    Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(ChooseYourOwnAdventure.PresentationSlide.BoostChoice,
+        ruleNavState, ruleVote, ruleRace with { BoostVotePhase = phase }, true) is null,
+        "Forward navigation started or skipped rule voting");
+Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(ChooseYourOwnAdventure.PresentationSlide.BoostChoice,
+    ruleNavState, ruleVote, ruleRace with { BoostVotePhase = ChooseYourOwnAdventure.Live.VotePhase.Closed }, true)
+    == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Closed rule vote could not continue");
 
 // Local development overrides must reach both the SignalR client and the QR code.
 using (var defaultSettings = typeof(ChooseYourOwnAdventure.Live.LiveAudienceOptions).Assembly
@@ -328,6 +342,61 @@ Check(store.GetRaceSnapshot("BATCHED").Phase == RacePhase.Finished, "Batched rou
 Console.WriteLine("PASS: batched finish roundoff regression.");
 Console.WriteLine("PASS: 600 concurrent participants, tie handling, team normalization, invalid taps, locked teams and enum contracts.");
 
+// Boost rules: one mutable vote per existing participant; both modes require equal effort.
+foreach (var mode in Enum.GetValues<BoostMode>())
+{
+    var rules = new VoteStore();
+    const string rulesSession = "RULES";
+    rules.OpenVoting(rulesSession);
+    for (var i = 0; i < 20; i++) rules.CastVote(rulesSession, $"r{i}", Champion.RacingDriver);
+    rules.CloseVoting(rulesSession);
+    rules.OpenBoostVoting(rulesSession);
+    rules.CastBoostVote(rulesSession, "unknown", mode);
+    Check(rules.GetRaceSnapshot(rulesSession).SteadyVotes + rules.GetRaceSnapshot(rulesSession).BurstVotes == 0,
+        "Unregistered spectator voted for race rules");
+    rules.CastBoostVote(rulesSession, "r0", BoostMode.Steady);
+    rules.CastBoostVote(rulesSession, "r0", mode);
+    Check(rules.GetRaceSnapshot(rulesSession).SteadyVotes + rules.GetRaceSnapshot(rulesSession).BurstVotes == 1,
+        "Rule vote counted one participant twice");
+    Check(rules.StartRace(rulesSession).Phase == RacePhase.Ready, "Race started while rule voting was open");
+    var choice = rules.CloseBoostVoting(rulesSession);
+    Check(choice.Mode == mode, "Rule majority did not select the chosen mode");
+    rules.CastBoostVote(rulesSession, "r1", (BoostMode)999);
+    rules.StartRace(rulesSession);
+    rules.OpenBoostVoting(rulesSession);
+    Check(rules.GetRaceSnapshot(rulesSession).BoostVotePhase == VotePhase.Closed, "Race mode changed during racing");
+    // 20 people, 3 taps/sec: at 6 taps each (2 sec), burst mode has charge but no movement.
+    for (var i = 0; i < 20; i++) rules.Boost(rulesSession, $"r{i}", 6);
+    var partial = rules.GetRaceSnapshot(rulesSession);
+    Check(mode == BoostMode.Steady ? partial.RacingDriverProgress > 0
+        : partial.RacingDriverProgress == 0 && partial.RacingDriverCharge > 0,
+        "Charge mode moved before releasing, or steady mode failed to move");
+    for (var i = 0; i < 20; i++) rules.Boost(rulesSession, $"r{i}", 15);
+    Check(Math.Abs(rules.GetRaceSnapshot(rulesSession).RacingDriverProgress - .25) < 1e-8,
+        "First quarter-lap release did not preserve equal effort");
+    // Finish the remaining 63 taps per person; mixed batch sizes cross burst boundaries.
+    for (var i = 0; i < 20; i++)
+    foreach (var taps in new[] { 20, 20, 20, 3 }) rules.Boost(rulesSession, $"r{i}", taps);
+    Check(rules.GetRaceSnapshot(rulesSession).Phase == RacePhase.Finished
+        && rules.GetRaceSnapshot(rulesSession).RacingDriverProgress == 1,
+        "1680 taps from a 20-person team did not finish in both modes");
+    var resetRules = rules.ResetRace(rulesSession);
+    Check(resetRules.Mode == mode && resetRules.RacingDriverCharge == 0 && resetRules.RacingDriverProgress == 0,
+        "Race reset lost the selected rule or kept charge");
+    Check(rules.Reset(rulesSession).Total == 0 && rules.GetRaceSnapshot(rulesSession).Mode == BoostMode.Steady,
+        "Session reset retained the previous rule");
+}
+var tieRules = new VoteStore();
+tieRules.OpenVoting("TIE-RULES");
+tieRules.CastVote("TIE-RULES", "a", Champion.SpacePilot);
+tieRules.CastVote("TIE-RULES", "b", Champion.Charioteer);
+tieRules.CloseVoting("TIE-RULES");
+tieRules.OpenBoostVoting("TIE-RULES");
+tieRules.CastBoostVote("TIE-RULES", "a", BoostMode.ChargeAndRelease);
+tieRules.CastBoostVote("TIE-RULES", "b", BoostMode.Steady);
+Check(tieRules.CloseBoostVoting("TIE-RULES").Mode == BoostMode.Steady, "Tied rule vote did not use advertised steady fallback");
+Console.WriteLine("PASS: boost vote identity, phase guards, tie fallback, charge release and equal effort with 20-person teams.");
+
 if (args.Length == 0) return;
 var url = args[0].TrimEnd('/');
 var session = "REHEARSAL-" + Guid.NewGuid().ToString("N");
@@ -383,6 +452,27 @@ try
     foreach (var taps in new[] { 20, 20, 2 })
         await clients[2].InvokeAsync("Boost", session, "p2", taps);
     await Until(() => HasRace(x => x.Phase == RacePhase.Finished && x.Winner == Champion.SpacePilot), "Reconnect/finish failed");
+    try { await clients[0].InvokeAsync("OpenBoostVoting", session, "wrong-key"); throw new Exception("Bad rule key accepted"); }
+    catch (Microsoft.AspNetCore.SignalR.HubException) { }
+    await presenter.InvokeAsync("ResetRace", session, key);
+    await presenter.InvokeAsync("OpenBoostVoting", session, key);
+    await clients[0].InvokeAsync("VoteBoostMode", session, "p0", "ChargeAndRelease");
+    await clients[1].InvokeAsync("VoteBoostMode", session, "p1", "ChargeAndRelease");
+    await clients[2].InvokeAsync("VoteBoostMode", session, "p2", "Steady");
+    await presenter.InvokeAsync("CloseBoostVoting", session, key);
+    await Until(() => HasRace(x => x.BoostVotePhase == VotePhase.Closed && x.Mode == BoostMode.ChargeAndRelease
+        && x.BurstVotes == 2 && x.SteadyVotes == 1), "Live boost vote did not reach clients");
+    await clients[2].StopAsync();
+    await clients[2].StartAsync();
+    await clients[2].InvokeAsync("JoinSession", session);
+    await presenter.InvokeAsync("StartRace", session, key);
+    await clients[2].InvokeAsync("Boost", session, "p2", 20);
+    await Until(() => HasRace(x => x.Mode == BoostMode.ChargeAndRelease && x.SpacePilotProgress == 0
+        && x.SpacePilotCharge > .9), "Live charge meter did not fill before movement");
+    foreach (var taps in new[] { 20, 20, 20, 4 }) await clients[2].InvokeAsync("Boost", session, "p2", taps);
+    await Until(() => HasRace(x => x.Mode == BoostMode.ChargeAndRelease && x.Phase == RacePhase.Finished
+        && x.Winner == Champion.SpacePilot), "Live burst race did not finish");
+    Console.WriteLine("PASS: live boost voting authorization, result broadcast, reconnect, charge meter and burst finish.");
     using var http = new HttpClient();
     Check((await http.GetAsync(url + "/join/ORBIT")).IsSuccessStatusCode, "Join page failed");
     Check((await http.GetStringAsync(url + "/js/signalr/dist/browser/signalr.min.js")).Length > 10000, "Local SignalR client missing");

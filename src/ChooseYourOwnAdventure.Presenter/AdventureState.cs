@@ -68,6 +68,8 @@ public sealed class AdventureState
         ChooseYourOwnAdventure.Champion.SpacePilot
     ];
 
+    public Live.BoostMode HighlightedBoostMode { get; set; }
+
     public bool IsRehearsing { get; set; }
 
     public OpeningStage OpeningStage { get; private set; } = OpeningStage.Title;

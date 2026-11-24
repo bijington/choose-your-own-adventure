@@ -65,6 +65,8 @@ public sealed class AudienceVoteClient : IAsyncDisposable
     public Task CloseVotingAsync() => InvokePresenterCommandAsync("CloseVoting");
     public Task RevealWinnerAsync() => InvokePresenterCommandAsync("RevealWinner");
     public Task ResetVotingAsync() => InvokePresenterCommandAsync("ResetVoting");
+    public Task OpenBoostVotingAsync() => InvokePresenterCommandAsync("OpenBoostVoting");
+    public Task CloseBoostVotingAsync() => InvokePresenterCommandAsync("CloseBoostVoting");
     public Task StartRaceAsync() => InvokePresenterCommandAsync("StartRace");
     public Task ResetRaceAsync() => InvokePresenterCommandAsync("ResetRace");
 

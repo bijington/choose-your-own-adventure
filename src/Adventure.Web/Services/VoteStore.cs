@@ -22,6 +22,13 @@ public sealed class VoteStore
             [Champion.Charioteer] = 0d,
             [Champion.SpacePilot] = 0d
         };
+        public BoostMode Mode { get; set; }
+        public VotePhase BoostVotePhase { get; set; }
+        public Dictionary<string, BoostMode> BoostVotes { get; } = new();
+        public Dictionary<Champion, double> Charge { get; } = new()
+        {
+            [Champion.RacingDriver] = 0, [Champion.Charioteer] = 0, [Champion.SpacePilot] = 0
+        };
         public Champion? RaceWinner { get; set; }
     }
 
@@ -47,6 +54,9 @@ public sealed class VoteStore
         var session = GetSession(sessionId);
         lock (session.Gate)
         {
+            session.BoostVotes.Clear();
+            session.BoostVotePhase = VotePhase.Ready;
+            session.Mode = BoostMode.Steady;
             session.Phase = VotePhase.Open;
             session.RevealedChampion = null;
             ResetRaceUnsafe(session);
@@ -88,6 +98,9 @@ public sealed class VoteStore
         var session = GetSession(sessionId);
         lock (session.Gate)
         {
+            session.BoostVotes.Clear();
+            session.BoostVotePhase = VotePhase.Ready;
+            session.Mode = BoostMode.Steady;
             session.VotesByParticipant.Clear();
             session.Phase = VotePhase.Ready;
             session.RevealedChampion = null;
@@ -105,11 +118,50 @@ public sealed class VoteStore
         }
     }
 
+    public RaceSnapshot OpenBoostVoting(string sessionId)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate)
+        {
+            if (session.RacePhase == RacePhase.Ready) session.BoostVotePhase = VotePhase.Open;
+            return RaceSnapshotFor(sessionId, session);
+        }
+    }
+
+    public RaceSnapshot CastBoostVote(string sessionId, string participantId, BoostMode mode)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate)
+        {
+            if (session.BoostVotePhase == VotePhase.Open && session.RacePhase == RacePhase.Ready
+                && session.VotesByParticipant.ContainsKey(participantId) && Enum.IsDefined(mode))
+                session.BoostVotes[participantId] = mode;
+            return RaceSnapshotFor(sessionId, session);
+        }
+    }
+
+    public RaceSnapshot CloseBoostVoting(string sessionId)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate)
+        {
+            if (session.BoostVotePhase == VotePhase.Open && session.RacePhase == RacePhase.Ready)
+            {
+                session.Mode = session.BoostVotes.Values.Count(x => x == BoostMode.ChargeAndRelease)
+                    > session.BoostVotes.Values.Count(x => x == BoostMode.Steady)
+                    ? BoostMode.ChargeAndRelease : BoostMode.Steady;
+                session.BoostVotePhase = VotePhase.Closed;
+            }
+            return RaceSnapshotFor(sessionId, session);
+        }
+    }
+
     public RaceSnapshot StartRace(string sessionId)
     {
         var session = GetSession(sessionId);
         lock (session.Gate)
         {
+            if (session.BoostVotePhase == VotePhase.Open) return RaceSnapshotFor(sessionId, session);
             ResetRaceUnsafe(session);
             session.RacePhase = RacePhase.Racing;
             return RaceSnapshotFor(sessionId, session);
@@ -130,7 +182,17 @@ public sealed class VoteStore
             var teamSize = Math.Max(1, session.VotesByParticipant.Values.Count(x => x == champion));
             var acceptedTaps = Math.Clamp(taps, 1, 20);
             var boostPerTap = 1d / (teamSize * AverageTapsPerPlayerToFinish);
-            var progress = Math.Clamp(session.RaceProgress[champion] + boostPerTap * acceptedTaps, 0d, 1d);
+            var earned = boostPerTap * acceptedTaps;
+            if (session.Mode == BoostMode.ChargeAndRelease)
+            {
+                // Four equally sized releases; carried charge makes batch boundaries fair.
+                const double burstSize = .25d;
+                session.Charge[champion] += earned;
+                var releases = Math.Floor((session.Charge[champion] + 1e-9d) / burstSize);
+                earned = releases * burstSize;
+                session.Charge[champion] = Math.Max(0, session.Charge[champion] - earned);
+            }
+            var progress = Math.Clamp(session.RaceProgress[champion] + earned, 0d, 1d);
             // Batched fractions can land just below 1 (for example four batches of 20 + 4 taps
             // from each of two racers). Snap numerical roundoff to the finish.
             if (progress >= 1d - 1e-9d) progress = 1d;
@@ -192,6 +254,9 @@ public sealed class VoteStore
 
     private static void ResetRaceUnsafe(SessionVotes session)
     {
+        session.Charge[Champion.RacingDriver] = 0;
+        session.Charge[Champion.Charioteer] = 0;
+        session.Charge[Champion.SpacePilot] = 0;
         session.RacePhase = RacePhase.Ready;
         session.RaceWinner = null;
         session.RaceProgress[Champion.RacingDriver] = 0d;
@@ -221,5 +286,12 @@ public sealed class VoteStore
             session.VotesByParticipant.Values.Count(x => x == Champion.Charioteer),
             session.VotesByParticipant.Values.Count(x => x == Champion.SpacePilot),
             session.RacePhase,
-            session.RaceWinner);
+            session.RaceWinner,
+            session.Mode,
+            session.BoostVotePhase,
+            session.BoostVotes.Values.Count(x => x == BoostMode.Steady),
+            session.BoostVotes.Values.Count(x => x == BoostMode.ChargeAndRelease),
+            session.Charge[Champion.RacingDriver] / .25d,
+            session.Charge[Champion.Charioteer] / .25d,
+            session.Charge[Champion.SpacePilot] / .25d);
 }

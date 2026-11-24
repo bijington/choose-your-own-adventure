@@ -9,7 +9,7 @@ public static class PresentationChapter
             => "PROLOGUE · DISCOVERING ORBIT",
         PresentationSlide.ChooseChampion or PresentationSlide.GameLoop => "CHAPTER ONE · MEET OUR CHAMPION",
         PresentationSlide.MauiInput or PresentationSlide.InputPackage or PresentationSlide.VehicleControl => "CHAPTER TWO · TAKE CONTROL",
-        PresentationSlide.SignalRTransition or PresentationSlide.SignalRArchitecture
+        PresentationSlide.BoostChoice or PresentationSlide.SignalRTransition or PresentationSlide.SignalRArchitecture
             or PresentationSlide.AudienceRace or PresentationSlide.Podium => "CHAPTER THREE · AN ADVENTURE TOGETHER",
         PresentationSlide.FutureIdeas or PresentationSlide.Recap => "EPILOGUE · THE JOURNEY HOME",
         _ => null

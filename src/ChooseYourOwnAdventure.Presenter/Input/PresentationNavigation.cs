@@ -8,6 +8,7 @@ public static class PresentationNavigation
     public static AdventureAction? ResolveNext(PresentationSlide slide, AdventureState state,
         VoteSnapshot vote, RaceSnapshot race, bool connected) => slide switch
     {
+        PresentationSlide.BoostChoice => race.BoostVotePhase == VotePhase.Closed ? AdventureAction.Confirm : null,
         PresentationSlide.ChooseChampion => state.LocalVoteWinner is not null
             || (connected && vote.Phase == VotePhase.Revealed && vote.RevealedChampion is not null)
                 ? AdventureAction.Confirm : null,

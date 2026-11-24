@@ -46,12 +46,28 @@
       </div>
     </section>
 
+    <section id="boostVotePanel" style="display:none">
+      <h1>WRITE THE RULES</h1>
+      <p class="sub">Steady progress or a dramatic burst? Your champion and race team stay the same.</p>
+      <div id="boostVoteStatus" class="status">Waiting for the presenter…</div>
+      <div class="grid">
+        <button class="champion" type="button" data-mode="Steady"><span class="name">STEADY EFFORT</span><span class="tag">Every tap moves your team.</span><span id="steadyVotes" class="votes">0 votes</span></button>
+        <button class="champion" type="button" data-mode="ChargeAndRelease"><span class="name">CHARGE &amp; RELEASE</span><span class="tag">Fill the team meter. Automatically release a burst.</span><span id="burstVotes" class="votes">0 votes</span></button>
+      </div>
+      <p class="sub">Same effort to finish. Ties use steady effort. Choose a champion first to vote.</p>
+    </section>
+
     <section id="racePanel">
       <h1>RACE YOUR CHAMPION</h1>
       <p class="sub">Every tap pushes your original champion closer to the finish line.</p>
       <div class="team-badge">You are racing for<strong id="teamName">YOUR TEAM</strong></div>
       <button id="boostButton" class="boost" type="button" disabled>BOOST!</button>
       <div id="raceStatus" class="status">Waiting for the presenter to start the race…</div>
+      <div id="chargePanel" style="display:none; margin:20px 0">
+        <strong>TEAM CHARGE — auto-release at 100%</strong>
+        <progress id="chargeMeter" max="1" value="0" style="width:100%;height:28px"></progress>
+        <div id="chargeLabel"></div>
+      </div>
       <div id="tapCount" class="tap-count">0 taps</div>
       <div id="raceResult" class="race-result"></div>
     </section>
@@ -74,6 +90,12 @@
     const participantId = localStorage.getItem('orbit-participant') || crypto.randomUUID();
     localStorage.setItem('orbit-participant', participantId);
     document.getElementById('session').textContent = `Session: ${sessionId}`;
+
+    const boostVotePanel = document.getElementById('boostVotePanel');
+    const modeButtons = [...document.querySelectorAll('button[data-mode]')];
+    let selectedMode = localStorage.getItem(`orbit-mode-${sessionId}`);
+    let flushing = false;
+    function modeName(mode) { return mode === 1 || mode === 'ChargeAndRelease' ? 'ChargeAndRelease' : 'Steady'; }
 
     let latestSnapshot = null;
     let latestRace = null;
@@ -142,17 +164,39 @@
     }
 
     function applyRace(snapshot) {
+      const previousPhase = latestRace ? racePhaseName(latestRace.phase) : null;
       latestRace = snapshot;
       const phase = racePhaseName(snapshot.phase);
       const winner = championName(snapshot.winner);
 
       if (phase === 'Ready') {
-        // Keep the voting/result screen visible until the presenter actually starts the race.
+        if (previousPhase !== 'Ready') { pendingTaps = 0; taps = 0; tapCount.textContent = '0 taps'; }
         racePanel.style.display = 'none';
-        votePanel.style.display = 'block';
+        const votePhase = phaseName(snapshot.boostVotePhase);
+        const showModes = votePhase === 'Open' || votePhase === 'Closed';
+        boostVotePanel.style.display = showModes ? 'block' : 'none';
+        votePanel.style.display = showModes ? 'none' : 'block';
+        document.getElementById('steadyVotes').textContent = `${snapshot.steadyVotes || 0} votes`;
+        document.getElementById('burstVotes').textContent = `${snapshot.burstVotes || 0} votes`;
+        modeButtons.forEach(button => {
+          button.disabled = votePhase !== 'Open' || !selectedChampion || connection.state !== signalR.HubConnectionState.Connected;
+          button.classList.toggle('selected', votePhase === 'Open' && button.dataset.mode === selectedMode);
+          button.classList.toggle('winner', votePhase === 'Closed' && button.dataset.mode === modeName(snapshot.mode));
+        });
+        document.getElementById('boostVoteStatus').textContent = votePhase === 'Open'
+          ? 'Choose the boost rule for EVERY team. You can change your vote while open.'
+          : `Chosen: ${modeName(snapshot.mode) === 'Steady' ? 'Steady effort' : 'Charge & release'}. Keep this page open for the race.`;
         return;
       }
 
+      boostVotePanel.style.display = 'none';
+      const charged = modeName(snapshot.mode) === 'ChargeAndRelease';
+      document.getElementById('chargePanel').style.display = charged ? 'block' : 'none';
+      const chargeKey = { RacingDriver: 'racingDriverCharge', Charioteer: 'charioteerCharge', SpacePilot: 'spacePilotCharge' }[selectedChampion];
+      const charge = snapshot[chargeKey] || 0;
+      document.getElementById('chargeMeter').value = charge;
+      document.getElementById('chargeLabel').textContent = `${Math.round(charge * 100)}% charged`;
+      boostButton.textContent = charged ? 'CHARGE!' : 'BOOST!';
       votePanel.style.display = 'none';
       racePanel.style.display = 'block';
       const label = selectedChampion ? labels[selectedChampion] : 'YOUR ORIGINAL CHAMPION';
@@ -160,7 +204,7 @@
 
       if (phase === 'Racing') {
         boostButton.disabled = false;
-        raceStatus.textContent = 'GO! Tap as fast as you can!';
+        raceStatus.textContent = charged ? 'Tap together to charge. Full meters release automatically!' : 'GO! Every tap moves your team!';
         raceResult.textContent = '';
       } else {
         boostButton.disabled = true;
@@ -177,6 +221,7 @@
       status.textContent = 'Reconnecting…';
       raceStatus.textContent = 'Reconnecting…';
       boostButton.disabled = true;
+      modeButtons.forEach(button => button.disabled = true);
     });
     connection.onreconnected(async () => {
       await connection.invoke('JoinSession', sessionId);
@@ -195,7 +240,20 @@
       });
     });
 
-    boostButton.addEventListener('click', async () => {
+    modeButtons.forEach(button => button.addEventListener('click', async () => {
+      if (connection.state !== signalR.HubConnectionState.Connected || !latestRace
+          || phaseName(latestRace.boostVotePhase) !== 'Open') return;
+      try {
+        await connection.invoke('VoteBoostMode', sessionId, participantId, button.dataset.mode);
+        selectedMode = button.dataset.mode;
+        localStorage.setItem(`orbit-mode-${sessionId}`, selectedMode);
+        applyRace(latestRace);
+      } catch {
+        document.getElementById('boostVoteStatus').textContent = 'Vote not confirmed. Please try again.';
+      }
+    }));
+
+    boostButton.addEventListener('click' , async () => {
       if (connection.state !== signalR.HubConnectionState.Connected) return;
       if (!latestRace || racePhaseName(latestRace.phase) !== 'Racing') return;
 
@@ -207,16 +265,19 @@
     // Batch frantic tapping into at most ten SignalR calls per second per browser.
     // The local tap count still responds immediately, while the server remains authoritative.
     setInterval(async () => {
-      if (pendingTaps <= 0) return;
+      if (flushing || pendingTaps <= 0) return;
       if (connection.state !== signalR.HubConnectionState.Connected) return;
       if (!latestRace || racePhaseName(latestRace.phase) !== 'Racing') return;
 
       const batch = Math.min(pendingTaps, 20);
       pendingTaps -= batch;
+      flushing = true;
       try {
         await connection.invoke('Boost', sessionId, participantId, batch);
       } catch {
         pendingTaps += batch;
+      } finally {
+        flushing = false;
       }
     }, 100);
 
