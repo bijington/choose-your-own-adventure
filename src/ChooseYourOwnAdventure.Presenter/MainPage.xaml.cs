@@ -125,7 +125,7 @@ public partial class MainPage : ContentPage
                 }
                 break;
             case "Skip the audience race":
-                _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+                _presentationNavigator.GoTo(PresentationSlide.Podium);
                 break;
             case "Go to slide":
                 var title = await DisplayActionSheet("Go to slide", "Cancel", null,
@@ -486,7 +486,7 @@ public partial class MainPage : ContentPage
     {
         if (_adventureState.IsRehearsing)
         {
-            if (action == AdventureAction.Confirm) _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+            if (action == AdventureAction.Confirm) _presentationNavigator.GoTo(PresentationSlide.Podium);
             else if (action == AdventureAction.Cancel) _presentationNavigator.Previous();
             return;
         }
@@ -508,7 +508,7 @@ public partial class MainPage : ContentPage
         }
         else if (race.Phase == RacePhase.Finished)
         {
-            _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+            _presentationNavigator.GoTo(PresentationSlide.Podium);
         }
     }
 

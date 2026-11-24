@@ -10,6 +10,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
+    <!-- Debug InitializeComponent/Hot Reload can load XAML at runtime. Preserve
+         its embedded resources even when XamlC has processed the assembly. -->
+    <MauiKeepXamlResources>true</MauiKeepXamlResources>
+
     <ApplicationTitle>Choose Your Own Adventure</ApplicationTitle>
 
     <!--

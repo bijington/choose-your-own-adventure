@@ -29,3 +29,13 @@ dotnet run --project tests/Adventure.Rehearsal -- --demo boost
 These demo commands intentionally use only localhost and the local presenter key. Never use them against a live conference session.
 
 The headless checks also verify presenter-note cues for the rendering reveal, firmware comparison, voting ties and race finish, plus extraction of speaker prose from the embedded talk guide. These checks do not open native windows; multi-window startup and screen placement require desktop rehearsal.
+
+## Packaged presenter XAML
+
+After building the Mac presenter, check the actual bundled assembly (not just the intermediate DLL):
+
+```bash
+dotnet run --project tests/Adventure.Rehearsal -- --check-presenter-xaml src/ChooseYourOwnAdventure.Presenter/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/ChooseYourOwnAdventure.app/Contents/MonoBundle/ChooseYourOwnAdventure.dll
+```
+
+This detects missing runtime XAML resources even when the build succeeds. The presenter explicitly keeps its XAML resources so Debug initialization and Hot Reload can load them after XamlC processing.

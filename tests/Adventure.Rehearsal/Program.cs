@@ -8,6 +8,26 @@ static void Check(bool condition, string message)
     if (!condition) throw new Exception(message);
 }
 
+// Inspect the packaged assembly without loading the platform-specific MAUI runtime.
+if (args.Length == 2 && args[0] == "--check-presenter-xaml")
+{
+    using var stream = File.OpenRead(args[1]);
+    using var pe = new System.Reflection.PortableExecutable.PEReader(stream);
+    var metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(pe);
+    var resources = metadata.ManifestResources.Select(handle =>
+        metadata.GetString(metadata.GetManifestResource(handle).Name)).ToHashSet();
+    foreach (var name in new[]
+    {
+        "ChooseYourOwnAdventure.App.xaml",
+        "ChooseYourOwnAdventure.MainPage.xaml",
+        "ChooseYourOwnAdventure.Controls.MauiAnimationShowcase.xaml",
+        "ChooseYourOwnAdventure.PresenterNotes.PresenterNotesPage.xaml"
+    })
+        Check(resources.Contains(name), $"Packaged presenter is missing embedded XAML: {name}");
+    Console.WriteLine("PASS: packaged presenter retains XAML for application, main page, animation control and presenter notes.");
+    return;
+}
+
 // Optional manual desktop rehearsal, using only the local ORBIT session.
 if (args.Length >= 2 && args[0] == "--demo")
 {
@@ -33,7 +53,7 @@ if (args.Length >= 2 && args[0] == "--demo")
 
 foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
-Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 25).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
+Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 26).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
 
 // Local development overrides must reach both the SignalR client and the QR code.
 using (var defaultSettings = typeof(ChooseYourOwnAdventure.Live.LiveAudienceOptions).Assembly
@@ -228,8 +248,8 @@ Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, tiedVote).Nex
     "Tied-vote notes incorrectly continued to a champion");
 Check(Cue(ChooseYourOwnAdventure.PresentationSlide.AudienceRace,
     raceSnapshot: readyRace with { Phase = ChooseYourOwnAdventure.Live.RacePhase.Finished,
-    Winner = ChooseYourOwnAdventure.Champion.SpacePilot }).NextAction.Contains("The Journey Home"),
-    "Finished-race notes skipped the epilogue");
+    Winner = ChooseYourOwnAdventure.Champion.SpacePilot }).NextAction.StartsWith("Open the podium"),
+    "Finished-race navigation skipped the podium");
 var offlineCue = ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(
     ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, new ChooseYourOwnAdventure.AdventureState(),
     tiedVote, readyRace, false);

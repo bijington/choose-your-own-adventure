@@ -32,6 +32,7 @@ public static class PresenterCueFactory
         PresentationSlide.AudienceRace => "The Audience Grand Prix",
         PresentationSlide.EpilogueChapter => "The Journey Home",
         PresentationSlide.Podium => "The Podium",
+        PresentationSlide.FutureIdeas => "What Would We Add Next?",
         PresentationSlide.Recap => "Adventure Complete",
         _ => slide.ToString()
     };
@@ -144,15 +145,22 @@ public static class PresenterCueFactory
             case PresentationSlide.AudienceRace:
                 if (state.IsRehearsing)
                     return new("Practice · skip the audience race", "Describe the architecture or skip ahead. No race-start or reset command is sent in practice mode.",
-                        "Right page / South / Enter / Right shoulder: skip to The Journey Home. " + back,
+                        "Right page / South / Enter / Right shoulder: skip to the podium. " + back,
                         "Skip the live race and continue the ending.");
                 return new($"Audience race · {race.Phase}",
                     "Frame this as our final challenge: power your champion through the last stretch. Your original vote chose your team.\n" +
                     "Before starting, ask: ‘What if one champion has twice as many people? Have we built a race — or a headcount?’ Pause for answers. The design bug is rewarding headcount; divide tap strength by team size so average effort decides progress. The fix is already implemented.\n" +
                     "Phones send boost intent. The server owns progress and normalizes boost by team size.\n" +
-                    (race.Phase == RacePhase.Finished ? "Celebrate the winner before turning to The Journey Home." : "Remind everyone that they race for their original champion. Keep the QR code available for reconnects."),
+                    (race.Phase == RacePhase.Finished ? "Celebrate the winner on the podium." : "Remind everyone that they race for their original champion. Keep the QR code available for reconnects."),
                     "South / Enter: start race, or continue after the finish. East / Shift / Escape: reset race.",
-                    race.Phase == RacePhase.Finished ? "Open The Journey Home, then the podium." : "Start the race, then encourage the audience to boost.");
+                    race.Phase == RacePhase.Finished ? "Open the podium, then The Journey Home." : "Start the race, then encourage the audience to boost.");
+            case PresentationSlide.FutureIdeas:
+                return new("Future ideas · 60–90 seconds",
+                    "Ask how players know their boost landed. A short haptic pulse can acknowledge touch on supported devices. " +
+                    "A countdown sound lets players keep their eyes on the race. A boost animation and visible countdown help when sound and vibration are off. " +
+                    "Use confirmed events for shared cues such as the finish.",
+                    "Right shoulder / Page Down / South / Enter / right page: continue. " + back,
+                    "Turn to Adventure Complete for the recap and resources.");
             case PresentationSlide.Recap:
                 return new("Closing summary · resources", string.Empty,
                     "Leave this final spread visible for questions and the resources link. " + back,

@@ -37,8 +37,9 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<SignalRArchitectureScene>(PresentationSlide.SignalRArchitecture,
             state => state.ResetSignalRWalkthrough()),
         PresentationSlideDefinition.Create<AudienceRaceScene>(PresentationSlide.AudienceRace),
-        PresentationSlideDefinition.Create<EpilogueChapterScene>(PresentationSlide.EpilogueChapter),
         PresentationSlideDefinition.Create<PodiumScene>(PresentationSlide.Podium),
+        PresentationSlideDefinition.Create<EpilogueChapterScene>(PresentationSlide.EpilogueChapter),
+        PresentationSlideDefinition.Create<FutureIdeasScene>(PresentationSlide.FutureIdeas),
         PresentationSlideDefinition.Create<RecapScene>(PresentationSlide.Recap)
     ];
 

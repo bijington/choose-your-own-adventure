@@ -23,12 +23,12 @@ public sealed class PodiumScene : PresentationSceneBase
     {
         DrawShell(canvas, dimensions);
         DrawTitle(canvas, dimensions, "THE PODIUM",
-            "One final page in our adventure: the audience race results.");
+            "Here’s how the room finished the race.");
 
         var standings = GetStandings();
         DrawPodium(canvas, dimensions, standings);
         base.Render(canvas, dimensions);
-        DrawPrompt(canvas, dimensions, "SOUTH / ENTER  ·  RECAP THE ADVENTURE");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER  ·  THE JOURNEY HOME");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.Podium, _state.Champion));
     }
 

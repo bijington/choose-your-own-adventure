@@ -26,5 +26,6 @@ public enum PresentationSlide
     ChosenChampion = 23,
     MauiInput = 24,
     MauiAnimations = 25,
+    FutureIdeas = 26,
     AfterParty = 404
 }

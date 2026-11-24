@@ -142,7 +142,8 @@ Do **not** let audience networking block the rest of the talk.
 | 21:30–24:30 | SignalR transition + architecture | Replace local input with audience intent |
 | 24:30–29:30 | Audience race | Big interactive payoff |
 | 29:30–31:00 | Podium | Celebrate the winner |
-| 31:00–33:00 | Recap | Reinforce Orbit + loop + multiplayer |
+| 31:00–32:15 | What Would We Add Next? | Haptics, audio and visual feedback |
+| 32:15–34:15 | Recap | Reinforce Orbit + loop + multiplayer |
 
 **Rehearsal target:** finish the planned content around **30–31 minutes**. Audience scanning, laughter, slow voting, network latency, and the race will add time live.
 
@@ -208,7 +209,7 @@ Every section has a dedicated right-page opening and matching running headers. E
 | Chapter One · Meet Our Champion | Champion vote, GameObject, character reveal |
 | Chapter Two · Take Control | Input package and local driving/flying |
 | Chapter Three · An Adventure Together | SignalR explanation and audience race |
-| Epilogue · The Journey Home | Podium and recap |
+| Epilogue · The Journey Home | Podium, future ideas and recap |
 
 ## PROLOGUE · DISCOVERING ORBIT — `PrologueChapterScene` — page 2
 
@@ -745,15 +746,21 @@ Celebrate the audience before switching back into recap mode.
 
 ### Action
 
-`A / Enter` → recap.
+`A / Enter` → What Would We Add Next?
 
 ### Transition
 
-> “So what did we actually build along the way?”
+> “When you tap Boost, how do you know the game felt it?”
 
 ---
 
-## Adventure Complete — `RecapScene` — page 41 / 71 / 101
+## What Would We Add Next? — `FutureIdeasScene` — page 41 / 71 / 101
+
+Spend 60–90 seconds on three ideas: a short pulse for touch input on supported devices, sound for the countdown and confirmed finish, and visible cues for players with sound or vibration off. Use the race the audience just played as your example. Continue to Adventure Complete.
+
+---
+
+## Adventure Complete — `RecapScene` — page 42 / 72 / 102
 
 ### On screen
 
@@ -793,7 +800,8 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 | AudienceRace | 38 | 68 | 98 |
 | EpilogueChapter | 39 | 69 | 99 |
 | Podium | 40 | 70 | 100 |
-| Recap | 41 | 71 | 101 |
+| FutureIdeas | 41 | 71 | 101 |
+| Recap | 42 | 72 | 102 |
 
 ---
 
@@ -852,7 +860,7 @@ If the clock is slipping, cut/compress in this order:
 4. **SignalR walkthrough** — spend one sentence on each of the four stages and move to the race.
 5. **Vehicle demo repetitions** — demonstrate the chosen mechanic once clearly.
 6. **Race** — keep it to one quick heat; do not restart.
-7. **Podium** — celebrate winner in 15–20 seconds and move to recap.
+7. **Podium** — celebrate the winner in 15–20 seconds, then cover future ideas before the recap.
 
 Do **not** cut:
 
