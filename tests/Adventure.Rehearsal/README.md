@@ -42,11 +42,11 @@ This detects missing runtime XAML resources even when the build succeeds. The pr
 
 ## Boost-style branch prototype
 
-On `codex/boost-style-prototype`, **You Write the Rules** follows the vehicle-control demonstration and precedes Chapter Three. The audience votes for one mode shared by all teams. South/Enter opens voting, closes and reveals the choice, then continues. East reopens the vote before racing. Left shoulder/Page Up goes back. In Practice mode, Up/Down (or the right-page cards) chooses a local preview; confirm to reveal, then confirm again to continue. A new audience session clears the choice.
+On `codex/boost-style-prototype`, **Choose Our Route** follows the vehicle-control demonstration and precedes Chapter Three. The audience votes for one route shared by all teams. South/Enter opens voting, closes and reveals the choice, then continues. East reopens the vote before racing. Left shoulder/Page Up goes back. In Practice mode, Up/Down (or the right-page cards) chooses a local preview; confirm to reveal, then confirm again to continue. A new audience session clears the choice.
 
-- **Steady effort:** each accepted tap advances progress immediately.
-- **Charge & release:** taps fill a shared team meter. Every quarter lap of earned progress releases automatically; excess charge carries forward. Each champion bursts four times to finish. The presenter and phone both show charge.
-- Both modes keep 84 average taps per team member (1,680 for a 20-person team), roughly 28 seconds at three taps/second/person. The first team to finish ends the race. Ties, including no votes, select steady effort as stated on screen. Original champion votes still determine race teams.
+- **The winding road (steady effort):** each accepted tap advances progress immediately.
+- **Ancient launch pads (charge & release):** taps fill a shared team meter. Every quarter lap of earned progress releases automatically; excess charge carries forward. Each champion bursts four times to finish. The presenter and phone both show launch energy and brief JUMP feedback. The race has road markings or glowing launch-pad markers for the chosen route.
+- Both modes keep 84 average taps per team member (1,680 for a 20-person team), roughly 28 seconds at three taps/second/person. The first team to finish ends the race. Ties, including no votes, take the winding road as stated on screen. Original champion votes still determine race teams.
 
 **This prototype needs its matching backend and audience web client.** It adds `OpenBoostVoting`, `VoteBoostMode` and `CloseBoostVoting`, plus race-snapshot fields. Nothing has been deployed. Run it locally or on a separate test deployment; the existing deployed backend cannot run the new vote.
 

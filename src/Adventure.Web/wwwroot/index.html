@@ -47,24 +47,24 @@
     </section>
 
     <section id="boostVotePanel" style="display:none">
-      <h1>WRITE THE RULES</h1>
-      <p class="sub">Steady progress or a dramatic burst? Your champion and race team stay the same.</p>
+      <h1>CHOOSE OUR ROUTE</h1>
+      <p class="sub">The finish lies beyond the mountains. Winding road or ancient launch pads?</p>
       <div id="boostVoteStatus" class="status">Waiting for the presenter…</div>
       <div class="grid">
-        <button class="champion" type="button" data-mode="Steady"><span class="name">STEADY EFFORT</span><span class="tag">Every tap moves your team.</span><span id="steadyVotes" class="votes">0 votes</span></button>
-        <button class="champion" type="button" data-mode="ChargeAndRelease"><span class="name">CHARGE &amp; RELEASE</span><span class="tag">Fill the team meter. Automatically release a burst.</span><span id="burstVotes" class="votes">0 votes</span></button>
+        <button class="champion" type="button" data-mode="Steady"><span class="name">THE WINDING ROAD</span><span class="tag">Keep moving with every tap.</span><span id="steadyVotes" class="votes">0 votes</span></button>
+        <button class="champion" type="button" data-mode="ChargeAndRelease"><span class="name">ANCIENT LAUNCH PADS</span><span class="tag">Charge together. Automatically leap forward!</span><span id="burstVotes" class="votes">0 votes</span></button>
       </div>
-      <p class="sub">Same effort to finish. Ties use steady effort. Choose a champion first to vote.</p>
+      <p class="sub">Same effort to finish. Ties take the winding road. Choose a champion first to vote.</p>
     </section>
 
     <section id="racePanel">
       <h1>RACE YOUR CHAMPION</h1>
-      <p class="sub">Every tap pushes your original champion closer to the finish line.</p>
+      <p class="sub">Follow the route you chose. Tap for your original champion!</p>
       <div class="team-badge">You are racing for<strong id="teamName">YOUR TEAM</strong></div>
       <button id="boostButton" class="boost" type="button" disabled>BOOST!</button>
       <div id="raceStatus" class="status">Waiting for the presenter to start the race…</div>
       <div id="chargePanel" style="display:none; margin:20px 0">
-        <strong>TEAM CHARGE — auto-release at 100%</strong>
+        <strong>LAUNCH ENERGY — automatic jump at 100%</strong>
         <progress id="chargeMeter" max="1" value="0" style="width:100%;height:28px"></progress>
         <div id="chargeLabel"></div>
       </div>
@@ -95,6 +95,12 @@
     const modeButtons = [...document.querySelectorAll('button[data-mode]')];
     let selectedMode = localStorage.getItem(`orbit-mode-${sessionId}`);
     let flushing = false;
+    let jumpUntil = 0;
+    let latestCharge = 0;
+    function refreshChargeLabel() {
+      document.getElementById('chargeLabel').textContent = Date.now() < jumpUntil
+        ? 'JUMP!' : `${Math.round(latestCharge * 100)}% charged`;
+    }
     function modeName(mode) { return mode === 1 || mode === 'ChargeAndRelease' ? 'ChargeAndRelease' : 'Steady'; }
 
     let latestSnapshot = null;
@@ -165,12 +171,14 @@
 
     function applyRace(snapshot) {
       const previousPhase = latestRace ? racePhaseName(latestRace.phase) : null;
+      const progressKey = { RacingDriver: 'racingDriverProgress', Charioteer: 'charioteerProgress', SpacePilot: 'spacePilotProgress' }[selectedChampion];
+      const previousProgress = latestRace?.[progressKey] || 0;
       latestRace = snapshot;
       const phase = racePhaseName(snapshot.phase);
       const winner = championName(snapshot.winner);
 
       if (phase === 'Ready') {
-        if (previousPhase !== 'Ready') { pendingTaps = 0; taps = 0; tapCount.textContent = '0 taps'; }
+        if (previousPhase !== 'Ready') { pendingTaps = 0; taps = 0; jumpUntil = 0; tapCount.textContent = '0 taps'; }
         racePanel.style.display = 'none';
         const votePhase = phaseName(snapshot.boostVotePhase);
         const showModes = votePhase === 'Open' || votePhase === 'Closed';
@@ -184,8 +192,8 @@
           button.classList.toggle('winner', votePhase === 'Closed' && button.dataset.mode === modeName(snapshot.mode));
         });
         document.getElementById('boostVoteStatus').textContent = votePhase === 'Open'
-          ? 'Choose the boost rule for EVERY team. You can change your vote while open.'
-          : `Chosen: ${modeName(snapshot.mode) === 'Steady' ? 'Steady effort' : 'Charge & release'}. Keep this page open for the race.`;
+          ? 'Choose the route for EVERY team. You can change your vote while open.'
+          : `Chosen: ${modeName(snapshot.mode) === 'Steady' ? 'The winding road' : 'Ancient launch pads'}. Keep this page open for the race.`;
         return;
       }
 
@@ -195,8 +203,13 @@
       const chargeKey = { RacingDriver: 'racingDriverCharge', Charioteer: 'charioteerCharge', SpacePilot: 'spacePilotCharge' }[selectedChampion];
       const charge = snapshot[chargeKey] || 0;
       document.getElementById('chargeMeter').value = charge;
-      document.getElementById('chargeLabel').textContent = `${Math.round(charge * 100)}% charged`;
-      boostButton.textContent = charged ? 'CHARGE!' : 'BOOST!';
+      latestCharge = charge;
+      if (charged && (snapshot[progressKey] || 0) - previousProgress >= .249) {
+        jumpUntil = Date.now() + 750;
+        setTimeout(refreshChargeLabel, 760);
+      }
+      refreshChargeLabel();
+      boostButton.textContent = charged ? 'CHARGE THE PAD!' : 'KEEP GOING!';
       votePanel.style.display = 'none';
       racePanel.style.display = 'block';
       const label = selectedChampion ? labels[selectedChampion] : 'YOUR ORIGINAL CHAMPION';
@@ -204,7 +217,7 @@
 
       if (phase === 'Racing') {
         boostButton.disabled = false;
-        raceStatus.textContent = charged ? 'Tap together to charge. Full meters release automatically!' : 'GO! Every tap moves your team!';
+        raceStatus.textContent = charged ? 'Charge the launch pad together. At 100%, your team jumps!' : 'Follow the winding road — every tap moves your team!';
         raceResult.textContent = '';
       } else {
         boostButton.disabled = true;

@@ -601,19 +601,21 @@ Current code uses `Up / W` to leave the interactive vehicle scene and move to th
 
 ---
 
-## You Write the Rules — `BoostChoiceScene` — prototype branch
+## Choose Our Route — `BoostChoiceScene` — prototype branch
 
 After the vehicle demo, offer the second real audience decision:
 
-> “You’ve chosen who we are. Now choose how we race: steady progress with every tap, or charge up and release a burst?”
+> “The finish lies beyond the mountains. Which way do we go: follow the winding road, or take the ancient launch pads?”
 
-The rule applies to all three teams. Both choices require the same team-normalized effort. Charge & release fills a team meter and automatically releases a quarter-lap burst; there is no manual release button. Four bursts finish. Ties use steady effort, as shown on the slide and phones.
+The route applies to all three teams. Both choices require the same team-normalized effort. The winding road gives steady progress with every tap. Ancient launch pads fill a team energy meter and automatically release a quarter-lap jump; four jumps finish. Ties take the winding road, as shown on the slide and phones. The race uses road markings or glowing pad markers to reflect the winning route.
+
+If the pads win: “Excellent. I’m sure somebody maintained them.”
 
 South/Enter opens voting, closes and reveals, then continues. East reopens before the race. In practice, select locally with Up/Down or a card, then confirm again to continue. Registered champion voters keep their original teams.
 
 > “To make that decision together, we connected your phones to our game. You’ve already used that connection — let’s see how it works.”
 
-Continue into Chapter Three and the existing SignalR walkthrough. The race now makes their rule choice visible through steady movement or charging meters and bursts.
+Continue into Chapter Three and the existing SignalR walkthrough. The race now makes their route choice visible through steady movement or launch-energy meters and jumps.
 
 ---
 

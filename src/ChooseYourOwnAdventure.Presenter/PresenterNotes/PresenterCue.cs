@@ -26,7 +26,7 @@ public static class PresenterCueFactory
         PresentationSlide.InputPackage => "How Does It Move?",
         PresentationSlide.GameLoop => "A Frame in the Life of Our Champion",
         PresentationSlide.VehicleControl => "Drive Our Champion",
-        PresentationSlide.BoostChoice => "You Write the Rules",
+        PresentationSlide.BoostChoice => "Choose Our Route",
         PresentationSlide.SignalRChapter => "An Adventure Together",
         PresentationSlide.SignalRTransition => "What If the Input Source Changes?",
         PresentationSlide.SignalRArchitecture => "The Room Becomes the Input",
@@ -123,13 +123,13 @@ public static class PresenterCueFactory
                 };
                 return new("Live control · " + (state.Champion?.ToString() ?? "RacingDriver"), model + "\nPoint out the active code branch and live values.",
                     "South / Enter: throttle, pull or thrust. East / Shift / Down: brake or down-thrust. Left/Right: driver steering. Right shoulder / Page Down / lower-right NEXT: next chapter.",
-                    "Ask: ‘What if the input source changes?’ Then let the audience choose the race rule.");
+                    "Ask: ‘What if the input source changes?’ Then let the audience choose our route.");
             case PresentationSlide.BoostChoice:
-                return new("Second decision · how do we boost?",
-                    "You chose who we are. Now choose how we race: steady progress with every tap, or charge up and release a burst? Both modes keep the same team-balanced total effort. Charge releases automatically at 100%; there is no extra release button. Ties choose steady effort.\n" +
+                return new("Second decision · which route?",
+                    "The finish lies beyond the mountains. Which way do we go: follow the winding road, or take the ancient launch pads? The road rewards steady tapping. The pads need the team to charge together, then automatically leap forward. Same team-balanced effort; ties take the road.\nOn choosing the pads: ‘Excellent. I’m sure somebody maintained them.’\n" +
                     "Once chosen: ‘To make that decision together, we connected your phones to our game. Let’s see how that connection works.’",
-                    "South / Enter: open vote, close and reveal, then continue. East: reopen the rule vote before racing. Offline: Up/Down or right-page options choose locally; confirm again to continue. " + back,
-                    race.BoostVotePhase == VotePhase.Closed ? "Open An Adventure Together." : "Let the audience choose the final race rule.");
+                    "South / Enter: open vote, close and reveal, then continue. East: reopen the route vote before racing. Offline: Up/Down or right-page options choose locally; confirm again to continue. " + back,
+                    race.BoostVotePhase == VotePhase.Closed ? "Open An Adventure Together." : "Let the audience choose our route to the finish.");
             case PresentationSlide.SignalRTransition:
                 return new("From one controller to the room",
                     "Ask: ‘What if the input came from all of you?’ The game still consumes intent; the source changes.\n" +
@@ -155,6 +155,9 @@ public static class PresenterCueFactory
                         "Right page / South / Enter / Right shoulder: skip to the podium. " + back,
                         "Skip the live race and continue the ending.");
                 return new($"Audience race · {race.Phase}",
+                    (race.Mode == BoostMode.ChargeAndRelease
+                        ? "You chose the ancient launch pads. Tap together to charge each pad; full meters launch automatically. Watch for JUMP!\n"
+                        : "You chose the winding road. Every tap keeps your original champion moving.\n") +
                     "Frame this as our final challenge: power your champion through the last stretch. Your original vote chose your team.\n" +
                     "Before starting, ask: ‘What if one champion has twice as many people? Have we built a race — or a headcount?’ Pause for answers. The design bug is rewarding headcount; divide tap strength by team size so average effort decides progress. The fix is already implemented.\n" +
                     "Phones send boost intent. The server owns progress and normalizes boost by team size.\n" +

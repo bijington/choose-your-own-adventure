@@ -9,6 +9,8 @@ namespace ChooseYourOwnAdventure.Scenes;
 public sealed class AudienceRaceScene : GameScene
 {
     private readonly AdventureState _state;
+    private double _animationTime;
+    private readonly Dictionary<Champion, (double Progress, double JumpUntil)> _launches = new();
 
     private readonly LiveRaceState _raceState;
     private readonly QrCodeRenderer _qrCodeRenderer;
@@ -35,6 +37,25 @@ public sealed class AudienceRaceScene : GameScene
         Add(_driver);
         Add(_charioteer);
         Add(_pilot);
+    }
+
+    public override void Update(double millisecondsSinceLastUpdate)
+    {
+        base.Update(millisecondsSinceLastUpdate);
+        _animationTime += millisecondsSinceLastUpdate;
+        var snapshot = _raceState.Snapshot;
+        if (snapshot.Phase == RacePhase.Ready)
+        {
+            _launches.Clear();
+            return;
+        }
+        foreach (var champion in Enum.GetValues<Champion>())
+        {
+            var progress = _raceState.ProgressFor(champion);
+            var previous = _launches.GetValueOrDefault(champion);
+            var jumped = snapshot.Mode == BoostMode.ChargeAndRelease && progress - previous.Progress >= .249d;
+            _launches[champion] = (progress, jumped ? _animationTime + 750 : previous.JumpUntil);
+        }
     }
 
     public override void Render(ICanvas canvas, RectF dimensions)
@@ -79,8 +100,8 @@ public sealed class AudienceRaceScene : GameScene
             : snapshot.Phase switch
         {
             RacePhase.Racing => snapshot.Mode == BoostMode.ChargeAndRelease
-                ? "CHARGE & RELEASE · Tap to fill your team meter. Full meters burst automatically!"
-                : "STEADY EFFORT · Every audience tap moves their original champion!",
+                ? "ANCIENT LAUNCH PADS · Charge together. At 100%, your team jumps!"
+                : "THE WINDING ROAD · Every tap moves your original champion!",
             RacePhase.Finished when snapshot.Winner is { } winner => $"{DisplayName(winner)} WINS!  ·  SOUTH / ENTER FOR THE PODIUM",
             _ => "SOUTH / ENTER starts the race · EAST / ESC resets · teams are remembered from the opening vote"
         };
@@ -90,7 +111,7 @@ public sealed class AudienceRaceScene : GameScene
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 
-    private static void DrawTrack(ICanvas canvas, RectF dimensions)
+    private void DrawTrack(ICanvas canvas, RectF dimensions)
     {
         var track = AudienceRaceLayout.GetTrackBounds(dimensions);
 
@@ -104,6 +125,43 @@ public sealed class AudienceRaceScene : GameScene
         canvas.DrawEllipse(track.X, track.Y, track.Width, track.Height);
         canvas.DrawEllipse(track.X + 26, track.Y + 16,
             Math.Max(1, track.Width - 52), Math.Max(1, track.Height - 32));
+
+        if (_raceState.Snapshot.Mode == BoostMode.ChargeAndRelease)
+        {
+            // Four ancient pads mark the quarter-lap jumps around the course.
+            for (var pad = 0; pad < 4; pad++)
+            {
+                var angle = pad * Math.PI / 2 - Math.PI / 2;
+                var x = track.Center.X + (float)Math.Cos(angle) * track.Width / 2;
+                var y = track.Center.Y + (float)Math.Sin(angle) * track.Height / 2;
+                canvas.SaveState();
+                canvas.Alpha = .22f;
+                canvas.FillColor = Color.FromArgb("#DCA530");
+                canvas.FillEllipse(x - 32, y - 32, 64, 64);
+                canvas.Alpha = 1;
+                canvas.StrokeColor = PresentationTheme.AccentGold;
+                canvas.StrokeSize = 3;
+                canvas.DrawEllipse(x - 22, y - 22, 44, 44);
+                var rune = new PathF();
+                rune.MoveTo(x, y - 14);
+                rune.LineTo(x + 11, y);
+                rune.LineTo(x, y + 14);
+                rune.LineTo(x - 11, y);
+                rune.Close();
+                canvas.StrokeColor = PresentationTheme.AccentRed;
+                canvas.DrawPath(rune);
+                canvas.RestoreState();
+            }
+        }
+        else
+        {
+            canvas.SaveState();
+            canvas.StrokeColor = PresentationTheme.ParchmentLight;
+            canvas.StrokeSize = 3;
+            canvas.StrokeDashPattern = new[] { 10f, 8f };
+            canvas.DrawEllipse(track);
+            canvas.RestoreState();
+        }
 
         // A proper finish line runs across the full thickness of the course.
         var centreX = track.X + track.Width / 2f;
@@ -165,11 +223,12 @@ public sealed class AudienceRaceScene : GameScene
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = PresentationTheme.AccentRed;
         canvas.FontSize = 14;
-        canvas.DrawString("TEAM CHARGE · AUTO-RELEASE AT 100%", x, y - 26, width, 24,
+        canvas.DrawString("LAUNCH ENERGY · AUTOMATIC JUMP AT 100%", x, y - 26, width, 24,
             HorizontalAlignment.Center, VerticalAlignment.Center);
-        var rows = new[] { ("DRIVER", snapshot.RacingDriverCharge),
-            ("CHARIOT", snapshot.CharioteerCharge), ("PILOT", snapshot.SpacePilotCharge) };
-        foreach (var (label, charge) in rows)
+        var rows = new[] { (Champion.RacingDriver, "DRIVER", snapshot.RacingDriverCharge),
+            (Champion.Charioteer, "CHARIOT", snapshot.CharioteerCharge),
+            (Champion.SpacePilot, "PILOT", snapshot.SpacePilotCharge) };
+        foreach (var (champion, label, charge) in rows)
         {
             canvas.FontColor = PresentationTheme.Ink;
             canvas.DrawString(label, x, y, 86, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
@@ -178,7 +237,8 @@ public sealed class AudienceRaceScene : GameScene
             canvas.FillRoundedRectangle(meter, 6);
             canvas.FillColor = PresentationTheme.AccentRed;
             canvas.FillRoundedRectangle(new RectF(meter.X, meter.Y, meter.Width * (float)Math.Clamp(charge, 0, 1), meter.Height), 6);
-            canvas.DrawString($"{charge:P0}", meter.Right + 5, y, 45, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
+            var feedback = _launches.GetValueOrDefault(champion).JumpUntil > _animationTime ? "JUMP!" : $"{charge:P0}";
+            canvas.DrawString(feedback, meter.Right + 5, y, 45, 24, HorizontalAlignment.Left, VerticalAlignment.Center);
             y += 28;
         }
     }
