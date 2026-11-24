@@ -55,7 +55,7 @@ public sealed class SignalRArchitectureScene : PresentationSceneBase
             HorizontalAlignment.Left, VerticalAlignment.Center);
 
         DrawPrompt(canvas, dimensions, stage == SignalRStage.Presenter
-            ? "SOUTH / RB / ENTER / PGDN · THE AUDIENCE RACE"
+            ? "SOUTH / RB / ENTER / PGDN · FROM VOTES TO RIVALS"
             : "SOUTH / RB / ENTER / PGDN · NEXT STEP");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.SignalRArchitecture, _state.Champion));
     }

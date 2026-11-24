@@ -75,8 +75,8 @@ _snapshot = snapshot;
 var votes = CurrentVotes;
 // Cards draw totals from this snapshot.
 """,
-            "The message changes state; the render loop draws it.",
-            "VoteUpdated matches the server's event name. The MAUI app is another SignalR client connected to the same hub and joined to the same session.\nThe callback updates LiveVoteState under a lock. OpeningScene reads that state on the normal Orbit loop and draws the totals and reveal animation. SignalR does not draw the scene or start another game loop.\nThe race uses the same path: Boost intent in, RaceUpdated snapshot out. That is the bridge into the live race."),
+            "One shared decision. Now a roomful of rivals.",
+            "VoteUpdated matches the server's event name. The MAUI app is another SignalR client connected to the same hub and joined to the same session.\nThe callback updates LiveVoteState under a lock. OpeningScene reads that state on the normal Orbit loop and draws the totals and reveal animation. SignalR does not draw the scene or start another game loop.\nSo far, we’ve used SignalR to make a decision together. You send a choice, the server updates the state, and everyone sees the result.\n\nBut choosing a champion is the easy part. What if we wanted to pit an entire room against each other… in a race to the death?\n\n[Pause.]\n\nOf your phone batteries, obviously.\n\nNow the input keeps coming. Every tap matters, every team is competing, and everyone needs to see the same race. The architecture stays familiar — but the rules get more interesting.\n\n[Advance to the race before explaining the fairness challenge.]"),
         _ => throw new ArgumentOutOfRangeException(nameof(stage))
     };
 }

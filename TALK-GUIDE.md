@@ -681,9 +681,21 @@ South / Right shoulder / Enter / Page Down / right-page tap steps forward. After
 
 ### Transition
 
-> “The race follows exactly the same route: Boost intent goes in, RaceUpdated state comes out. And the server remembered which team each of you chose.”
+Finish the fourth reveal with the change in stakes, rather than explaining the message path a second time:
 
-Briefly mention that the browser batches boost taps into fewer calls. Then give control to the room.
+> “So far, we’ve used SignalR to make a decision together. You send a choice, the server updates the state, and everyone sees the result.
+>
+> “But choosing a champion is the easy part. What if we wanted to pit an entire room against each other… in a race to the death?”
+
+**[Pause.]**
+
+> “Of your phone batteries, obviously.”
+
+> “Now the input keeps coming. Every tap matters, every team is competing, and everyone needs to see the same race. The architecture stays familiar — but the rules get more interesting.”
+
+**[Advance to the race. Keep the battery punchline spoken so the slide does not reveal it early.]**
+
+The final reveal’s caption and continue prompt mark the shift from a shared decision to competing players. If useful, mention once that Boost intent goes in and RaceUpdated state comes out; the browser batches pending taps every 100 ms. Do not repeat the four-component walkthrough. Save the fairness question for the race’s Ready state.
 
 ---
 
@@ -697,7 +709,11 @@ All three champions race simultaneously. Audience phones automatically become te
 
 Say:
 
-> “This is our final challenge. You chose your champion earlier, and you have been on that team ever since. Now power them through the last stretch.”
+> “You chose your champion. You chose our route. Now let’s find out whether either was a sensible decision.”
+
+Briefly remind players what they chose: winding road means steady progress; ancient launch pads mean charging together and jumping automatically. If the route vote was skipped, say “You chose your champion. Now let’s find out whether that was a sensible decision.” Everyone still races for their original champion.
+
+The new technical question is fairness under continuous competing input, not how to connect a client.
 
 Before starting, expose the design bug (about 20 seconds):
 
@@ -711,7 +727,7 @@ Pause for an answer. Explain that raw tap totals would reward team size. The fix
 
 - `A / Enter` while race is **Ready** → start race
 - `B / Esc` → reset race
-- `A / Enter` after **Finished** → epilogue chapter, then podium
+- `South / Enter` after **Finished** → podium, then The Journey Home
 
 ### During the race
 

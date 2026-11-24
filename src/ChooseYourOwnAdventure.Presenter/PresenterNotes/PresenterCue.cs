@@ -158,7 +158,10 @@ public static class PresenterCueFactory
                     (race.Mode == BoostMode.ChargeAndRelease
                         ? "You chose the ancient launch pads. Tap together to charge each pad; full meters launch automatically. Watch for JUMP!\n"
                         : "You chose the winding road. Every tap keeps your original champion moving.\n") +
-                    "Frame this as our final challenge: power your champion through the last stretch. Your original vote chose your team.\n" +
+                    (race.BoostVotePhase == VotePhase.Closed
+                        ? "You chose your champion. You chose our route. Now let’s find out whether either was a sensible decision.\n"
+                        : "You chose your champion. Now let’s find out whether that was a sensible decision.\n") +
+                    "Your original vote chose your team. Now we’re competing, rather than making one shared decision.\n" +
                     "Before starting, ask: ‘What if one champion has twice as many people? Have we built a race — or a headcount?’ Pause for answers. The design bug is rewarding headcount; divide tap strength by team size so average effort decides progress. The fix is already implemented.\n" +
                     "Phones send boost intent. The server owns progress and normalizes boost by team size.\n" +
                     (race.Phase == RacePhase.Finished ? "Celebrate the winner on the podium." : "Remind everyone that they race for their original champion. Keep the QR code available for reconnects."),
