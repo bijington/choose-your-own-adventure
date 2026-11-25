@@ -9,6 +9,7 @@ namespace ChooseYourOwnAdventure.Scenes;
 
 public sealed class SteeringRaceScene(AdventureState state, AudienceVoteClient audience, QrCodeRenderer qr) : PresentationSceneBase
 {
+    private readonly bool _showAchievement = state.TryUnlockAfterCreditsAchievement();
     private readonly Dictionary<int, Sprite> _sprites = new();
     private readonly Dictionary<int, double> _progress = new();
     private readonly Dictionary<int, double> _movingUntil = new();
@@ -125,7 +126,58 @@ public sealed class SteeringRaceScene(AdventureState state, AudienceVoteClient a
             HorizontalAlignment.Left, VerticalAlignment.Center);
         DrawPrompt(canvas, dimensions, "SOUTH / ENTER · PREPARE / START / FINISH    EAST / ESC · CLOSE BONUS RACE");
         DrawPageNumber(canvas, dimensions, 405);
+        DrawAchievement(canvas, dimensions);
     }
+    private void DrawAchievement(ICanvas canvas, RectF dimensions)
+    {
+        const double duration = 4500;
+        if (!_showAchievement || _elapsed >= duration) return;
+        var fade = (float)Math.Min(Math.Clamp(_elapsed / 350, 0, 1), Math.Clamp((duration - _elapsed) / 600, 0, 1));
+        var width = Math.Min(720, dimensions.Width * .76f);
+        var height = Math.Clamp(dimensions.Height * .16f, 120, 165);
+        var card = new RectF(dimensions.Center.X - width / 2,
+            dimensions.Y + dimensions.Height * .05f - (1 - fade) * 24, width, height);
+        canvas.SaveState();
+        canvas.Alpha = fade;
+        canvas.FillColor = PresentationTheme.CodePanel;
+        canvas.FillRoundedRectangle(card, 16);
+        canvas.StrokeColor = Gold;
+        canvas.StrokeSize = 3;
+        canvas.DrawRoundedRectangle(card, 16);
+        var badgeX = card.X + 50;
+        var badgeY = card.Center.Y;
+        canvas.FillColor = Gold;
+        canvas.FillEllipse(badgeX - 27, badgeY - 27, 54, 54);
+        var star = new PathF();
+        for (var i = 0; i < 10; i++)
+        {
+            var angle = -Math.PI / 2 + i * Math.PI / 5;
+            var radius = i % 2 == 0 ? 18 : 8;
+            var point = new PointF(badgeX + (float)Math.Cos(angle) * radius, badgeY + (float)Math.Sin(angle) * radius);
+            if (i == 0) star.MoveTo(point); else star.LineTo(point);
+        }
+        star.Close();
+        canvas.FillColor = Ink;
+        canvas.FillPath(star);
+        var textX = card.X + 92;
+        var textWidth = card.Width - 112;
+        canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
+        canvas.FontColor = Accent;
+        canvas.FontSize = Math.Clamp(width * .023f, 12, 16);
+        canvas.DrawString("ACHIEVEMENT UNLOCKED", textX, card.Y + 12, textWidth, height * .20f,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+        canvas.FontColor = Ink;
+        canvas.FontSize = Math.Clamp(width * .035f, 17, 25);
+        canvas.DrawString("You stayed after the credits", textX, card.Y + height * .32f, textWidth, height * .25f,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+        canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+        canvas.FontColor = Muted;
+        canvas.FontSize = Math.Clamp(width * .024f, 12, 17);
+        canvas.DrawString("Apparently, one questionable decision wasn’t enough.", textX, card.Y + height * .65f, textWidth, height * .24f,
+            HorizontalAlignment.Left, VerticalAlignment.Center);
+        canvas.RestoreState();
+    }
+
     private static PointF CoursePoint(RectF track, double progress, double offset)
     {
         var angle = progress * Math.PI * 2 - Math.PI / 2;

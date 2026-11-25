@@ -130,7 +130,10 @@ await using (var practiceClient = new ChooseYourOwnAdventure.Live.AudienceVoteCl
     practiceRace.Update(new("ORBIT", 1, .5, .2, 20, 10, 5, ChooseYourOwnAdventure.Live.RacePhase.Finished,
         ChooseYourOwnAdventure.Champion.RacingDriver));
     practiceState.RevealLocalVote();
+    Check(practiceState.TryUnlockAfterCreditsAchievement() && !practiceState.TryUnlockAfterCreditsAchievement(),
+        "After-credits achievement did not unlock exactly once");
     var freshSession = await practiceClient.CreateSessionAsync();
+    Check(practiceState.TryUnlockAfterCreditsAchievement(), "New audience session did not reset the achievement");
     Check(freshSession != "ORBIT" && freshSession == practiceOptions.SessionId
         && practiceOptions.JoinUrl.EndsWith("/join/" + freshSession), "New session did not update the audience link");
     Check(practiceVote.Snapshot.SessionId == freshSession && practiceVote.Snapshot.Total == 0

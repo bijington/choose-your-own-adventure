@@ -514,10 +514,12 @@ And if I’ve muted my phone or turned vibration off, the buttons and the race s
 
 **[Allow roughly 60–90 seconds. Pause after the opening question if you invite an answer.]**
 
-**[Continue → Adventure Complete.]**
+**[Continue → The End.]**
 
 
-## Adventure Complete — summary and resources
+## The End — credits and resources
+
+Starring… you, the audience. Thank you for playing your part in this adventure.
 
 We started with MAUI: an application, ordinary controls, input and animation.
 
@@ -542,6 +544,8 @@ And yes, AI was used in the making of these slides — but no agents were harmed
 ## Optional after-credits encore — do not advance into this automatically
 
 **[Only if time permits: open Presenter → Go to Slide → After Credits · Team Steering (Optional). This does not run when continuing from the closing page.]**
+
+**[Pause for the achievement popup: “You stayed after the credits.” Let it fade before the steering briefing.]**
 
 One more lap? Keep your original champion team — but this time, half of you power the left side and half power the right. Can you coordinate well enough to steer?
 

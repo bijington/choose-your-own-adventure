@@ -808,15 +808,15 @@ The left page shows the same MAUI Animation approach used by the live controls. 
 
 ## What Would We Add Next? — `FutureIdeasScene` — page 44 / 74 / 104
 
-Spend 60–90 seconds on three ideas: a short pulse for touch input on supported devices, sound for the countdown and confirmed finish, and visible cues for players with sound or vibration off. Use the race the audience just played as your example. Continue to Adventure Complete.
+Spend 60–90 seconds on three ideas: a short pulse for touch input on supported devices, sound for the countdown and confirmed finish, and visible cues for players with sound or vibration off. Use the race the audience just played as your example. Continue to The End.
 
 ---
 
-## Adventure Complete — `RecapScene` — page 45 / 75 / 105
+## The End — credits — `RecapScene` — page 45 / 75 / 105
 
 ### On screen
 
-The closing spread thanks the audience and names **Shaun Lawrence**. The left page recaps three steps: start with MAUI, bring it to life with Orbit and input, and let the room play with SignalR. The right page offers the blog post and resources, with a QR code and the URL beneath it.
+The final book spread is a static credits screen on parchment: **THE END**, starring the audience and champion teams, written and presented by the configured speaker, and built with MAUI, MAUI Graphics, Orbit and SignalR. The right page retains the resources QR/link and the AI/no-agents-harmed disclaimer. There is no rolling text; leave it visible for scanning and questions.
 
 Configure `TalkSummary:ResourcesUrl` before the talk. An empty or invalid URL shows a “Resources coming soon” panel rather than a QR code. This link is separate from the live audience join URL. No credentials belong in the resources URL.
 
@@ -861,7 +861,9 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 
 ## Optional after-credits lap — `SteeringRaceScene` — page 405
 
-This is deliberately outside the normal talk route. Adventure Complete remains the final forward-navigation destination. If there is time and the room wants another challenge, use **Presenter → Go to Slide → After Credits · Team Steering (Optional)**, or the mobile options slide picker.
+This is deliberately outside the normal talk route. The End remains the final forward-navigation destination. If there is time and the room wants another challenge, use **Presenter → Go to Slide → After Credits · Team Steering (Optional)**, or the mobile options slide picker.
+
+On the first encore entry, a gold bookplate popup announces **ACHIEVEMENT UNLOCKED — You stayed after the credits — Apparently, one questionable decision wasn’t enough.** Pause for the joke; it fades away after 4.5 seconds and never blocks controls. It appears once per app session and resets when creating a new audience session.
 
 > “One more lap? Keep your original champion team — but this time, half of you power the left side and half power the right. Can you coordinate well enough to steer?”
 

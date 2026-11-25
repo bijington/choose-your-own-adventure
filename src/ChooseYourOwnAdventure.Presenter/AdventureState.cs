@@ -68,6 +68,15 @@ public sealed class AdventureState
         ChooseYourOwnAdventure.Champion.SpacePilot
     ];
 
+    private bool _afterCreditsAchievementUnlocked;
+    public bool TryUnlockAfterCreditsAchievement()
+    {
+        if (_afterCreditsAchievementUnlocked) return false;
+        _afterCreditsAchievementUnlocked = true;
+        return true;
+    }
+    public void ResetAfterCreditsAchievement() => _afterCreditsAchievementUnlocked = false;
+
     public Live.BoostMode HighlightedBoostMode { get; set; }
 
     public bool IsRehearsing { get; set; }
