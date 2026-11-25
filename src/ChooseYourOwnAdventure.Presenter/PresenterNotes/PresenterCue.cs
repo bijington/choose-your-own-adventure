@@ -22,6 +22,7 @@ public static class PresenterCueFactory
         PresentationSlide.ChooseChampion => "Choose Your Champion",
         PresentationSlide.ChosenChampion => "Our Champion",
         PresentationSlide.InputChapter => "Take Control",
+        PresentationSlide.InputOverview => "Many Ways to Play",
         PresentationSlide.MauiInput => "MAUI Already Has Input",
         PresentationSlide.InputPackage => "How Does It Move?",
         PresentationSlide.GameLoop => "A Frame in the Life of Our Champion",
@@ -50,6 +51,12 @@ public static class PresenterCueFactory
                     "Tap Play it again if useful. These are great for transitions, feedback and playful UI. These effects also work in ordinary apps, without a game loop. Keep this demonstration to about 30 seconds.",
                     "Tap Play it again to replay. South / Enter / Right shoulder / Page Down: what would we add next? " + back,
                     "Explore haptics, audio and visual feedback.");
+            case PresentationSlide.InputOverview:
+                return new("Input possibilities · 30–45 seconds",
+                    "There are more ways into our game than a button. MAUI supplies touch, mouse and gestures, plus device sensor APIs. Accelerometers measure acceleration and can detect shake; a gyroscope measures rotation speed, while orientation and compass readings can support attitude or heading-based ideas. Imagine tilting to steer, turning to aim or shaking to act.\n" +
+                    "These depend on device support. We’re describing possibilities, not activating sensors here. The right page introduces keyboard and game controllers through Orbit.Input’s shared game-input layer. Start with the simplest source: a normal MAUI button.",
+                    "South / Enter / Right shoulder / Page Down / right page: MAUI button example. " + back,
+                    "Show how a press and release becomes intent.");
             case PresentationSlide.MauiInput:
                 return new("Touch and mouse · ordinary MAUI UI",
                     "Start with what MAUI already gives us: a Button works with touch and mouse. Clicked or Command can represent a single action; Pressed and Released are useful for held controls.\n" +

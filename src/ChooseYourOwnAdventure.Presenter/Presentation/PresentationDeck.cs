@@ -28,6 +28,7 @@ public static class PresentationDeck
             PresentationSlide.GameLoop,
             state => state.ResetGameLoop()),
         PresentationSlideDefinition.Create<InputChapterScene>(PresentationSlide.InputChapter),
+        PresentationSlideDefinition.Create<InputOverviewScene>(PresentationSlide.InputOverview),
         PresentationSlideDefinition.Create<MauiInputScene>(PresentationSlide.MauiInput),
         PresentationSlideDefinition.Create<InputPackageScene>(PresentationSlide.InputPackage),
         PresentationSlideDefinition.Create<VehicleControlScene>(PresentationSlide.VehicleControl),

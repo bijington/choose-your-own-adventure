@@ -270,6 +270,18 @@ Input affects state. Update evolves state. Render displays state. One frame, the
 
 Our champion has a world, a look and a rhythm. Now let’s give them something to respond to.
 
+**[Continue → Many Ways to Play.]**
+
+## Many Ways to Play — input possibilities
+
+A tap is only one way to express intent. MAUI gives us buttons, touch, mouse and gestures, and supported devices offer other possibilities.
+
+We could tilt to steer, turn to aim, or shake to act. An accelerometer measures acceleration; a gyroscope measures rotation speed. Orientation and compass readings give us other ways to interpret the device.
+
+On the other page are keys, controller buttons and sticks. Orbit.Input gives our game a shared layer for those. Different sources; the same intent.
+
+These sensor ideas depend on the hardware. For now, let’s start with the simplest source: a normal MAUI button.
+
 **[Continue → MAUI Already Has Input.]**
 
 ## MAUI Already Has Input

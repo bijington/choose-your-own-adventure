@@ -468,6 +468,20 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
+## Many Ways to Play — `InputOverviewScene`
+
+Before the MAUI button example, spend 30–45 seconds on the possibilities. The left page covers ordinary MAUI UI and device sensors; the right page covers keyboard and game controllers through Orbit.Input.
+
+> “A tap is only one way to express intent. We could tilt to steer, turn to aim, or shake to act. An accelerometer measures acceleration, a gyroscope measures rotation speed, and orientation or compass readings give us other ways to understand the device. Or we could use keys, buttons and sticks. Different sources; the same intent.”
+
+These are ideas rather than a live sensor demo. Check platform/hardware support before using sensors. Keyboard and controller game input on the right is supplied by Orbit.Input; normal MAUI UI remains useful alongside it.
+
+> “Let’s start with the simplest one: a normal MAUI button.”
+
+Source: [MAUI device sensors](https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/device/sensors?view=net-maui-10.0).
+
+---
+
 ## MAUI Already Has Input — `MauiInputScene` — page 32 / 62 / 92
 
 ### On screen

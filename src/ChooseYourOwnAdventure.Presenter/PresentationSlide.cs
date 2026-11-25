@@ -28,5 +28,6 @@ public enum PresentationSlide
     MauiAnimations = 25,
     FutureIdeas = 26,
     BoostChoice = 27,
+    InputOverview = 28,
     AfterParty = 404
 }
