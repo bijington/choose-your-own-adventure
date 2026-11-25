@@ -118,9 +118,24 @@ Loading chooses the world. Starting begins the repeating update-and-render work 
 
 That is the basic route: register the engine, give it a view, load a scene and start.
 
-Our scene is ready. What it needs now is a main character.
+Our scene is ready. First, what did starting it actually do?
+
+**[Continue → A Familiar Rhythm.]**
+
+## A Familiar Rhythm — firmware first
+
+If you’ve worked with firmware, this pattern may look familiar.
+
+Read inputs. Update state. Write outputs. Wait, then repeat.
+
+The game loop has a similar rhythm. We collect intent, evolve the world, render what it looks like now, and yield until the next frame.
+
+The snippets are a conceptual comparison. We don’t need to write our own blocking while loop in a MAUI page; Orbit runs the loop for us.
+
+That is what Start begins. Now let’s find a champion to put inside that world.
 
 **[Continue → Meet Our Champion.]**
+
 
 ## Chapter One — Meet Our Champion
 
@@ -204,23 +219,10 @@ This uses Orbit’s Sprite with a sequence of celebration frames. We create it o
 
 A sprite doesn’t have to be animated, but this one is. The artwork has evolved from a dot into a moving character, while the canvas-and-bounds rendering contract remains familiar.
 
-There’s one question hiding in that explanation: who keeps calling Update and Render?
+We saw Start begin the loop earlier. Now let’s follow what our champion does in one frame.
 
-**[Continue → A Familiar Rhythm, the firmware comparison.]**
+**[Continue → A Frame in the Life of Our Champion.]**
 
-## A Familiar Rhythm — firmware first
-
-If you’ve worked with firmware, this pattern may look familiar.
-
-Read inputs. Update state. Write outputs. Wait, then repeat.
-
-The game loop has a similar rhythm. We collect intent, evolve the world, render what it looks like now, and yield until the next frame.
-
-The snippets are a conceptual comparison. We don’t need to write our own blocking while loop in a MAUI page; Orbit runs the loop for us.
-
-Let’s follow one frame in our champion’s life.
-
-**[Continue once → the four-station loop walkthrough.]**
 
 ## A Frame in the Life of Our Champion — four stations
 
@@ -298,17 +300,43 @@ What if we also want a keyboard or a game controller?
 
 **[Continue → How Does It Move?]**
 
-## How Does It Move? — Orbit.Input
+## Connect a Game Controller — four reveals
 
-Orbit.Input is a separate package for keyboard and game-controller input.
+### 1 / 4 — Register
 
-We register the input support we want, then interpret controls as actions in our application.
+Orbit.Input is a separate package for keyboard and game-controller input. We register the support we want when building the app. Our bridge receives the managers through dependency injection.
 
-The particular button is less important than the intent it represents. South might mean accelerate here; the same action could come from a keyboard or a touch control.
+**[Continue → Discovery.]**
 
-Now let’s see the consequence of your champion choice.
+### 2 / 4 — Discover
 
-**[Continue → Drive Our Champion.]**
+First, listen for a controller connecting. Then start discovery. The order matters: subscribe before starting the operation that can raise the event.
+
+These are the calls used by this presentation. Discovery is optional; a failure must not prevent touch or keyboard from working.
+
+**[Continue → Connect and subscribe.]**
+
+### 3 / 4 — Get the controller and hook its events
+
+The event gives us the actual controller: e.GameController. We keep that instance, then subscribe to button and analog-value changes.
+
+When replacing a controller, we detach the previous handlers and clear held actions. We also unsubscribe when the bridge is disposed.
+
+**[Continue → Read and map.]**
+
+### 4 / 4 — Read the current input values
+
+Now we have our connected controller. Reading it can be this simple.
+
+South gives us a boolean: pressed or released. That could mean jump.
+
+The shoulder trigger gives us a value between zero and one: how far it is pressed. That could mean throttle.
+
+The stick axis gives us a value from minus one to plus one, with zero at the centre. That could mean steering.
+
+We can listen for changes or read the current state. Our game decides what those values mean, and Update uses that intent to change the world.
+
+**[Continue → Drive Our Champion. Left-page tap/East goes back one controller step.]**
 
 ## Drive Our Champion — live demonstration
 

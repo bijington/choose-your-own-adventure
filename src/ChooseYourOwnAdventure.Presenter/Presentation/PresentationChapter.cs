@@ -5,7 +5,7 @@ public static class PresentationChapter
     public static string? LabelFor(PresentationSlide slide) => slide switch
     {
         PresentationSlide.OrbitOverview or PresentationSlide.InstallOrbit
-            or PresentationSlide.GameSceneView or PresentationSlide.LoadGameScene
+            or PresentationSlide.GameSceneView or PresentationSlide.LoadGameScene or PresentationSlide.FamiliarRhythm
             => "PROLOGUE · DISCOVERING ORBIT",
         PresentationSlide.ChooseChampion or PresentationSlide.GameLoop => "CHAPTER ONE · MEET OUR CHAMPION",
         PresentationSlide.InputOverview or PresentationSlide.MauiInput or PresentationSlide.InputPackage or PresentationSlide.VehicleControl => "CHAPTER TWO · TAKE CONTROL",

@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/AdventureAction.cs" Link="Presenter/AdventureAction.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/PresentationNavigation.cs" Link="Presenter/PresentationNavigation.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ControllerWalkthrough.cs" Link="Presenter/ControllerWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/SignalRWalkthrough.cs" Link="Presenter/SignalRWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/OrbitOverviewWalkthrough.cs" Link="Presenter/OrbitOverviewWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/LiveAudienceOptions.cs" Link="Presenter/LiveAudienceOptions.cs" />

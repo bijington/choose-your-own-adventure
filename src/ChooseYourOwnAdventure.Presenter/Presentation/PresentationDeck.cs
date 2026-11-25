@@ -18,6 +18,7 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<InstallOrbitScene>(PresentationSlide.InstallOrbit),
         PresentationSlideDefinition.Create<GameSceneViewIntroScene>(PresentationSlide.GameSceneView),
         PresentationSlideDefinition.Create<LoadGameSceneIntroScene>(PresentationSlide.LoadGameScene),
+        PresentationSlideDefinition.Create<FamiliarRhythmScene>(PresentationSlide.FamiliarRhythm),
         PresentationSlideDefinition.Create<ChampionChapterScene>(PresentationSlide.ChampionChapter),
         PresentationSlideDefinition.Create<OpeningScene>(
             PresentationSlide.ChooseChampion,
@@ -30,7 +31,8 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<InputChapterScene>(PresentationSlide.InputChapter),
         PresentationSlideDefinition.Create<InputOverviewScene>(PresentationSlide.InputOverview),
         PresentationSlideDefinition.Create<MauiInputScene>(PresentationSlide.MauiInput),
-        PresentationSlideDefinition.Create<InputPackageScene>(PresentationSlide.InputPackage),
+        PresentationSlideDefinition.Create<InputPackageScene>(PresentationSlide.InputPackage,
+            state => state.ResetControllerWalkthrough()),
         PresentationSlideDefinition.Create<VehicleControlScene>(PresentationSlide.VehicleControl),
         PresentationSlideDefinition.Create<BoostChoiceScene>(PresentationSlide.BoostChoice),
         PresentationSlideDefinition.Create<SignalRChapterScene>(PresentationSlide.SignalRChapter),

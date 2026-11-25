@@ -54,7 +54,7 @@ if (args.Length >= 2 && args[0] == "--demo")
 
 foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
-Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 28).Where(id => id is not (8 or 9)).Append(404).Append(405)), "Slide numbering mismatch");
+Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 29).Where(id => id is not (8 or 9)).Append(404).Append(405)), "Slide numbering mismatch");
 
 foreach (var mode in Enum.GetValues<BoostMode>())
     Check((int)mode == (int)Enum.Parse<ChooseYourOwnAdventure.Live.BoostMode>(mode.ToString()),
@@ -250,16 +250,34 @@ Check(!presenterState.ChampionRenderingVisible, "Reversing past the dot did not 
 presenterState.ShowChampionRendering();
 presenterState.PrepareChampionReveal();
 Check(!presenterState.ChampionRenderingVisible, "Re-entering the summary retained a rendering stage");
-presenterState.ShowFirmwareComparison();
-Check(Cue(ChooseYourOwnAdventure.PresentationSlide.GameLoop).NextAction.Contains("frame in the life"),
-    "Firmware should introduce the champion walking around the loop");
-presenterState.ShowGameLoopOverview();
+Check(Cue(ChooseYourOwnAdventure.PresentationSlide.FamiliarRhythm).TalkingPoints.Contains("Start")
+    && Cue(ChooseYourOwnAdventure.PresentationSlide.FamiliarRhythm).NextAction.Contains("Champion"),
+    "Standalone firmware comparison did not lead from Start to the champion");
 Check(Cue(ChooseYourOwnAdventure.PresentationSlide.GameLoop).NextAction.Contains("Take Control"),
     "Character loop should lead into Chapter Two");
+presenterState.AdvanceLoopStation();
 presenterState.ResetGameLoop();
-Check(presenterState.GameLoopStage == ChooseYourOwnAdventure.GameLoopStage.FirmwareComparison
-    && presenterState.GameLoopStation == ChooseYourOwnAdventure.LoopStation.Input,
-    "Entering the game-loop spread should start with firmware before the champion walkthrough");
+Check(presenterState.GameLoopStation == ChooseYourOwnAdventure.LoopStation.Input,
+    "Entering the champion loop should start at Input");
+var controllerState = new ChooseYourOwnAdventure.AdventureState();
+Check(!controllerState.PreviousControllerStage(), "Controller walkthrough underflowed");
+foreach (var stage in Enum.GetValues<ChooseYourOwnAdventure.Presentation.ControllerStage>())
+{
+    Check(controllerState.ControllerStage == stage, "Controller walkthrough skipped a step");
+    var cue = ChooseYourOwnAdventure.PresenterNotes.PresenterCueFactory.Create(
+        ChooseYourOwnAdventure.PresentationSlide.InputPackage, controllerState, readyVote, readyRace, false);
+    Check(cue.Beat.Contains($"{(int)stage + 1}/4") && cue.TalkingPoints.Length > 0, "Controller cues did not follow the stage");
+    Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(
+        ChooseYourOwnAdventure.PresentationSlide.InputPackage, controllerState, readyVote, readyRace, false)
+        == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Shoulder skipped the controller explanation");
+    Check(controllerState.AdvanceControllerStage() == (stage != ChooseYourOwnAdventure.Presentation.ControllerStage.Actions),
+        "Controller walkthrough escaped before its last step");
+}
+for (var i = 0; i < 3; i++) Check(controllerState.PreviousControllerStage(), "Could not reverse the controller walkthrough");
+controllerState.AdvanceControllerStage();
+controllerState.ResetControllerWalkthrough();
+Check(controllerState.ControllerStage == ChooseYourOwnAdventure.Presentation.ControllerStage.Setup, "Controller reentry retained a stage");
+Console.WriteLine("PASS: separate Start rhythm cue and four-stage controller discovery/access/event walkthrough.");
 var tiedVote = readyVote with { Phase = ChooseYourOwnAdventure.Live.VotePhase.Revealed,
     RacingDriver = 1, Charioteer = 1, SpacePilot = 1 };
 Check(Cue(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion, tiedVote).NextAction.Contains("Reopen voting"),
@@ -290,9 +308,6 @@ foreach (var champion in Enum.GetValues<ChooseYourOwnAdventure.Champion>())
         Check(beat.Thought.Length > 0 && beat.Explanation.Length > 0, "Champion loop story is missing a beat");
     }
 }
-presenterState.ShowGameLoopOverview();
-Check(presenterState.GameLoopStage == ChooseYourOwnAdventure.GameLoopStage.Overview,
-    "Could not return from firmware comparison to the champion loop");
 Check(ChooseYourOwnAdventure.Presentation.PresentationChapter.LabelFor(ChooseYourOwnAdventure.PresentationSlide.MauiInput)
     == "CHAPTER TWO · TAKE CONTROL", "MAUI input spread lost its chapter label");
 Check(Cue(ChooseYourOwnAdventure.PresentationSlide.MauiInput).TalkingPoints.Contains("Pressed and Released")

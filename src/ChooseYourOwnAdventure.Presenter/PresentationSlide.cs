@@ -29,6 +29,7 @@ public enum PresentationSlide
     FutureIdeas = 26,
     BoostChoice = 27,
     InputOverview = 28,
+    FamiliarRhythm = 29,
     AfterCreditsRace = 405,
     AfterParty = 404
 }

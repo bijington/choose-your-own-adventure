@@ -9,7 +9,7 @@ public sealed class LoadGameSceneIntroScene : PresentationSceneBase
     {
         DrawShell(canvas, dimensions);
         DrawTitle(canvas, dimensions, "LOAD A GAME SCENE",
-            "Register Orbit → give it a view → load a scene. Now our adventure needs a main character…");
+            "Register Orbit → give it a view → load a scene. Start brings the world to life.");
 
         var rect = BookLayout.RightPage(dimensions);
         var left = BookLayout.LeftPage(dimensions);
@@ -21,7 +21,7 @@ public sealed class LoadGameSceneIntroScene : PresentationSceneBase
         DrawCodeCard(canvas, rect, "MainPage.xaml.cs",
             "gameSceneManager\n    .LoadScene<OpeningScene>(GameView);\n\ngameSceneManager.Start();");
 
-        DrawPrompt(canvas, dimensions);
+        DrawPrompt(canvas, dimensions, "SOUTH / RB / ENTER / PGDN · WHAT DOES START BEGIN?");
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.LoadGameScene));
     }
 }

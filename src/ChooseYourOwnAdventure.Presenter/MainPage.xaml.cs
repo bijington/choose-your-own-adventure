@@ -235,7 +235,7 @@ public partial class MainPage : ContentPage
         }
 
         if (_presentationNavigator.Current is PresentationSlide.ChosenChampion
-            or PresentationSlide.SignalRArchitecture or PresentationSlide.OrbitOverview)
+            or PresentationSlide.SignalRArchitecture or PresentationSlide.OrbitOverview or PresentationSlide.InputPackage)
         {
             _inputRouter.Trigger(position.Value.X < GameView.Width / 2d
                 ? AdventureAction.Previous : AdventureAction.Confirm);
@@ -332,12 +332,8 @@ public partial class MainPage : ContentPage
         // Navigation never starts or resets a vote/race. Confirmation owns those commands.
         if (action == AdventureAction.Previous)
         {
-            if (_presentationNavigator.Current == PresentationSlide.GameLoop
-                && _adventureState.GameLoopStage == GameLoopStage.Overview)
-            {
-                _adventureState.ShowFirmwareComparison();
-                return;
-            }
+            if (_presentationNavigator.Current == PresentationSlide.InputPackage
+                && _adventureState.PreviousControllerStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.OrbitOverview
                 && _adventureState.PreviousOrbitOverviewStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.SignalRArchitecture
@@ -385,6 +381,16 @@ public partial class MainPage : ContentPage
                 }
                 return;
 
+            case PresentationSlide.InputPackage:
+                if (action == AdventureAction.Confirm)
+                {
+                    if (!_adventureState.AdvanceControllerStage()) _presentationNavigator.Next();
+                }
+                else if (action == AdventureAction.Cancel)
+                {
+                    if (!_adventureState.PreviousControllerStage()) _presentationNavigator.Previous();
+                }
+                return;
             case PresentationSlide.FirstDecision:
                 if (action == AdventureAction.Cancel)
                     _presentationNavigator.GoTo(PresentationSlide.AfterParty);
@@ -529,14 +535,6 @@ public partial class MainPage : ContentPage
 
     private void HandleGameLoop(AdventureAction action)
     {
-        if (_adventureState.GameLoopStage == GameLoopStage.FirmwareComparison)
-        {
-            if (action is AdventureAction.Confirm or AdventureAction.Right)
-                _adventureState.ShowGameLoopOverview();
-            else if (action is AdventureAction.Cancel or AdventureAction.Left)
-                _presentationNavigator.Previous();
-            return;
-        }
         if (action == AdventureAction.Confirm)
         {
             _adventureState.AdvanceLoopStation();
@@ -545,7 +543,7 @@ public partial class MainPage : ContentPage
         if (action is AdventureAction.Left or AdventureAction.Cancel)
         {
             if (_adventureState.GameLoopStation == LoopStation.Input)
-                _adventureState.ShowFirmwareComparison();
+                _presentationNavigator.Previous();
             else
                 _adventureState.PreviousLoopStation();
             return;
