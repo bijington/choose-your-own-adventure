@@ -35,6 +35,12 @@ public sealed class VoteStore
     private readonly ConcurrentDictionary<string, SessionVotes> _sessions =
         new(StringComparer.OrdinalIgnoreCase);
 
+    public IReadOnlyDictionary<string, Champion> SteeringParticipants(string sessionId)
+    {
+        var session = GetSession(sessionId);
+        lock (session.Gate) return new Dictionary<string, Champion>(session.VotesByParticipant);
+    }
+
     public VoteSnapshot CastVote(string sessionId, string participantId, Champion champion)
     {
         var session = GetSession(sessionId);

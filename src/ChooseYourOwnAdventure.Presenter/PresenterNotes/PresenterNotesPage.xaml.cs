@@ -60,7 +60,7 @@ public sealed partial class PresenterNotesPage : ContentPage
         var current = _slides.First(definition => definition.Slide == slide);
         var cue = PresenterCueFactory.Create(slide, _state, _vote.Snapshot, _race.Snapshot, _audience.IsConnected);
         var index = _slides.ToList().FindIndex(definition => definition.Slide == slide);
-        var next = current.Next ?? (index + 1 < _slides.Count ? _slides[index + 1].Slide : (PresentationSlide?)null);
+        var next = current.Next == slide ? null : current.Next ?? (index + 1 < _slides.Count ? _slides[index + 1].Slide : (PresentationSlide?)null);
         var title = PresenterCueFactory.TitleFor(slide);
         var section = PresentationChapter.LabelFor(slide) ?? "CHOOSE YOUR OWN ADVENTURE";
         section += slide == PresentationSlide.Title ? " · COVER"

@@ -1,3 +1,4 @@
+using Adventure.Contracts;
 using ChooseYourOwnAdventure.Input;
 using ChooseYourOwnAdventure.Live;
 using ChooseYourOwnAdventure.Presentation;
@@ -94,6 +95,7 @@ public partial class MainPage : ContentPage
                 await CreateAudienceSessionAsync();
                 break;
             case "Practise without the audience":
+                if (_audienceVoteClient.IsConnected) await _audienceVoteClient.StopSteeringRaceAsync();
                 _adventureState.IsRehearsing = true;
                 _adventureState.ResetLocalVote();
                 if (_isMobile) Preferences.Default.Set("MobilePracticeMode", true);
@@ -157,8 +159,12 @@ public partial class MainPage : ContentPage
         _hasStarted = true;
         var animationTimer = Dispatcher.CreateTimer();
         animationTimer.Interval = TimeSpan.FromMilliseconds(100);
+        var wasInBonus = false;
         animationTimer.Tick += (_, _) =>
         {
+            var inBonus = _presentationNavigator.Current == PresentationSlide.AfterCreditsRace;
+            if (wasInBonus && !inBonus && _audienceVoteClient.IsConnected) _ = _audienceVoteClient.StopSteeringRaceAsync();
+            wasInBonus = inBonus;
             AnimationShowcase.Margin = new Thickness(GameView.Width * .54, GameView.Height * .25,
                 GameView.Width * .065, GameView.Height * .17);
             AnimationShowcase.IsVisible = _presentationNavigator.Current == PresentationSlide.MauiAnimations
@@ -198,6 +204,11 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        if (_presentationNavigator.Current == PresentationSlide.AfterCreditsRace)
+        {
+            _inputRouter.Trigger(position.Value.X < GameView.Width / 2 ? AdventureAction.Cancel : AdventureAction.Confirm);
+            return;
+        }
         if (_presentationNavigator.Current == PresentationSlide.BoostChoice)
         {
             if (position.Value.X < GameView.Width / 2d) _presentationNavigator.Previous();
@@ -289,6 +300,34 @@ public partial class MainPage : ContentPage
     private async void OnAdventureAction(object? sender, AdventureAction action)
     {
         if (_presentationNavigator.IsTurning) return;
+
+        if (_presentationNavigator.Current == PresentationSlide.AfterCreditsRace)
+        {
+            var bonus = _audienceVoteClient.Steering.Snapshot;
+            if (action is AdventureAction.Cancel or AdventureAction.Previous)
+            {
+                if (_audienceVoteClient.IsConnected) await _audienceVoteClient.StopSteeringRaceAsync();
+                _presentationNavigator.GoTo(PresentationSlide.Recap);
+            }
+            else if (action == AdventureAction.Confirm)
+            {
+                if (!_audienceVoteClient.IsConnected)
+                    await DisplayAlert("Bonus race", "This optional race needs a live connection and registered champion teams. Practice mode shows the briefing only.", "OK");
+                else if (bonus.Phase == SteeringPhase.Inactive)
+                {
+                    if (_liveVoteState.Snapshot.Total == 0)
+                        await DisplayAlert("Bonus race", "The audience must choose champion teams before preparing this race.", "OK");
+                    else await _audienceVoteClient.PrepareSteeringRaceAsync();
+                }
+                else if (bonus.Phase == SteeringPhase.Ready) await _audienceVoteClient.StartSteeringRaceAsync();
+                else if (bonus.Phase == SteeringPhase.Finished)
+                {
+                    await _audienceVoteClient.StopSteeringRaceAsync();
+                    _presentationNavigator.GoTo(PresentationSlide.Recap);
+                }
+            }
+            return;
+        }
 
         // Navigation never starts or resets a vote/race. Confirmation owns those commands.
         if (action == AdventureAction.Previous)

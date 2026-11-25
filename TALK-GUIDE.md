@@ -482,7 +482,7 @@ Source: [MAUI device sensors](https://learn.microsoft.com/en-us/dotnet/maui/plat
 
 ---
 
-## MAUI Already Has Input — `MauiInputScene` — page 32 / 62 / 92
+## MAUI Already Has Input — `MauiInputScene` — page 33 / 63 / 93
 
 ### On screen
 
@@ -508,7 +508,7 @@ The [MAUI Button documentation](https://learn.microsoft.com/en-us/dotnet/maui/us
 
 ---
 
-## How Does It Move? — `InputPackageScene` — page 33 / 63 / 93
+## How Does It Move? — `InputPackageScene` — page 34 / 64 / 94
 
 ### On screen
 
@@ -543,7 +543,7 @@ and a small controller-state example.
 
 ---
 
-## Now Drive It — `VehicleControlScene` — page 34 / 64 / 94
+## Now Drive It — `VehicleControlScene` — page 35 / 65 / 95
 
 ### Purpose
 
@@ -622,7 +622,7 @@ Continue into Chapter Three and the existing SignalR walkthrough. The race now m
 
 ---
 
-## CHAPTER THREE · AN ADVENTURE TOGETHER — `SignalRChapterScene` — page 35 / 65 / 95
+## CHAPTER THREE · AN ADVENTURE TOGETHER — `SignalRChapterScene` — page 37 / 67 / 97
 
 Right-page chapter opener. Left page blank.
 
@@ -630,7 +630,7 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## What If the Input Source Changes? — `SignalRTransitionScene` — page 36 / 66 / 96
+## What If the Input Source Changes? — `SignalRTransitionScene` — page 38 / 68 / 98
 
 ### On screen
 
@@ -653,7 +653,7 @@ Conceptual transition from local controller intent to remote/audience intent.
 
 ---
 
-## SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 37 / 67 / 97
+## SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 39 / 69 / 99
 
 ### On screen
 
@@ -702,7 +702,7 @@ The final reveal’s caption and continue prompt mark the shift from a shared de
 
 ---
 
-## Audience Grand Prix — `AudienceRaceScene` — page 38 / 68 / 98
+## Audience Grand Prix — `AudienceRaceScene` — page 40 / 70 / 100
 
 ### On screen
 
@@ -756,7 +756,7 @@ After the race finishes, press `A / Enter`.
 
 ---
 
-## The Podium — `PodiumScene` — page 40 / 70 / 100
+## The Podium — `PodiumScene` — page 41 / 71 / 101
 
 ### On screen
 
@@ -784,7 +784,7 @@ Celebrate the audience before switching back into recap mode.
 ---
 
 
-## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 39 / 69 / 99
+## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 42 / 72 / 102
 
 Right-page chapter opener. Left page blank.
 
@@ -806,13 +806,13 @@ The left page shows the same MAUI Animation approach used by the live controls. 
 ---
 
 
-## What Would We Add Next? — `FutureIdeasScene` — page 41 / 71 / 101
+## What Would We Add Next? — `FutureIdeasScene` — page 44 / 74 / 104
 
 Spend 60–90 seconds on three ideas: a short pulse for touch input on supported devices, sound for the countdown and confirmed finish, and visible cues for players with sound or vibration off. Use the race the audience just played as your example. Continue to Adventure Complete.
 
 ---
 
-## Adventure Complete — `RecapScene` — page 42 / 72 / 102
+## Adventure Complete — `RecapScene` — page 45 / 75 / 105
 
 ### On screen
 
@@ -843,21 +843,37 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 | ChosenChampion | 29 | 59 | 89 |
 | GameLoop | 30 | 60 | 90 |
 | InputChapter | 31 | 61 | 91 |
-| MauiInput | 32 | 62 | 92 |
-| InputPackage | 33 | 63 | 93 |
-| VehicleControl | 34 | 64 | 94 |
-| SignalRChapter | 35 | 65 | 95 |
-| SignalRTransition | 36 | 66 | 96 |
-| SignalRArchitecture | 37 | 67 | 97 |
-| AudienceRace | 38 | 68 | 98 |
-| EpilogueChapter | 39 | 69 | 99 |
-| Podium | 40 | 70 | 100 |
-| FutureIdeas | 41 | 71 | 101 |
-| Recap | 42 | 72 | 102 |
+| MauiInput | 33 | 63 | 93 |
+| InputPackage | 34 | 64 | 94 |
+| VehicleControl | 35 | 65 | 95 |
+| SignalRChapter | 37 | 67 | 97 |
+| SignalRTransition | 38 | 68 | 98 |
+| SignalRArchitecture | 39 | 69 | 99 |
+| AudienceRace | 40 | 70 | 100 |
+| EpilogueChapter | 42 | 72 | 102 |
+| Podium | 41 | 71 | 101 |
+| FutureIdeas | 44 | 74 | 104 |
+| Recap | 45 | 75 | 105 |
 
 ---
 
 # Input cheat sheet
+
+## Optional after-credits lap — `SteeringRaceScene` — page 405
+
+This is deliberately outside the normal talk route. Adventure Complete remains the final forward-navigation destination. If there is time and the room wants another challenge, use **Presenter → Go to Slide → After Credits · Team Steering (Optional)**, or the mobile options slide picker.
+
+> “One more lap? Keep your original champion team — but this time, half of you power the left side and half power the right. Can you coordinate well enough to steer?”
+
+South/Enter **prepares** a separate bonus round. Existing champion voters are assigned stable, balanced left/right groups within each team. Everyone keeps their original browser and team. A one-person team gets both controls. Wait for people to see their side before pressing South/Enter again to **start**.
+
+> “Tap together for speed. Change the balance to steer the red marker into the green band. More left power steers left; more right power steers right. Off course slows you down — it doesn’t erase your progress.”
+
+The screen shows a winding course, progress and each team’s steering target. Movement is simulated by the server at 20 Hz; phone taps feed normalized left/right power. This is independent of the main race, so its podium result remains intact. Assignments persist on reconnect; stale-round taps are ignored.
+
+South/Enter after the finish returns to the closing page. East/Escape stops the bonus and returns immediately. Leaving through the slide menu also stops it. Phones return to the main race/result screen. Practice mode shows the briefing but does not simulate an audience or start a network round. This prototype needs the matching server and phone page; allow a real-device rehearsal to tune the coordination difficulty before using it live.
+
+---
 
 ## Ordinary presentation scenes
 

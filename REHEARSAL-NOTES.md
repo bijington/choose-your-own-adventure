@@ -539,6 +539,22 @@ And yes, AI was used in the making of these slides — but no agents were harmed
 
 **[Pause. Leave the final spread visible for questions and the QR code.]**
 
+## Optional after-credits encore — do not advance into this automatically
+
+**[Only if time permits: open Presenter → Go to Slide → After Credits · Team Steering (Optional). This does not run when continuing from the closing page.]**
+
+One more lap? Keep your original champion team — but this time, half of you power the left side and half power the right. Can you coordinate well enough to steer?
+
+**[South/Enter prepares the separate bonus round. Ask everyone to check the original browser for their assigned side. A one-person team gets both controls. Then South/Enter starts.]**
+
+Tap together for speed. Change the balance to steer the red marker into the green band. More left power steers left; more right power steers right. Off course slows you down, but doesn’t erase your progress.
+
+**[Let them coordinate. This is a prototype: rehearse with real phones before deciding to use it live. East/Escape can stop it at any time.]**
+
+The original race winner still keeps their victory. This one was about how well your team could work together.
+
+**[After the finish, South/Enter closes the bonus and restores the summary/resources page. Leave that page visible. Practice mode has briefing only, with no live race.]**
+
 ## Emergency cards — read only if needed
 
 ### Setup or connectivity trouble

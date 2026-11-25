@@ -11,6 +11,7 @@ public static class PresenterCueFactory
     {
         PresentationSlide.Title => "Choose Your Own Adventure",
         PresentationSlide.FirstDecision => "Your First Decision",
+        PresentationSlide.AfterCreditsRace => "After Credits · Team Steering (Optional)",
         PresentationSlide.AfterParty => "After-Party Not Found",
         PresentationSlide.PrologueChapter => "Discovering Orbit",
         PresentationSlide.MauiAnimations => "MAUI Already Has Some Magic",
@@ -181,6 +182,12 @@ public static class PresenterCueFactory
                     "Use confirmed events for shared cues such as the finish.",
                     "Right shoulder / Page Down / South / Enter / right page: continue. " + back,
                     "Turn to Adventure Complete for the recap and resources.");
+            case PresentationSlide.AfterCreditsRace:
+                return new("Optional encore · keep the competition",
+                    "Each champion team now has left and right power groups. Check your original phone for your assigned side. Tap together for speed; change the balance to steer the marker into the green course band. Running off course slows you down without erasing progress. One-person teams get both controls.\n" +
+                    "Prepare first so everyone can see their role, then start. This is a separate bonus round; the original podium result stays intact. In practice mode this is a briefing only.",
+                    "South / Enter: prepare, start, then return after finish. East / Escape: stop and return to the closing page.",
+                    "Leave the closing page visible when finished.");
             case PresentationSlide.Recap:
                 return new("Closing summary · resources", string.Empty,
                     "Leave this final spread visible for questions and the resources link. " + back,

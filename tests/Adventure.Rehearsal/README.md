@@ -58,3 +58,17 @@ dotnet run --project tests/Adventure.Rehearsal -- http://localhost:5199
 ```
 
 Point `LiveAudience:BaseUrl` in your local presenter settings at that host to rehearse live. Physical phones need a reachable LAN/deployed URL, not `localhost`. The localhost checks cover both normal and burst finishes, registration/phase guards, presenter authorization, reconnect and matching 20-person team effort.
+
+## Optional steering encore
+
+Stage three is deliberately independent of the main race. From the closing page, open **Presenter → Go to Slide → After Credits · Team Steering (Optional)** (or the mobile slide picker). Normal forward navigation stays on the closing slide. South/Enter prepares existing champion voters into stable left/right groups; press again after checking phone roles to start. A one-person team receives both controls. East/Escape stops the bonus and returns to the closing page, as does South/Enter after the finish. Navigating away also stops the server round.
+
+The server runs a separate 20 Hz movement loop, normalizes power by each side’s player count, and slows off-course vehicles. It never overwrites the main race result. Reconnects retain assignments; round IDs prevent queued old taps affecting a new round. Practice mode is briefing only. This requires the matching backend and phone page; rehearse real-device feel and tuning before choosing to use the encore live.
+
+Run the normal .NET rehearsal checks for role/round validation and a simulated steered lap; run against the local host for actual SignalR preparation, assignment, reconnect, power, movement and stop. The audience script’s state logic also has a dependency-free test:
+
+```bash
+node tests/Adventure.Rehearsal/browser-steering.test.cjs
+```
+
+That test exercises UI state transitions with a DOM/SignalR test double; it is not a visual/browser or physical-device test.

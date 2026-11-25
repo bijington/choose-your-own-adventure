@@ -1,3 +1,4 @@
+using Adventure.Contracts;
 using Adventure.Web.Models;
 using Adventure.Web.Services;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -53,7 +54,7 @@ if (args.Length >= 2 && args[0] == "--demo")
 
 foreach (var champion in Enum.GetValues<Champion>())
     Check((int)champion == (int)Enum.Parse<ChooseYourOwnAdventure.Champion>(champion.ToString()), "Champion contract mismatch");
-Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 28).Where(id => id is not (8 or 9)).Append(404)), "Slide numbering mismatch");
+Check(Enum.GetValues<ChooseYourOwnAdventure.PresentationSlide>().Select(x => (int)x).SequenceEqual(Enumerable.Range(1, 28).Where(id => id is not (8 or 9)).Append(404).Append(405)), "Slide numbering mismatch");
 
 foreach (var mode in Enum.GetValues<BoostMode>())
     Check((int)mode == (int)Enum.Parse<ChooseYourOwnAdventure.Live.BoostMode>(mode.ToString()),
@@ -397,6 +398,59 @@ tieRules.CastBoostVote("TIE-RULES", "b", BoostMode.Steady);
 Check(tieRules.CloseBoostVoting("TIE-RULES").Mode == BoostMode.Steady, "Tied rule vote did not use advertised steady fallback");
 Console.WriteLine("PASS: boost vote identity, phase guards, tie fallback, charge release and equal effort with 20-person teams.");
 
+// The bonus round snapshots original teams and assigns stable, balanced power sides.
+var bonusStore = new SteeringRaceStore();
+var bonusPlayers = new Dictionary<string, Champion>
+{
+    ["a"] = Champion.RacingDriver, ["b"] = Champion.RacingDriver,
+    ["c"] = Champion.RacingDriver, ["d"] = Champion.RacingDriver,
+    ["e"] = Champion.RacingDriver, ["solo"] = Champion.SpacePilot
+};
+var prepared = bonusStore.Prepare("BONUS", bonusPlayers);
+Check(prepared.Phase == SteeringPhase.Ready && prepared.Vehicles[0].LeftPlayers == 3
+    && prepared.Vehicles[0].RightPlayers == 2, "Bonus teams were not balanced");
+Check(bonusStore.SideFor("BONUS", prepared.RoundId, "a") == PowerSide.Left
+    && bonusStore.SideFor("BONUS", prepared.RoundId, "b") == PowerSide.Right
+    && bonusStore.SideFor("BONUS", prepared.RoundId, "solo") == PowerSide.Both,
+    "Bonus assignment or solo fallback incorrect");
+bonusStore.Power("BONUS", prepared.RoundId, "a", PowerSide.Left, 20);
+Check(bonusStore.Get("BONUS").Vehicles[0].LeftPower == 0, "Power applied before start");
+bonusStore.Start("BONUS");
+bonusStore.Power("BONUS", prepared.RoundId, "a", PowerSide.Right, 20);
+bonusStore.Power("BONUS", prepared.RoundId, "unknown", PowerSide.Right, 20);
+Check(bonusStore.Get("BONUS").Vehicles[0].RightPower == 0, "Wrong side or unregistered player supplied power");
+bonusStore.Power("BONUS", prepared.RoundId, "a", PowerSide.Left, 20);
+Check(bonusStore.Step("BONUS", .1)!.Vehicles[0].Offset < 0, "Differential power did not steer");
+var replacement = bonusStore.Prepare("BONUS", bonusPlayers);
+bonusStore.Start("BONUS");
+bonusStore.Power("BONUS", prepared.RoundId, "a", PowerSide.Left, 20);
+Check(bonusStore.Get("BONUS").Vehicles[0].LeftPower == 0, "Old-round taps leaked after reset");
+Check(bonusStore.SideFor("BONUS", replacement.RoundId, "a") == PowerSide.Left, "Assignment changed on reconnect/reset");
+var presenterBonus = new ChooseYourOwnAdventure.Live.LiveSteeringState();
+presenterBonus.Update(replacement);
+presenterBonus.Update(bonusStore.Stop("BONUS"));
+presenterBonus.Update(replacement with { Phase = SteeringPhase.Racing });
+Check(presenterBonus.Snapshot.Phase == SteeringPhase.Inactive, "Late tick reopened a stopped bonus round");
+Check(bonusStore.Step("BONUS", .1) is null, "Stopped bonus round kept simulating");
+// A simple feedback driver must be able to steer a complete lap, without touching main race state.
+var driving = new SteeringRaceStore();
+var driveRound = driving.Prepare("DRIVE", new Dictionary<string, Champion> { ["driver"] = Champion.RacingDriver });
+driving.Start("DRIVE");
+for (var tick = 0; tick < 3600 && driving.Get("DRIVE").Phase != SteeringPhase.Finished; tick++)
+{
+    var vehicle = driving.Get("DRIVE").Vehicles.Single();
+    if (tick % 4 == 0)
+    {
+        var error = vehicle.TargetOffset - vehicle.Offset;
+        if (error < .08) driving.Power("DRIVE", driveRound.RoundId, "driver", PowerSide.Left, 1);
+        if (error > -.08) driving.Power("DRIVE", driveRound.RoundId, "driver", PowerSide.Right, 1);
+    }
+    driving.Step("DRIVE", .05);
+}
+Check(driving.Get("DRIVE").Phase == SteeringPhase.Finished && driving.Get("DRIVE").Winner == 20,
+    "Feedback steering could not finish the bonus course");
+Console.WriteLine("PASS: bonus side balancing, solo fallback, role/round guards, reset, late snapshots and a complete steered lap.");
+
 if (args.Length == 0) return;
 var url = args[0].TrimEnd('/');
 var session = "REHEARSAL-" + Guid.NewGuid().ToString("N");
@@ -473,6 +527,39 @@ try
     await Until(() => HasRace(x => x.Mode == BoostMode.ChargeAndRelease && x.Phase == RacePhase.Finished
         && x.Winner == Champion.SpacePilot), "Live burst race did not finish");
     Console.WriteLine("PASS: live boost voting authorization, result broadcast, reconnect, charge meter and burst finish.");
+    var bonusSnapshots = new List<SteeringSnapshot>();
+    clients[0].On<SteeringSnapshot>("SteeringUpdated", x => { lock (bonusSnapshots) bonusSnapshots.Add(x); });
+    bool HasBonus(Func<SteeringSnapshot, bool> predicate) { lock (bonusSnapshots) return bonusSnapshots.Any(predicate); }
+    try { await clients[0].InvokeAsync("PrepareSteeringRace", session, "wrong-key"); throw new Exception("Bad bonus key accepted"); }
+    catch (Microsoft.AspNetCore.SignalR.HubException) { }
+    await presenter.InvokeAsync("PrepareSteeringRace", session, key);
+    await Until(() => HasBonus(x => x.Phase == SteeringPhase.Ready && x.Vehicles.Length == 3), "Bonus preparation not broadcast");
+    SteeringSnapshot liveBonus;
+    lock (bonusSnapshots) liveBonus = bonusSnapshots.Last(x => x.Phase == SteeringPhase.Ready);
+    var assigned = await clients[0].InvokeAsync<PowerSide>("SteeringSide", session, liveBonus.RoundId, "p0");
+    Check(assigned is PowerSide.Left or PowerSide.Right, "Live power assignment missing");
+    await clients[0].StopAsync();
+    await clients[0].StartAsync();
+    await clients[0].InvokeAsync("JoinSession", session);
+    Check(await clients[0].InvokeAsync<PowerSide>("SteeringSide", session, liveBonus.RoundId, "p0") == assigned,
+        "Live reconnect changed the power assignment");
+    await presenter.InvokeAsync("StartSteeringRace", session, key);
+    var otherSide = assigned == PowerSide.Left ? PowerSide.Right : PowerSide.Left;
+    await clients[0].InvokeAsync("SteeringPower", session, liveBonus.RoundId, "p0", (int)otherSide, 20);
+    await clients[0].InvokeAsync("SteeringPower", session, liveBonus.RoundId, "p0", (int)assigned, 20);
+    await Until(() => HasBonus(x => x.Phase == SteeringPhase.Racing && x.Vehicles.Any(v => v.Champion == 20 && v.Progress > 0)),
+        "Server loop did not move the bonus vehicle");
+    await presenter.InvokeAsync("StopSteeringRace", session, key);
+    await Until(() => HasBonus(x => x.Phase == SteeringPhase.Inactive), "Bonus exit did not restore normal phone state");
+    int beforeJoin;
+    lock (races) beforeJoin = races.Count;
+    await clients[0].InvokeAsync("JoinSession", session);
+    await Until(() => { lock (races) return races.Count > beforeJoin; }, "Main race not restored on rejoin");
+    RaceSnapshot originalResult;
+    lock (races) originalResult = races.Last();
+    Check(originalResult.Mode == BoostMode.ChargeAndRelease && originalResult.Phase == RacePhase.Finished
+        && originalResult.Winner == Champion.SpacePilot, "Bonus round overwrote the main race result");
+    Console.WriteLine("PASS: live bonus preparation, presenter authorization, stable reconnect role, power, server ticks and stop.");
     using var http = new HttpClient();
     Check((await http.GetAsync(url + "/join/ORBIT")).IsSuccessStatusCode, "Join page failed");
     Check((await http.GetStringAsync(url + "/js/signalr/dist/browser/signalr.min.js")).Length > 10000, "Local SignalR client missing");

@@ -72,6 +72,18 @@
       <div id="raceResult" class="race-result"></div>
     </section>
 
+    <section id="steeringPanel" style="display:none">
+      <h1>ONE MORE LAP?</h1>
+      <p class="sub">Your champion team is split into LEFT and RIGHT power. Coordinate to stay on course.</p>
+      <div id="steeringRole" class="team-badge">Assigning your side…</div>
+      <div id="steeringStatus" class="status"></div>
+      <div class="grid">
+        <button id="leftPower" class="boost" type="button" disabled>LEFT POWER</button>
+        <button id="rightPower" class="boost" type="button" disabled>RIGHT POWER</button>
+      </div>
+      <p id="steeringCourse" class="sub"></p>
+      <p class="sub">Tap together for speed. More LEFT power steers left; more RIGHT steers right. Off course slows your team down.</p>
+    </section>
     <footer id="session"></footer>
   </main>
   <script src="/js/signalr/dist/browser/signalr.min.js"></script>
@@ -94,6 +106,88 @@
     const boostVotePanel = document.getElementById('boostVotePanel');
     const modeButtons = [...document.querySelectorAll('button[data-mode]')];
     let selectedMode = localStorage.getItem(`orbit-mode-${sessionId}`);
+    const endedSteeringRounds = new Set();
+    let latestSteering = null;
+    let assignmentRound = '';
+    let assignedSide = 'None';
+    let pendingLeft = 0, pendingRight = 0, steeringSending = false;
+    const steeringPanel = document.getElementById('steeringPanel');
+    const leftPower = document.getElementById('leftPower');
+    const rightPower = document.getElementById('rightPower');
+    function steeringPhase(snapshot) {
+      return typeof snapshot.phase === 'string' ? snapshot.phase : ['Inactive', 'Ready', 'Racing', 'Finished'][snapshot.phase];
+    }
+    function sideName(value) { return typeof value === 'string' ? value : ['None', 'Left', 'Right', 'Both'][value]; }
+    async function applySteering(snapshot) {
+      if (steeringPhase(snapshot) === 'Inactive') {
+        if (latestSteering?.roundId) endedSteeringRounds.add(latestSteering.roundId);
+        if (snapshot.roundId) endedSteeringRounds.add(snapshot.roundId);
+      } else if (endedSteeringRounds.has(snapshot.roundId)) return;
+      if (latestSteering?.roundId !== snapshot.roundId || steeringPhase(snapshot) !== 'Racing') {
+        pendingLeft = 0; pendingRight = 0;
+      }
+      latestSteering = snapshot;
+      const phase = steeringPhase(snapshot);
+      steeringPanel.style.display = phase === 'Inactive' ? 'none' : 'block';
+      if (phase === 'Inactive') {
+        assignmentRound = ''; assignedSide = 'None';
+        if (latestRace) applyRace(latestRace);
+        return;
+      }
+      votePanel.style.display = 'none'; racePanel.style.display = 'none'; boostVotePanel.style.display = 'none';
+      if (assignmentRound !== snapshot.roundId && connection.state === signalR.HubConnectionState.Connected) {
+        assignmentRound = snapshot.roundId;
+        assignedSide = 'None';
+        try {
+          const side = await connection.invoke('SteeringSide', sessionId, snapshot.roundId, participantId);
+          if (latestSteering.roundId !== snapshot.roundId) return;
+          assignedSide = sideName(side);
+          renderSteering();
+        } catch {
+          assignmentRound = '';
+          document.getElementById('steeringStatus').textContent = 'Unable to confirm your side. Reconnecting…';
+        }
+      }
+      renderSteering();
+    }
+    function renderSteering() {
+      if (!latestSteering) return;
+      const phase = steeringPhase(latestSteering);
+      const racing = phase === 'Racing' && connection.state === signalR.HubConnectionState.Connected;
+      leftPower.style.display = assignedSide === 'Left' || assignedSide === 'Both' ? 'block' : 'none';
+      rightPower.style.display = assignedSide === 'Right' || assignedSide === 'Both' ? 'block' : 'none';
+      leftPower.disabled = rightPower.disabled = !racing;
+      document.getElementById('steeringRole').textContent = assignedSide === 'None'
+        ? 'No race role: you must have joined a champion team before preparation.'
+        : `${labels[selectedChampion] || 'Your original team'} · ${assignedSide === 'Both' ? 'SOLO: both power controls' : assignedSide.toUpperCase() + ' POWER'}`;
+      const vehicle = latestSteering.vehicles.find(x => championName(x.champion) === selectedChampion);
+      document.getElementById('steeringStatus').textContent = phase === 'Ready' ? 'Find your side. Waiting for the presenter to start…'
+        : phase === 'Finished' ? `${labels[championName(latestSteering.winner)] || 'A champion'} wins the bonus race!`
+        : 'GO! Coordinate with the other side of your team!';
+      document.getElementById('steeringCourse').textContent = vehicle
+        ? `${Math.round(vehicle.progress * 100)}% complete · ${Math.abs(vehicle.offset - vehicle.targetOffset) > .5 ? 'OFF COURSE — steer toward the green band!' : 'ON COURSE'}` : '';
+    }
+    leftPower.addEventListener('click', () => { if (!leftPower.disabled) pendingLeft++; });
+    rightPower.addEventListener('click', () => { if (!rightPower.disabled) pendingRight++; });
+    setInterval(async () => {
+      if (steeringSending || !latestSteering || steeringPhase(latestSteering) !== 'Racing'
+          || connection.state !== signalR.HubConnectionState.Connected) return;
+      const roundId = latestSteering.roundId;
+      const left = Math.min(pendingLeft, 20), right = Math.min(pendingRight, 20);
+      if (!left && !right) return;
+      pendingLeft -= left; pendingRight -= right;
+      steeringSending = true;
+      try {
+        if (left) await connection.invoke('SteeringPower', sessionId, roundId, participantId, 1, left);
+        if (right) await connection.invoke('SteeringPower', sessionId, roundId, participantId, 2, right);
+      } catch {
+        // Old-round taps never leak into a reset round.
+        if (latestSteering?.roundId === roundId && steeringPhase(latestSteering) === 'Racing') {
+          pendingLeft += left; pendingRight += right;
+        }
+      } finally { steeringSending = false; }
+    }, 100);
+
     let flushing = false;
     let jumpUntil = 0;
     let latestCharge = 0;
@@ -174,6 +268,7 @@
       const progressKey = { RacingDriver: 'racingDriverProgress', Charioteer: 'charioteerProgress', SpacePilot: 'spacePilotProgress' }[selectedChampion];
       const previousProgress = latestRace?.[progressKey] || 0;
       latestRace = snapshot;
+      if (latestSteering && steeringPhase(latestSteering) !== 'Inactive') return;
       const phase = racePhaseName(snapshot.phase);
       const winner = championName(snapshot.winner);
 
@@ -228,9 +323,13 @@
       }
     }
 
+    connection.on('SteeringUpdated', applySteering);
     connection.on('VoteUpdated', applySnapshot);
     connection.on('RaceUpdated', applyRace);
     connection.onreconnecting(() => {
+      assignmentRound = '';
+      leftPower.disabled = rightPower.disabled = true;
+      document.getElementById('steeringStatus').textContent = 'Reconnecting…';
       status.textContent = 'Reconnecting…';
       raceStatus.textContent = 'Reconnecting…';
       boostButton.disabled = true;

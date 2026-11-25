@@ -53,6 +53,7 @@ public static class PresentationTheme
         {
             PresentationSlide.Title => 1,
             PresentationSlide.AfterParty => 404,
+            PresentationSlide.AfterCreditsRace => 405,
             _ => PresentationDeck.StoryPageNumber(slide)
                 + (PresentationDeck.UsesChampionOffset(slide) ? (int)(champion ?? 0) : 0)
         };

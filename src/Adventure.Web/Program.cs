@@ -10,6 +10,8 @@ if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:SignalR:ConnectionSt
 }
 
 builder.Services.AddSingleton<VoteStore>();
+builder.Services.AddSingleton<SteeringRaceStore>();
+builder.Services.AddHostedService<SteeringRaceLoop>();
 
 var app = builder.Build();
 

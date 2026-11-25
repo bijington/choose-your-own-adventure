@@ -42,13 +42,15 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<EpilogueChapterScene>(PresentationSlide.EpilogueChapter),
         PresentationSlideDefinition.Create<MauiAnimationsScene>(PresentationSlide.MauiAnimations),
         PresentationSlideDefinition.Create<FutureIdeasScene>(PresentationSlide.FutureIdeas),
-        PresentationSlideDefinition.Create<RecapScene>(PresentationSlide.Recap)
+        PresentationSlideDefinition.Create<RecapScene>(PresentationSlide.Recap, next: PresentationSlide.Recap),
+        PresentationSlideDefinition.Create<SteeringRaceScene>(PresentationSlide.AfterCreditsRace,
+            next: PresentationSlide.Recap, previous: PresentationSlide.Recap)
     ];
 
     // Printed page order excludes the cover and the optional page-404 gag.
     private static readonly PresentationSlide[] StoryPages = Slides
         .Select(definition => definition.Slide)
-        .Where(slide => slide is not (PresentationSlide.Title or PresentationSlide.AfterParty))
+        .Where(slide => slide is not (PresentationSlide.Title or PresentationSlide.AfterParty or PresentationSlide.AfterCreditsRace))
         .ToArray();
 
     public static int StoryPageNumber(PresentationSlide slide)
