@@ -219,17 +219,6 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## MAUI Already Has Some Magic — `MauiAnimationsScene`
-
-Before the Orbit overview, spend about 30 seconds showing three real MAUI animations: a bouncing control, a spinning/scaling star and a pulsing heart. Tap **Play it again** to restart or **Build a game →** to continue. The examples run automatically and stop when leaving the spread.
-
-> “Before we reach for a game engine, MAUI already gives us a little magic. These are ordinary XAML controls. We can move, rotate, scale and fade them, and easing gives that movement personality.”
-
-> “That is great for playful UI and feedback. As our game grows, we want a shared game loop, scenes and game objects. That is where Orbit comes in.”
-
-The left page shows the same MAUI Animation approach used by the live controls. Continue with South / Enter / right-page tap / right shoulder; left-page tap goes back. Leave space around the controls to tap the page, or use keyboard/controller navigation.
-
----
 
 ## Building a Game in MAUI — `OrbitOverviewScene` — page 3
 
@@ -246,7 +235,7 @@ The same book spread has four talking points. The right page always shows `.NET 
 
 ### Action
 
-South / Right shoulder / Enter / Page Down / right-page tap advances one building block. Left shoulder / East / Page Up / Escape / left-page tap goes back one step; from step 1 it returns to the MAUI animation demo. Only after Your Game does the next action open Install & Register Orbit. Re-entering the spread starts again at .NET MAUI. Presenter notes follow each step.
+South / Right shoulder / Enter / Page Down / right-page tap advances one building block. Left shoulder / East / Page Up / Escape / left-page tap goes back one step; from step 1 it returns to the prologue. Only after Your Game does the next action open Install & Register Orbit. Re-entering the spread starts again at .NET MAUI. Presenter notes follow each step.
 
 ### Transition
 
@@ -753,14 +742,6 @@ After the race finishes, press `A / Enter`.
 
 ---
 
-## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 39 / 69 / 99
-
-Right-page chapter opener. Left page blank.
-
-> Every race has a finish. Every adventure leaves us with something to take home.
-
-A/Enter or right-page tap continues; left-page tap goes back.
-
 ## The Podium — `PodiumScene` — page 40 / 70 / 100
 
 ### On screen
@@ -780,13 +761,36 @@ Celebrate the audience before switching back into recap mode.
 
 ### Action
 
-`A / Enter` → What Would We Add Next?
+`A / Enter` → The Journey Home
 
 ### Transition
 
-> “When you tap Boost, how do you know the game felt it?”
+> “Let’s take some of that life back into our everyday applications.”
 
 ---
+
+
+## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 39 / 69 / 99
+
+Right-page chapter opener. Left page blank.
+
+> Every race has a finish. Every adventure leaves us with something to take home.
+
+A/Enter or right-page tap continues to the MAUI animation demo; left-page tap goes back.
+
+
+## MAUI Already Has Some Magic — `MauiAnimationsScene`
+
+As the first content slide after The Journey Home opener, spend about 30 seconds showing three real MAUI animations: a bouncing control, a spinning/scaling star and a pulsing heart. Tap **Play it again** to restart or **What next? →** to continue. The examples run automatically and stop when leaving the spread.
+
+> “To take this home, remember that MAUI already gives everyday apps a little magic. These are ordinary XAML controls. We can move, rotate, scale and fade them, and easing gives that movement personality.”
+
+> “That is great for playful UI and feedback. What other senses could we bring into the experience?”
+
+The left page shows the same MAUI Animation approach used by the live controls. Continue with South / Enter / right-page tap / right shoulder; left-page tap goes back. Leave space around the controls to tap the page, or use keyboard/controller navigation.
+
+---
+
 
 ## What Would We Add Next? — `FutureIdeasScene` — page 41 / 71 / 101
 

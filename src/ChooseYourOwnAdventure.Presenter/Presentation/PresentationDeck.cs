@@ -13,7 +13,6 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<AfterPartyScene>(PresentationSlide.AfterParty),
         PresentationSlideDefinition.Create<PrologueChapterScene>(PresentationSlide.PrologueChapter,
             previous: PresentationSlide.FirstDecision),
-        PresentationSlideDefinition.Create<MauiAnimationsScene>(PresentationSlide.MauiAnimations),
         PresentationSlideDefinition.Create<OrbitOverviewScene>(PresentationSlide.OrbitOverview,
             state => state.ResetOrbitOverview()),
         PresentationSlideDefinition.Create<InstallOrbitScene>(PresentationSlide.InstallOrbit),
@@ -40,6 +39,7 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<AudienceRaceScene>(PresentationSlide.AudienceRace),
         PresentationSlideDefinition.Create<PodiumScene>(PresentationSlide.Podium),
         PresentationSlideDefinition.Create<EpilogueChapterScene>(PresentationSlide.EpilogueChapter),
+        PresentationSlideDefinition.Create<MauiAnimationsScene>(PresentationSlide.MauiAnimations),
         PresentationSlideDefinition.Create<FutureIdeasScene>(PresentationSlide.FutureIdeas),
         PresentationSlideDefinition.Create<RecapScene>(PresentationSlide.Recap)
     ];

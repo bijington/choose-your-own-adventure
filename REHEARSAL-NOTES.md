@@ -45,23 +45,8 @@ Every adventure needs a world to happen in. Ours happens inside a MAUI app.
 
 That’s worth keeping in mind throughout the talk. We aren’t leaving our application behind. We’re adding another way to make part of it feel alive.
 
-**[Continue → MAUI Already Has Some Magic.]**
+**[Continue → Building a Game in MAUI.]**
 
-## MAUI Already Has Some Magic — live animations
-
-Before we reach for anything else, MAUI already gives us a little magic.
-
-These are ordinary XAML controls. We can move them, rotate them, scale them and change their opacity. Easing changes the feel of that movement: the same journey can feel mechanical, gentle or a little more dramatic.
-
-**[Point to the bounce, rotating star and heartbeat. Let them play. Tap Play it again if useful.]**
-
-The code on the left animates properties over time. The star doesn’t need a complete game engine just to make an entrance.
-
-This is great for transitions, feedback and playful UI. As we add characters, rules and a changing world, it becomes useful to organize those things around a shared game loop.
-
-Let’s build up the pieces.
-
-**[Tap Build a game →, or continue outside the control panel.]**
 
 ## Building a Game in MAUI — four reveals
 
@@ -471,12 +456,6 @@ This is where I’ll celebrate the winning team, then connect the result back to
 
 **[Practice: Continue/right page → The Journey Home. A new practice session has no race winner to celebrate.]**
 
-## Epilogue — The Journey Home
-
-Every race has a finish. Every adventure leaves us with something to take home.
-
-**[Continue → The Podium.]**
-
 ## The Podium
 
 **[Live: acknowledge the actual winner and the other teams. Pause for reaction. Solo: skip the celebration if there is no result.]**
@@ -484,6 +463,32 @@ Every race has a finish. Every adventure leaves us with something to take home.
 Thank you for playing. The champion vote, the movement demo and that race all came back to the same idea: give intent a route into shared state, and make the result visible.
 
 **[Continue → What Would We Add Next?]**
+
+
+## Epilogue — The Journey Home
+
+Every race has a finish. Every adventure leaves us with something to take home.
+
+**[Continue → MAUI Already Has Some Magic.]**
+
+
+## MAUI Already Has Some Magic — live animations
+
+Let’s take this home. MAUI already gives ordinary applications a little magic.
+
+These are ordinary XAML controls. We can move them, rotate them, scale them and change their opacity. Easing changes the feel of that movement: the same journey can feel mechanical, gentle or a little more dramatic.
+
+**[Point to the bounce, rotating star and heartbeat. Let them play. Tap Play it again if useful.]**
+
+The code on the left animates properties over time. The star doesn’t need a complete game engine just to make an entrance.
+
+This is great for transitions, feedback and playful UI. We can use these effects in everyday applications too.
+
+What other feedback could we add?
+
+**[Tap What next? →, or continue outside the control panel → Future Ideas.]**
+
+
 
 ## What Would We Add Next? — feedback ideas
 
@@ -498,6 +503,7 @@ And if I’ve muted my phone or turned vibration off, the buttons and the race s
 **[Allow roughly 60–90 seconds. Pause after the opening question if you invite an answer.]**
 
 **[Continue → Adventure Complete.]**
+
 
 ## Adventure Complete — summary and resources
 

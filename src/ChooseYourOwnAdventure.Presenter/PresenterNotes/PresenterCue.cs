@@ -46,10 +46,10 @@ public static class PresenterCueFactory
         {
             case PresentationSlide.MauiAnimations:
                 return new("MAUI animations · a little magic",
-                    "Before introducing Orbit, show what MAUI already provides. These are real XAML controls animated with MAUI’s Animation API: translation, rotation, scale and opacity. Easing changes the feel of the motion.\n" +
-                    "Tap Play it again if useful. These are great for transitions, feedback and playful UI. We can build games with MAUI; Orbit gives us a shared game loop, scenes and game objects as complexity grows. Keep this demonstration to about 30 seconds.",
-                    "Tap Play it again to replay. South / Enter / Right shoulder / Page Down: building a game in MAUI. " + back,
-                    "Walk through the four building blocks, introducing Orbit at step three.");
+                    "Start The Journey Home with what the audience can take back to everyday MAUI apps. These are real XAML controls animated with MAUI’s Animation API: translation, rotation, scale and opacity. Easing changes the feel of the motion.\n" +
+                    "Tap Play it again if useful. These are great for transitions, feedback and playful UI. These effects also work in ordinary apps, without a game loop. Keep this demonstration to about 30 seconds.",
+                    "Tap Play it again to replay. South / Enter / Right shoulder / Page Down: what would we add next? " + back,
+                    "Explore haptics, audio and visual feedback.");
             case PresentationSlide.MauiInput:
                 return new("Touch and mouse · ordinary MAUI UI",
                     "Start with what MAUI already gives us: a Button works with touch and mouse. Clicked or Command can represent a single action; Pressed and Released are useful for held controls.\n" +
