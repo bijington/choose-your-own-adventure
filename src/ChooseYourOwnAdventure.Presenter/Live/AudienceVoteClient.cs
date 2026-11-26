@@ -64,6 +64,7 @@ public sealed class AudienceVoteClient : IAsyncDisposable
         await PauseAsync();
         var session = _options.CreateSession();
         Steering.Update(new SteeringSnapshot(session, "", SteeringPhase.Inactive, [], null));
+        _state.ParticipationQr.ResetSession();
         _state.ResetAfterCreditsAchievement();
         _state.ResetLocalVote();
         _voteState.Update(new VoteSnapshot(session, 0, 0, 0, VotePhase.Ready, null));

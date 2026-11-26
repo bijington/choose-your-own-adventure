@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ParticipationQrState.cs" Link="Presenter/ParticipationQrState.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/AdventureAction.cs" Link="Presenter/AdventureAction.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/PresentationNavigation.cs" Link="Presenter/PresentationNavigation.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ControllerWalkthrough.cs" Link="Presenter/ControllerWalkthrough.cs" />

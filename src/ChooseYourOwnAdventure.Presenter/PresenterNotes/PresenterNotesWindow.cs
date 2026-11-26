@@ -26,6 +26,8 @@ public sealed class PresenterNotesWindow(IServiceProvider services)
         if (!_elapsed.IsRunning) _elapsed.Start();
     }
 
+    public void RestartTimer() => _elapsed.Restart();
+
     public Window CreateNotesWindow()
     {
         var page = services.GetRequiredService<PresenterNotesPage>();

@@ -35,6 +35,12 @@ Speaker prose is extracted from this guide at build time; code blocks and audien
 
 Before the audience joins, choose **Presenter → New Audience Session** in either desktop window (or **New audience session** in the mobile options menu). This creates a unique session ID and updates the audience QR code/link without server changes. Old test votes stay in the old session. Ask everyone to scan the new code; people already in the old session will not move automatically. The session is remembered across restarts on this device. Practice mode stays enabled if already on, so switch to live audience when ready.
 
+# Large participation QR
+
+The first visit to Choose Your Champion opens a large, high-contrast join QR automatically. Invite everyone to scan it, then tap the screen or press South/Enter/either shoulder/Escape to dismiss it. That action **only closes the QR**; use the next action to start the vote. It does not choose a champion or navigate to another slide.
+
+Use **Enlarge QR** on the audience screen or in Presenter Notes to show it again on champion voting, route voting, the main race or the optional encore. Close it to return to the exact same scene. A live race continues underneath; enlargement does not start, reset or pause it. The resources QR on the credits page is separate. A new audience session updates the URL/code and re-enables the initial large showing.
+
 # Mobile rehearsal
 
 Phones and tablets default to Practice mode. Use the **Practice · options** button to choose a local champion, skip the race or jump to a slide. Card taps select the champion locally; the race's right page skips to the epilogue. No SignalR connection or presenter commands are used in practice. The mode is remembered on the device. Select **Use live audience** to reconnect and rehearse with real phones. Desktop offers **Presenter → Practice Options** as well.

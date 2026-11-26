@@ -62,6 +62,8 @@ public sealed class AdventureState
         ChooseYourOwnAdventure.Champion.SpacePilot
     ];
 
+    public Presentation.ParticipationQrState ParticipationQr { get; } = new();
+
     private bool _afterCreditsAchievementUnlocked;
     public bool TryUnlockAfterCreditsAchievement()
     {

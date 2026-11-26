@@ -38,6 +38,7 @@ public partial class MainPage : ContentPage
         LiveVoteState liveVoteState,
         LiveRaceState liveRaceState,
         LiveAudienceOptions liveOptions,
+        QrCodeRenderer participationQr,
         PresenterNotesWindow notes,
         IReadOnlyList<PresentationSlideDefinition> slides)
     {
@@ -45,6 +46,7 @@ public partial class MainPage : ContentPage
         _notes = notes;
         _slides = slides;
         _liveOptions = liveOptions;
+        ParticipationCode.Configure(participationQr, liveOptions);
         liveOptions.SessionId = Preferences.Default.Get("AudienceSessionId", liveOptions.SessionId);
         _isMobile = DeviceInfo.Current.Idiom == DeviceIdiom.Phone || DeviceInfo.Current.Idiom == DeviceIdiom.Tablet;
         adventureState.IsRehearsing = _isMobile && Preferences.Default.Get("MobilePracticeMode", true);
@@ -69,6 +71,31 @@ public partial class MainPage : ContentPage
         UpdatePracticeButton();
 
         _inputRouter.ActionTriggered += OnAdventureAction;
+    }
+
+    private void SyncParticipationQr()
+    {
+        if (!_hasStarted || _presentationNavigator.IsTurning)
+        {
+            ParticipationCode.IsVisible = false;
+            EnlargeQrButton.IsVisible = false;
+            return;
+        }
+        var qr = _adventureState.ParticipationQr;
+        qr.Visit(_presentationNavigator.Current);
+        ParticipationCode.IsVisible = qr.IsExpanded;
+        EnlargeQrButton.IsVisible = qr.CanShow && !qr.IsExpanded;
+        if (qr.IsExpanded) ParticipationCode.Refresh(PresenterCueFactory.TitleFor(_presentationNavigator.Current));
+    }
+    private void OnToggleParticipationQr(object? sender, EventArgs e)
+    {
+        _adventureState.ParticipationQr.Toggle();
+        SyncParticipationQr();
+    }
+    private void OnDismissParticipationQr(object? sender, EventArgs e)
+    {
+        _adventureState.ParticipationQr.Dismiss();
+        SyncParticipationQr();
     }
 
     private void OnAnimationContinueRequested(object? sender, EventArgs e) => _inputRouter.Trigger(AdventureAction.Confirm);
@@ -162,6 +189,7 @@ public partial class MainPage : ContentPage
         var wasInBonus = false;
         animationTimer.Tick += (_, _) =>
         {
+            SyncParticipationQr();
             var inBonus = _presentationNavigator.Current == PresentationSlide.AfterCreditsRace;
             if (wasInBonus && !inBonus && _audienceVoteClient.IsConnected) _ = _audienceVoteClient.StopSteeringRaceAsync();
             wasInBonus = inBonus;
@@ -300,6 +328,13 @@ public partial class MainPage : ContentPage
     private async void OnAdventureAction(object? sender, AdventureAction action)
     {
         if (_presentationNavigator.IsTurning) return;
+        SyncParticipationQr();
+        if (_adventureState.ParticipationQr.IsExpanded)
+        {
+            if (action is AdventureAction.Confirm or AdventureAction.Next or AdventureAction.Previous or AdventureAction.Cancel)
+                OnDismissParticipationQr(this, EventArgs.Empty);
+            return;
+        }
 
         if (_presentationNavigator.Current == PresentationSlide.AfterCreditsRace)
         {

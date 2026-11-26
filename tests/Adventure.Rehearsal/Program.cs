@@ -22,10 +22,11 @@ if (args.Length == 2 && args[0] == "--check-presenter-xaml")
         "ChooseYourOwnAdventure.App.xaml",
         "ChooseYourOwnAdventure.MainPage.xaml",
         "ChooseYourOwnAdventure.Controls.MauiAnimationShowcase.xaml",
+        "ChooseYourOwnAdventure.Controls.ParticipationQrView.xaml",
         "ChooseYourOwnAdventure.PresenterNotes.PresenterNotesPage.xaml"
     })
         Check(resources.Contains(name), $"Packaged presenter is missing embedded XAML: {name}");
-    Console.WriteLine("PASS: packaged presenter retains XAML for application, main page, animation control and presenter notes.");
+    Console.WriteLine("PASS: packaged presenter retains XAML for application, main page, animation/participation controls and presenter notes.");
     return;
 }
 
@@ -69,6 +70,31 @@ foreach (var phase in new[] { ChooseYourOwnAdventure.Live.VotePhase.Ready, Choos
 Check(ChooseYourOwnAdventure.Input.PresentationNavigation.ResolveNext(ChooseYourOwnAdventure.PresentationSlide.BoostChoice,
     ruleNavState, ruleVote, ruleRace with { BoostVotePhase = ChooseYourOwnAdventure.Live.VotePhase.Closed }, true)
     == ChooseYourOwnAdventure.Input.AdventureAction.Confirm, "Closed rule vote could not continue");
+
+var participationCode = new ChooseYourOwnAdventure.Presentation.ParticipationQrState();
+participationCode.Visit(ChooseYourOwnAdventure.PresentationSlide.Title);
+Check(!participationCode.CanShow && !participationCode.IsExpanded, "Cover showed audience QR");
+participationCode.Visit(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion);
+Check(participationCode.IsExpanded, "First champion entry did not show large QR");
+Check(participationCode.Dismiss() && !participationCode.Dismiss(), "QR dismissal did not consume exactly one action");
+participationCode.Visit(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion);
+Check(!participationCode.IsExpanded, "Polling reopened a dismissed QR");
+foreach (var participationSlide in new[] { ChooseYourOwnAdventure.PresentationSlide.BoostChoice,
+    ChooseYourOwnAdventure.PresentationSlide.AudienceRace, ChooseYourOwnAdventure.PresentationSlide.AfterCreditsRace })
+{
+    participationCode.Visit(participationSlide);
+    Check(participationCode.CanShow && !participationCode.IsExpanded, "Later participation slides unexpectedly interrupted the flow");
+    participationCode.Toggle();
+    Check(participationCode.IsExpanded, "Manual QR enlargement failed");
+}
+participationCode.Visit(ChooseYourOwnAdventure.PresentationSlide.Recap);
+Check(!participationCode.CanShow && !participationCode.IsExpanded, "Audience code leaked onto resources page");
+participationCode.Visit(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion);
+Check(!participationCode.IsExpanded, "Revisiting the champion vote showed the initial QR again");
+participationCode.ResetSession();
+participationCode.Visit(ChooseYourOwnAdventure.PresentationSlide.ChooseChampion);
+Check(participationCode.IsExpanded, "Fresh session did not show its new join QR");
+Console.WriteLine("PASS: initial audience QR, single dismissal, manual enlargement, scene changes and session reset.");
 
 // Local development overrides must reach both the SignalR client and the QR code.
 using (var defaultSettings = typeof(ChooseYourOwnAdventure.Live.LiveAudienceOptions).Assembly

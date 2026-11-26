@@ -55,10 +55,19 @@ public sealed partial class PresenterNotesPage : ContentPage
 
     private void RefreshNotes()
     {
+        _participationQrButton.IsVisible = _state.ParticipationQr.CanShow;
+        _participationQrButton.Text = _state.ParticipationQr.IsExpanded ? "Close QR" : "Enlarge QR";
         _clock.Text = _windows.Elapsed.ToString(@"hh\:mm\:ss");
         var slide = _navigator.Current;
         var current = _slides.First(definition => definition.Slide == slide);
         var cue = PresenterCueFactory.Create(slide, _state, _vote.Snapshot, _race.Snapshot, _audience.IsConnected);
+        if (_state.ParticipationQr.IsExpanded)
+            cue = cue with
+            {
+                Beat = "Large QR · invite the room to scan",
+                Controls = "Tap / South / Enter / either shoulder / Escape: close the QR only. Voting and racing are unchanged.",
+                NextAction = "Return to " + PresenterCueFactory.TitleFor(slide) + "."
+            };
         var index = _slides.ToList().FindIndex(definition => definition.Slide == slide);
         var next = current.Next == slide ? null : current.Next ?? (index + 1 < _slides.Count ? _slides[index + 1].Slide : (PresentationSlide?)null);
         var title = PresenterCueFactory.TitleFor(slide);
@@ -81,6 +90,19 @@ public sealed partial class PresenterNotesPage : ContentPage
         _nextAction.Text = cue.NextAction;
         _nextSpread.Text = upcoming;
         _status.Text = status;
+    }
+
+    private void OnToggleParticipationQr(object? sender, EventArgs e)
+    {
+        _state.ParticipationQr.Toggle();
+        _windows.FocusPresentation();
+        RefreshNotes();
+    }
+
+    private void OnRestartTimer(object? sender, EventArgs e)
+    {
+        _windows.RestartTimer();
+        _clock.Text = "00:00:00";
     }
 
     private void OnReturnToPresentation(object? sender, EventArgs e) => _windows.FocusPresentation();

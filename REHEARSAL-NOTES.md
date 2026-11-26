@@ -147,6 +147,8 @@ But first, you get to decide who we meet.
 
 ## Choose Your Champion — live vote
 
+**[The large participation QR appears first. Give people time to scan. Tap / South / Enter / either shoulder closes only the code; the next action opens voting. Use Enlarge QR in Presenter Notes or on participation slides for late arrivals.]**
+
 Scan the QR code and choose your champion.
 
 We have the Driver: speed, precision and questionable braking. The Charioteer: glory, courage and momentum. Or the Space Pilot: exploration, thrusters and, naturally, Orbit.
