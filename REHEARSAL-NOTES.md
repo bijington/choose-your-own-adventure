@@ -52,7 +52,7 @@ That’s worth keeping in mind throughout the talk. We aren’t leaving our appl
 
 ### 1 / 4 — .NET MAUI
 
-We begin with the application itself: windows, pages, layouts and controls.
+We begin by creating our app: dotnet new maui, named AdventureGame, then move into that directory. That gives us the application itself: windows, pages, layouts and controls.
 
 MAUI gives our game a home. This presentation is an example: the audience sees a game view inside a page, while the presenter notes use ordinary XAML UI in another window.
 
@@ -92,7 +92,7 @@ MAUI hosts it. Graphics draws it. Orbit supplies the structure and loop. Our cod
 
 ## Install & Register Orbit
 
-The setup starts in a familiar place: a NuGet package.
+We’ve created our app. Now, inside that project, we add a NuGet package.
 
 Add Bijington.Orbit.Engine, then register it with UseOrbitEngine when building the MAUI application.
 
@@ -116,7 +116,7 @@ We ask the scene manager to load a scene into that view, then start the loop.
 
 Loading chooses the world. Starting begins the repeating update-and-render work that keeps it alive.
 
-That is the basic route: register the engine, give it a view, load a scene and start.
+That is the route we’ve built: create the app, add and register the engine, give it a view, load a scene and start. The terminal line builds and runs it on this Mac using the Mac Catalyst target.
 
 Our scene is ready. First, what did starting it actually do?
 

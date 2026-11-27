@@ -249,6 +249,20 @@ South / Right shoulder / Enter / Page Down / right-page tap advances one buildin
 
 ---
 
+### Build-through thread
+
+Keep the early setup as one story: **create the app → add Orbit → add the view → load/start the scene → build and run**. These are teaching examples shown on the slides, not commands executed by the presentation:
+
+```bash
+dotnet new maui -n AdventureGame
+cd AdventureGame
+dotnet add package Bijington.Orbit.Engine
+# After adding the view and scene setup, on a Mac:
+dotnet build -f net10.0-maccatalyst -t:Run
+```
+
+The first command appears with the .NET MAUI building block; the existing engine-install slide adds the package, and Load a Game Scene shows the final Mac run command. AdventureGame is the example project name; the presentation repository is unchanged. Assume an installed MAUI workload, and use the appropriate target for other platforms. Do not repeat the command list on each slide—keep referring to the same app as we add the next piece.
+
 ## Install & Register Orbit — `InstallOrbitScene` — page 4
 
 ### On screen

@@ -9,10 +9,10 @@ public static class OrbitOverviewWalkthrough
     {
         OrbitOverviewStage.Maui => new(
             ".NET MAUI", "Start with a MAUI app",
-            "Windows, pages and controls.\n\nA home for the game view.\n\nMenus and presenter notes can remain ordinary MAUI UI.",
+            "Use MAUI for what it is good at",
             "MAUI hosts the experience.",
             """
-            Start with the question: how could we make a game in MAUI? We already have an application, windows, pages and controls. We need somewhere to display a world that changes over time.\nThis presentation is itself a MAUI app. The audience book contains a game view; the presenter-notes window uses ordinary XAML controls. We can combine both approaches in one application.
+            Start with dotnet new maui -n AdventureGame, then cd AdventureGame. This is our example project for the build-through; no new project is created during the talk. How could we make a game in MAUI? We already have an application, windows, pages and controls. We need somewhere to display a world that changes over time.\nThis presentation is itself a MAUI app. The audience book contains a game view; the presenter-notes window uses ordinary XAML controls. We can combine both approaches in one application.
             """),
         
         OrbitOverviewStage.Graphics => new(
@@ -20,6 +20,7 @@ public static class OrbitOverviewWalkthrough
             "Draw shapes, text and images with ICanvas.\n\nTurn the current game state into pixels.\n\nDrawing is one part of making a game.",
             "Graphics supplies the drawing tools.",
             """
+            What should we do when we want to stretch how it looks?
             MAUI Graphics gives us ICanvas: shapes, text, images and transforms. We could build a game directly on these drawing tools.\nWe would still need to decide how to organize the world, advance state over time and schedule updates and drawing. That is the opening for Orbit. The later Render examples use these same drawing APIs.
             """),
         

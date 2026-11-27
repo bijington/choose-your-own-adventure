@@ -91,7 +91,7 @@ public static class PresenterCueFactory
                     "Left shoulder / East / Page Up / Escape / left page: previous; from step 1, previous spread.", overviewNext);
             case PresentationSlide.InstallOrbit:
                 return new("Install & Register Orbit",
-                    "Orbit arrives as NuGet packages and MAUI builder extensions. Install Bijington.Orbit.Engine and register it with UseOrbitEngine(). This is still a normal MAUI project with no special editor or runtime required. Keep this short.",
+                    "We created AdventureGame and moved into its directory. Now add Bijington.Orbit.Engine with dotnet add package. Orbit arrives as a NuGet package and MAUI builder extensions. Install Bijington.Orbit.Engine and register it with UseOrbitEngine(). This is still a normal MAUI project with no special editor or runtime required. Keep this short.",
                     forward + back, "Give the engine somewhere inside the MAUI UI to render.");
             case PresentationSlide.GameSceneView:
                 return new("GameSceneView · a place to render",
@@ -99,7 +99,7 @@ public static class PresenterCueFactory
                     forward + back, "Load a scene into the view.");
             case PresentationSlide.LoadGameScene:
                 return new("Load a Game Scene",
-                    "A GameScene represents the current part of the game. Load the opening scene into GameView and start the scene manager. This presentation uses a scene for each major beat, registered and ordered by PresentationDeck.",
+                    "We have created the app, added Orbit and placed the view. Now load the opening scene into GameView and start the scene manager. The terminal command builds and runs our example on Mac Catalyst; it is a platform-specific example. A GameScene represents the current part of the game. This presentation uses a scene for each major beat, registered and ordered by PresentationDeck.",
                     forward + back, "Show what Start() does: the update/render rhythm.");
             case PresentationSlide.ChampionChapter:
                 return new("Chapter One · Meet Our Champion",

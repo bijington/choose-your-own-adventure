@@ -18,7 +18,7 @@ public sealed class InstallOrbitScene : PresentationSceneBase
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Ink;
         canvas.FontSize = Math.Clamp(dimensions.Width * .018f, 16f, 26f);
-        canvas.DrawString("First, add Orbit to your MAUI app.\n\nThen register the engine when you build the application.",
+        canvas.DrawString("Inside AdventureGame, add Orbit.\n\nThen register the engine when you build the application.",
             left.X + 12, left.Y + left.Height * .44f, left.Width - 24, left.Height * .46f,
             HorizontalAlignment.Left, VerticalAlignment.Top);
         DrawCodeCard(canvas, right, "MauiProgram.cs",
