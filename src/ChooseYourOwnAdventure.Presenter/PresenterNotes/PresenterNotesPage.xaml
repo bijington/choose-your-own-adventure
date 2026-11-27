@@ -37,6 +37,13 @@
                 <Label x:Name="_clock" Grid.Column="1" FontSize="26"
                        FontAttributes="Bold" HorizontalOptions="End" />
             </Grid>
+            <HorizontalStackLayout HorizontalOptions="End" Spacing="8">
+                <Button Text="Restart timer" BackgroundColor="#E3DCCE" TextColor="#34271E"
+                        Padding="12,6" FontSize="13" Clicked="OnRestartTimer" />
+                <Button x:Name="_participationQrButton" Text="Enlarge QR" IsVisible="False"
+                        BackgroundColor="#E3DCCE" TextColor="#34271E"
+                        Padding="12,6" FontSize="13" Clicked="OnToggleParticipationQr" />
+            </HorizontalStackLayout>
             <Label x:Name="_section" FontSize="13" FontAttributes="Bold" />
             <Label x:Name="_title" FontSize="28" FontAttributes="Bold" />
             <Label x:Name="_beat" FontSize="21" FontAttributes="Bold" TextColor="#B33F20" />

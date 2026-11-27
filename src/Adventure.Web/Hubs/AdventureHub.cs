@@ -1,4 +1,5 @@
 using Adventure.Web.Models;
+using Adventure.Contracts;
 using Adventure.Web.Services;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,11 +8,13 @@ namespace Adventure.Web.Hubs;
 public sealed class AdventureHub : Hub
 {
     private readonly VoteStore _voteStore;
+    private readonly SteeringRaceStore _steering;
     private readonly string _presenterKey;
 
-    public AdventureHub(VoteStore voteStore, IConfiguration configuration)
+    public AdventureHub(VoteStore voteStore, IConfiguration configuration, SteeringRaceStore steering)
     {
         _voteStore = voteStore;
+        _steering = steering;
         _presenterKey = configuration["Presenter:Key"] ?? "orbit-local-presenter";
     }
 
@@ -21,6 +24,7 @@ public sealed class AdventureHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, normalized);
         await Clients.Caller.SendAsync("VoteUpdated", _voteStore.GetSnapshot(normalized));
         await Clients.Caller.SendAsync("RaceUpdated", _voteStore.GetRaceSnapshot(normalized));
+        await Clients.Caller.SendAsync("SteeringUpdated", _steering.Get(normalized));
     }
 
     public async Task Vote(string sessionId, string participantId, string championName)
@@ -44,6 +48,49 @@ public sealed class AdventureHub : Hub
         await Clients.Group(normalized).SendAsync("RaceUpdated", snapshot);
     }
 
+    public async Task VoteBoostMode(string sessionId, string participantId, string modeName)
+    {
+        if (!Enum.TryParse<BoostMode>(modeName, true, out var mode) || !Enum.IsDefined(mode))
+            throw new HubException("Unknown boost mode.");
+        var normalized = Normalize(sessionId);
+        var snapshot = _voteStore.CastBoostVote(normalized, NormalizeParticipant(participantId), mode);
+        await Clients.Group(normalized).SendAsync("RaceUpdated", snapshot);
+    }
+
+    public Task OpenBoostVoting(string sessionId, string presenterKey) =>
+        PresenterRaceBroadcast(sessionId, presenterKey, _voteStore.OpenBoostVoting);
+
+    public Task CloseBoostVoting(string sessionId, string presenterKey) =>
+        PresenterRaceBroadcast(sessionId, presenterKey, _voteStore.CloseBoostVoting);
+
+    public async Task PrepareSteeringRace(string sessionId, string presenterKey)
+    {
+        EnsurePresenter(presenterKey);
+        var normalized = Normalize(sessionId);
+        var players = _voteStore.SteeringParticipants(normalized);
+        if (players.Count == 0) throw new HubException("Choose champion teams before preparing the bonus race.");
+        await Clients.Group(normalized).SendAsync("SteeringUpdated", _steering.Prepare(normalized, players));
+    }
+    public async Task StartSteeringRace(string sessionId, string presenterKey)
+    {
+        EnsurePresenter(presenterKey);
+        var normalized = Normalize(sessionId);
+        await Clients.Group(normalized).SendAsync("SteeringUpdated", _steering.Start(normalized));
+    }
+    public async Task StopSteeringRace(string sessionId, string presenterKey)
+    {
+        EnsurePresenter(presenterKey);
+        var normalized = Normalize(sessionId);
+        await Clients.Group(normalized).SendAsync("SteeringUpdated", _steering.Stop(normalized));
+    }
+    public PowerSide SteeringSide(string sessionId, string roundId, string participantId) =>
+        _steering.SideFor(Normalize(sessionId), roundId, NormalizeParticipant(participantId));
+    public Task SteeringPower(string sessionId, string roundId, string participantId, int side, int taps)
+    {
+        _steering.Power(Normalize(sessionId), roundId, NormalizeParticipant(participantId), (PowerSide)side, taps);
+        return Task.CompletedTask;
+    }
+
     public Task OpenVoting(string sessionId, string presenterKey) =>
         PresenterVoteBroadcast(sessionId, presenterKey, _voteStore.OpenVoting);
 
@@ -53,8 +100,13 @@ public sealed class AdventureHub : Hub
     public Task RevealWinner(string sessionId, string presenterKey) =>
         PresenterVoteBroadcast(sessionId, presenterKey, _voteStore.RevealWinner);
 
-    public Task ResetVoting(string sessionId, string presenterKey) =>
-        PresenterVoteBroadcast(sessionId, presenterKey, _voteStore.Reset);
+    public async Task ResetVoting(string sessionId, string presenterKey)
+    {
+        EnsurePresenter(presenterKey);
+        var normalized = Normalize(sessionId);
+        await Clients.Group(normalized).SendAsync("SteeringUpdated", _steering.Stop(normalized));
+        await PresenterVoteBroadcast(normalized, presenterKey, _voteStore.Reset);
+    }
 
     public Task StartRace(string sessionId, string presenterKey) =>
         PresenterRaceBroadcast(sessionId, presenterKey, _voteStore.StartRace);

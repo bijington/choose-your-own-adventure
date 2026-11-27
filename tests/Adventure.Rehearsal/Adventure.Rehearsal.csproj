@@ -6,8 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ParticipationQrState.cs" Link="Presenter/ParticipationQrState.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/AdventureAction.cs" Link="Presenter/AdventureAction.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Input/PresentationNavigation.cs" Link="Presenter/PresentationNavigation.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ControllerWalkthrough.cs" Link="Presenter/ControllerWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/SignalRWalkthrough.cs" Link="Presenter/SignalRWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/OrbitOverviewWalkthrough.cs" Link="Presenter/OrbitOverviewWalkthrough.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/LiveAudienceOptions.cs" Link="Presenter/LiveAudienceOptions.cs" />
@@ -16,6 +18,7 @@
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ChampionLoopStory.cs" Link="Presenter/ChampionLoopStory.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/PresentationChapter.cs" Link="Presenter/PresentationChapter.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Presentation/ChampionRenderingWalkthrough.cs" Link="Presenter/ChampionRenderingWalkthrough.cs" />
+    <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/LiveSteeringState.cs" Link="Presenter/LiveSteeringState.cs" />
     <Compile Include="../../src/ChooseYourOwnAdventure.Presenter/Live/AudienceVoteClient.cs" Link="Presenter/AudienceVoteClient.cs" />
     <ProjectReference Include="../../src/Adventure.Web/Adventure.Web.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.14" />

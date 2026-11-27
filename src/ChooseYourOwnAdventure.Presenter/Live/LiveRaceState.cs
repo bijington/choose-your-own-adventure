@@ -1,5 +1,11 @@
 namespace ChooseYourOwnAdventure.Live;
 
+public enum BoostMode
+{
+    Steady,
+    ChargeAndRelease
+}
+
 public enum RacePhase
 {
     Ready,
@@ -16,7 +22,14 @@ public sealed record RaceSnapshot(
     int CharioteerTeamSize,
     int SpacePilotTeamSize,
     RacePhase Phase,
-    Champion? Winner);
+    Champion? Winner,
+    BoostMode Mode = BoostMode.Steady,
+    VotePhase BoostVotePhase = VotePhase.Ready,
+    int SteadyVotes = 0,
+    int BurstVotes = 0,
+    double RacingDriverCharge = 0,
+    double CharioteerCharge = 0,
+    double SpacePilotCharge = 0);
 
 public sealed class LiveRaceState
 {

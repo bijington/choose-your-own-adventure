@@ -35,6 +35,12 @@ Speaker prose is extracted from this guide at build time; code blocks and audien
 
 Before the audience joins, choose **Presenter → New Audience Session** in either desktop window (or **New audience session** in the mobile options menu). This creates a unique session ID and updates the audience QR code/link without server changes. Old test votes stay in the old session. Ask everyone to scan the new code; people already in the old session will not move automatically. The session is remembered across restarts on this device. Practice mode stays enabled if already on, so switch to live audience when ready.
 
+# Large participation QR
+
+The first visit to Choose Your Champion opens a large, high-contrast join QR automatically. Invite everyone to scan it, then tap the screen or press South/Enter/either shoulder/Escape to dismiss it. That action **only closes the QR**; use the next action to start the vote. It does not choose a champion or navigate to another slide.
+
+Use **Enlarge QR** on the audience screen or in Presenter Notes to show it again on champion voting, route voting, the main race or the optional encore. Close it to return to the exact same scene. A live race continues underneath; enlargement does not start, reset or pause it. The resources QR on the credits page is separate. A new audience session updates the URL/code and re-enables the initial large showing.
+
 # Mobile rehearsal
 
 Phones and tablets default to Practice mode. Use the **Practice · options** button to choose a local champion, skip the race or jump to a slide. Card taps select the champion locally; the race's right page skips to the epilogue. No SignalR connection or presenter commands are used in practice. The mode is remembered on the device. Select **Use live audience** to reconnect and rehearse with real phones. Desktop offers **Presenter → Practice Options** as well.
@@ -142,7 +148,8 @@ Do **not** let audience networking block the rest of the talk.
 | 21:30–24:30 | SignalR transition + architecture | Replace local input with audience intent |
 | 24:30–29:30 | Audience race | Big interactive payoff |
 | 29:30–31:00 | Podium | Celebrate the winner |
-| 31:00–33:00 | Recap | Reinforce Orbit + loop + multiplayer |
+| 31:00–32:15 | What Would We Add Next? | Haptics, audio and visual feedback |
+| 32:15–34:15 | Recap | Reinforce Orbit + loop + multiplayer |
 
 **Rehearsal target:** finish the planned content around **30–31 minutes**. Audience scanning, laughter, slow voting, network latency, and the race will add time live.
 
@@ -158,15 +165,17 @@ Vintage choose-your-own-adventure-inspired cover art with the .NET bot holding a
 
 ### Purpose
 
-Give yourself time to explain the emotional reason for the talk before showing any code.
-
 ### Suggested talking points
 
-- “When I was younger, I loved choose-your-own-adventure books.”
-- Talk about reaching the bottom of a page and being responsible for what happened next.
-- Connect that to games: the world can react immediately to the player's choices.
-- “So today I thought I would make the audience partly responsible for what this talk looks like.”
-- Briefly set expectations: this is a real .NET MAUI application, not a normal slide deck.
+Good afternoon, thank you for joining me for the final session of the day.
+
+My name is Shaun Lawrence and I am hoping to take you on an adventure into building games with .NET MAUI.
+
+Does anyone remember the Choose Your Own Adventure books where you put a finger between the pages because you weren’t completely convinced that opening the mysterious door was a good idea?
+
+Well todays talk is inspired by those plus the fact that as I age in life I become worse at making decisions, so today you get to. You’ll choose our champion, shape the example we explore, and eventually become the input that powers the final challenge.
+
+We’ll start with ordinary MAUI, give our champion a world and some movement, and then connect this screen to your phones. The technology won’t just be something we discuss. It will be running the session.
 
 ### Action
 
@@ -177,8 +186,6 @@ Give yourself time to explain the emotional reason for the talk before showing a
 > “Before we start making choices, I should probably explain the thing powering the game we are going to build.”
 
 ### If running late
-
-Keep this to 60–90 seconds. Do not cut it entirely; it establishes the whole theme.
 
 ---
 
@@ -208,27 +215,16 @@ Every section has a dedicated right-page opening and matching running headers. E
 | Chapter One · Meet Our Champion | Champion vote, GameObject, character reveal |
 | Chapter Two · Take Control | Input package and local driving/flying |
 | Chapter Three · An Adventure Together | SignalR explanation and audience race |
-| Epilogue · The Journey Home | Podium and recap |
+| Epilogue · The Journey Home | Podium, future ideas and recap |
 
 ## PROLOGUE · DISCOVERING ORBIT — `PrologueChapterScene` — page 2
 
-Right-page chapter opener. Left page blank.
+Every adventure needs a world to happen in. Ours happens inside a MAUI app.
 
-> Before we choose a path, let’s discover the engine that brings this world to life.
+That’s worth keeping in mind throughout the talk. We aren’t leaving our application behind. We’re adding another way to make part of it feel alive.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## MAUI Already Has Some Magic — `MauiAnimationsScene`
-
-Before the Orbit overview, spend about 30 seconds showing three real MAUI animations: a bouncing control, a spinning/scaling star and a pulsing heart. Tap **Play it again** to restart or **Build a game →** to continue. The examples run automatically and stop when leaving the spread.
-
-> “Before we reach for a game engine, MAUI already gives us a little magic. These are ordinary XAML controls. We can move, rotate, scale and fade them, and easing gives that movement personality.”
-
-> “That is great for playful UI and feedback. As our game grows, we want a shared game loop, scenes and game objects. That is where Orbit comes in.”
-
-The left page shows the same MAUI Animation approach used by the live controls. Continue with South / Enter / right-page tap / right shoulder; left-page tap goes back. Leave space around the controls to tap the page, or use keyboard/controller navigation.
-
----
 
 ## Building a Game in MAUI — `OrbitOverviewScene` — page 3
 
@@ -245,13 +241,27 @@ The same book spread has four talking points. The right page always shows `.NET 
 
 ### Action
 
-South / Right shoulder / Enter / Page Down / right-page tap advances one building block. Left shoulder / East / Page Up / Escape / left-page tap goes back one step; from step 1 it returns to the MAUI animation demo. Only after Your Game does the next action open Install & Register Orbit. Re-entering the spread starts again at .NET MAUI. Presenter notes follow each step.
+South / Right shoulder / Enter / Page Down / right-page tap advances one building block. Left shoulder / East / Page Up / Escape / left-page tap goes back one step; from step 1 it returns to the prologue. Only after Your Game does the next action open Install & Register Orbit. Re-entering the spread starts again at .NET MAUI. Presenter notes follow each step.
 
 ### Transition
 
 > “Now let's see how little setup it takes to add Orbit to that MAUI app.”
 
 ---
+
+### Build-through thread
+
+Keep the early setup as one story: **create the app → add Orbit → add the view → load/start the scene → build and run**. These are teaching examples shown on the slides, not commands executed by the presentation:
+
+```bash
+dotnet new maui -n AdventureGame
+cd AdventureGame
+dotnet add package Bijington.Orbit.Engine
+# After adding the view and scene setup, on a Mac:
+dotnet build -f net10.0-maccatalyst -t:Run
+```
+
+The first command appears with the .NET MAUI building block; the existing engine-install slide adds the package, and Load a Game Scene shows the final Mac run command. AdventureGame is the example project name; the presentation repository is unchanged. Assume an installed MAUI workload, and use the appropriate target for other platforms. Do not repeat the command list on each slide—keep referring to the same app as we add the next piece.
 
 ## Install & Register Orbit — `InstallOrbitScene` — page 4
 
@@ -339,11 +349,17 @@ gameSceneManager.Start();
 
 ---
 
-## Chapter One opening — `ChampionChapterScene` — page 7
+## A Familiar Rhythm — `FamiliarRhythmScene`
+
+Immediately after Load a Game Scene, show what `Start()` begins: read input, update state, render the world, yield, repeat. Compare the firmware superloop with conceptual game-loop pseudocode. We do not write a blocking while loop in the MAUI page; Orbit runs it. Keep this brief, then continue to Meet Our Champion. The later champion-frame walkthrough applies the same rhythm without repeating this comparison.
+
+---
+
+## Chapter One opening — `ChampionChapterScene` — page 8
 
 Introduce “MEET OUR CHAMPION” before voting. The right page contains the chapter title and self-discovery lead-in; the left stays blank. No selected character appears yet. Continue opens the champion vote; Back returns to the end of the prologue.
 
-## Choose Your Champion — `OpeningScene` — page 8
+## Choose Your Champion — `OpeningScene` — page 9
 
 ### On screen
 
@@ -404,7 +420,7 @@ The final result stays on this spread: the losing cards fade out while the winni
 ---
 
 
-## Our champion’s origins — `ChosenChampionScene` — page 29 / 59 / 89
+## Our champion’s origins — `ChosenChampionScene` — page 30 / 60 / 90
 
 ### Talking points
 
@@ -435,7 +451,7 @@ The four stages share one printed page. The celebration uses the existing cached
 
 ---
 
-## A Frame in the Life of Our Champion — `GameLoopScene` — page 30 / 60 / 90
+## A Frame in the Life of Our Champion — `GameLoopScene` — page 31 / 61 / 91
 
 ### Purpose
 
@@ -443,11 +459,7 @@ Finish meeting the champion by discovering how their world stays alive. The audi
 
 ### On screen
 
-Start with **A Familiar Rhythm**: firmware superloop and conceptual game-loop code on the facing pages. Establish read → update → output → repeat first. Then apply the same idea to the selected champion, walking them through INPUT → UPDATE → RENDER → WAIT.
-
-### Firmware comparison — first
-
-The spread opens on the familiar firmware superloop alongside conceptual game-loop pseudocode. Keep the analogy brief; Orbit owns the actual loop. South / Enter / Right shoulder / Page Down / right-page tap shows the champion walkthrough. Back from this first comparison returns to the character summary.
+Recall **A Familiar Rhythm**, introduced immediately after starting the scene manager. Now apply that loop to the selected champion, walking through INPUT → UPDATE → RENDER → WAIT.
 
 ### Talking points — then the champion
 
@@ -462,7 +474,7 @@ Repeat: **Input supplies intent. Update evolves state. Render makes state visibl
 
 ### Action
 
-On the champion walkthrough, South / Enter / right-page tap advances stations; East / Escape / Left / left-page tap reverses a station, returning to firmware before Input. Left shoulder / Page Up returns directly to the firmware comparison, preserving the selected station. Right shoulder / Page Down or the lower-right NEXT area opens Chapter Two: Take Control. Re-entering this spread starts with firmware and resets the station to Input.
+On the champion walkthrough, South / Enter / right-page tap advances stations. East / Escape / Left / left-page tap reverses a station; before Input it returns to the champion summary. Left shoulder / Page Up returns to the preceding spread. Right shoulder / Page Down or the lower-right NEXT area opens Chapter Two: Take Control. Re-entering this spread resets to Input.
 
 ### Transition
 
@@ -470,7 +482,7 @@ On the champion walkthrough, South / Enter / right-page tap advances stations; E
 
 ---
 
-## CHAPTER TWO · TAKE CONTROL — `InputChapterScene` — page 31 / 61 / 91
+## CHAPTER TWO · TAKE CONTROL — `InputChapterScene` — page 32 / 62 / 92
 
 Right-page chapter opener. Left page blank.
 
@@ -478,7 +490,21 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## MAUI Already Has Input — `MauiInputScene` — page 32 / 62 / 92
+## Many Ways to Play — `InputOverviewScene`
+
+Before the MAUI button example, spend 30–45 seconds on the possibilities. The left page covers ordinary MAUI UI and device sensors; the right page covers keyboard and game controllers through Orbit.Input.
+
+> “A tap is only one way to express intent. We could tilt to steer, turn to aim, or shake to act. An accelerometer measures acceleration, a gyroscope measures rotation speed, and orientation or compass readings give us other ways to understand the device. Or we could use keys, buttons and sticks. Different sources; the same intent.”
+
+These are ideas rather than a live sensor demo. Check platform/hardware support before using sensors. Keyboard and controller game input on the right is supplied by Orbit.Input; normal MAUI UI remains useful alongside it.
+
+> “Let’s start with the simplest one: a normal MAUI button.”
+
+Source: [MAUI device sensors](https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/device/sensors?view=net-maui-10.0).
+
+---
+
+## MAUI Already Has Input — `MauiInputScene` — page 34 / 64 / 94
 
 ### On screen
 
@@ -504,42 +530,22 @@ The [MAUI Button documentation](https://learn.microsoft.com/en-us/dotnet/maui/us
 
 ---
 
-## How Does It Move? — `InputPackageScene` — page 33 / 63 / 93
+## Connect a Game Controller — `InputPackageScene`
 
-### On screen
+A four-step local reveal, using focused excerpts of `MauiProgram.cs` and `Input/OrbitInputBridge.cs`:
 
-```bash
-dotnet add package Bijington.Orbit.Input
-```
+1. **Register:** add Bijington.Orbit.Input, then UseOrbitGameController and UseOrbitKeyboard. The bridge receives the managers through DI.
+2. **Discover:** subscribe to `GameControllerConnected` before awaiting `StartDiscovery()`.
+3. **Connect and subscribe:** the event gives us `e.GameController`. Store it in `_gameController`, hook `ButtonChanged` and `ValueChanged`, and detach the previous controller when replacing it. Dispose also cleans up subscriptions.
+4. **Read current values:** assume the controller obtained in the previous step. `gameController.South.Value` is a boolean; `gameController.RightShoulder.Trigger.Value` is a float from 0 to 1; `gameController.LeftStick.XAxis.Value` is a float from -1 to 1. The example focuses on jump, throttle and steering without null checks or action-routing details. Events and reading current state are both options; the actual bridge remains unchanged.
 
-```csharp
-builder
-    .UseMauiApp<App>()
-    .UseOrbitEngine()
-    .UseOrbitGameController()
-    .UseOrbitKeyboard();
-```
+South / Enter / Right shoulder / Page Down / right-page tap advances each step. Back/East reverses. Only after step four does the next action open the vehicle demo. Re-entry resets to registration. The working input bridge is unchanged.
 
-and a small controller-state example.
-
-### Talking points
-
-- `Bijington.Orbit.Input` provides game-controller and keyboard support.
-- A game needs a way to capture **player intent**.
-- Input can be queried or reacted to.
-- Keep this API walkthrough light; the important question is what happens *after* input is received.
-
-### Action
-
-`South / Enter` → live vehicle control.
-
-### Transition
-
-> “We have seen the loop. Now watch real input change our champion’s state.”
+> “Discovery finds a controller. The event gives us the instance. Its changes become intent, and the game loop does the moving.”
 
 ---
 
-## Now Drive It — `VehicleControlScene` — page 34 / 64 / 94
+## Now Drive It — `VehicleControlScene` — page 36 / 66 / 96
 
 ### Purpose
 
@@ -600,7 +606,25 @@ Current code uses `Up / W` to leave the interactive vehicle scene and move to th
 
 ---
 
-## CHAPTER THREE · AN ADVENTURE TOGETHER — `SignalRChapterScene` — page 35 / 65 / 95
+## Choose Our Route — `BoostChoiceScene` — prototype branch
+
+After the vehicle demo, offer the second real audience decision:
+
+> “The finish lies beyond the mountains. Which way do we go: follow the winding road, or take the ancient launch pads?”
+
+The route applies to all three teams. Both choices require the same team-normalized effort. The winding road gives steady progress with every tap. Ancient launch pads fill a team energy meter and automatically release a quarter-lap jump; four jumps finish. Ties take the winding road, as shown on the slide and phones. The race uses road markings or glowing pad markers to reflect the winning route.
+
+If the pads win: “Excellent. I’m sure somebody maintained them.”
+
+South/Enter opens voting, closes and reveals, then continues. East reopens before the race. In practice, select locally with Up/Down or a card, then confirm again to continue. Registered champion voters keep their original teams.
+
+> “To make that decision together, we connected your phones to our game. You’ve already used that connection — let’s see how it works.”
+
+Continue into Chapter Three and the existing SignalR walkthrough. The race now makes their route choice visible through steady movement or launch-energy meters and jumps.
+
+---
+
+## CHAPTER THREE · AN ADVENTURE TOGETHER — `SignalRChapterScene` — page 38 / 68 / 98
 
 Right-page chapter opener. Left page blank.
 
@@ -608,7 +632,7 @@ Right-page chapter opener. Left page blank.
 
 A/Enter or right-page tap continues; left-page tap goes back.
 
-## What If the Input Source Changes? — `SignalRTransitionScene` — page 36 / 66 / 96
+## What If the Input Source Changes? — `SignalRTransitionScene` — page 39 / 69 / 99
 
 ### On screen
 
@@ -631,7 +655,7 @@ Conceptual transition from local controller intent to remote/audience intent.
 
 ---
 
-## SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 37 / 67 / 97
+## SignalR: The Room Becomes the Input — `SignalRArchitectureScene` — page 40 / 70 / 100
 
 ### On screen
 
@@ -662,13 +686,25 @@ South / Right shoulder / Enter / Page Down / right-page tap steps forward. After
 
 ### Transition
 
-> “The race follows exactly the same route: Boost intent goes in, RaceUpdated state comes out. And the server remembered which team each of you chose.”
+Finish the fourth reveal with the change in stakes, rather than explaining the message path a second time:
 
-Briefly mention that the browser batches boost taps into fewer calls. Then give control to the room.
+> “So far, we’ve used SignalR to make a decision together. You send a choice, the server updates the state, and everyone sees the result.
+>
+> “But choosing a champion is the easy part. What if we wanted to pit an entire room against each other… in a race to the death?”
+
+**[Pause.]**
+
+> “Of your phone batteries, obviously.”
+
+> “Now the input keeps coming. Every tap matters, every team is competing, and everyone needs to see the same race. The architecture stays familiar — but the rules get more interesting.”
+
+**[Advance to the race. Keep the battery punchline spoken so the slide does not reveal it early.]**
+
+The final reveal’s caption and continue prompt mark the shift from a shared decision to competing players. If useful, mention once that Boost intent goes in and RaceUpdated state comes out; the browser batches pending taps every 100 ms. Do not repeat the four-component walkthrough. Save the fairness question for the race’s Ready state.
 
 ---
 
-## Audience Grand Prix — `AudienceRaceScene` — page 38 / 68 / 98
+## Audience Grand Prix — `AudienceRaceScene` — page 41 / 71 / 101
 
 ### On screen
 
@@ -678,7 +714,11 @@ All three champions race simultaneously. Audience phones automatically become te
 
 Say:
 
-> “This is our final challenge. You chose your champion earlier, and you have been on that team ever since. Now power them through the last stretch.”
+> “You chose your champion. You chose our route. Now let’s find out whether either was a sensible decision.”
+
+Briefly remind players what they chose: winding road means steady progress; ancient launch pads mean charging together and jumping automatically. If the route vote was skipped, say “You chose your champion. Now let’s find out whether that was a sensible decision.” Everyone still races for their original champion.
+
+The new technical question is fairness under continuous competing input, not how to connect a client.
 
 Before starting, expose the design bug (about 20 seconds):
 
@@ -692,7 +732,7 @@ Pause for an answer. Explain that raw tap totals would reward team size. The fix
 
 - `A / Enter` while race is **Ready** → start race
 - `B / Esc` → reset race
-- `A / Enter` after **Finished** → epilogue chapter, then podium
+- `South / Enter` after **Finished** → podium, then The Journey Home
 
 ### During the race
 
@@ -718,15 +758,7 @@ After the race finishes, press `A / Enter`.
 
 ---
 
-## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 39 / 69 / 99
-
-Right-page chapter opener. Left page blank.
-
-> Every race has a finish. Every adventure leaves us with something to take home.
-
-A/Enter or right-page tap continues; left-page tap goes back.
-
-## The Podium — `PodiumScene` — page 40 / 70 / 100
+## The Podium — `PodiumScene` — page 42 / 72 / 102
 
 ### On screen
 
@@ -745,19 +777,48 @@ Celebrate the audience before switching back into recap mode.
 
 ### Action
 
-`A / Enter` → recap.
+`A / Enter` → The Journey Home
 
 ### Transition
 
-> “So what did we actually build along the way?”
+> “Let’s take some of that life back into our everyday applications.”
 
 ---
 
-## Adventure Complete — `RecapScene` — page 41 / 71 / 101
+
+## EPILOGUE · THE JOURNEY HOME — `EpilogueChapterScene` — page 43 / 73 / 103
+
+Right-page chapter opener. Left page blank.
+
+> Every race has a finish. Every adventure leaves us with something to take home.
+
+A/Enter or right-page tap continues to the MAUI animation demo; left-page tap goes back.
+
+
+## MAUI Already Has Some Magic — `MauiAnimationsScene`
+
+As the first content slide after The Journey Home opener, spend about 30 seconds showing three real MAUI animations: a bouncing control, a spinning/scaling star and a pulsing heart. Tap **Play it again** to restart or **What next? →** to continue. The examples run automatically and stop when leaving the spread.
+
+> “To take this home, remember that MAUI already gives everyday apps a little magic. These are ordinary XAML controls. We can move, rotate, scale and fade them, and easing gives that movement personality.”
+
+> “That is great for playful UI and feedback. What other senses could we bring into the experience?”
+
+The left page shows the same MAUI Animation approach used by the live controls. Continue with South / Enter / right-page tap / right shoulder; left-page tap goes back. Leave space around the controls to tap the page, or use keyboard/controller navigation.
+
+---
+
+
+## What Would We Add Next? — `FutureIdeasScene` — page 45 / 75 / 105
+
+Spend 60–90 seconds on three ideas: a short pulse for touch input on supported devices, sound for the countdown and confirmed finish, and visible cues for players with sound or vibration off. Use the race the audience just played as your example. Continue to The End.
+
+---
+
+## The End — credits — `RecapScene` — page 46 / 76 / 106
 
 ### On screen
 
-The closing spread thanks the audience and names **Shaun Lawrence**. The left page recaps three steps: start with MAUI, bring it to life with Orbit and input, and let the room play with SignalR. The right page offers the blog post and resources, with a QR code and the URL beneath it.
+The final book spread is a static credits screen on parchment: **THE END**, starring the audience and champion teams, written and presented by the configured speaker, and built with MAUI, MAUI Graphics, Orbit and SignalR. The right page retains the resources QR/link and the AI/no-agents-harmed disclaimer. There is no rolling text; leave it visible for scanning and questions.
 
 Configure `TalkSummary:ResourcesUrl` before the talk. An empty or invalid URL shows a “Resources coming soon” panel rather than a QR code. This link is separate from the live audience join URL. No credentials belong in the resources URL.
 
@@ -781,23 +842,42 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 
 | Spread | Driver | Charioteer | Space Pilot |
 | --- | ---: | ---: | ---: |
-| ChosenChampion | 29 | 59 | 89 |
-| GameLoop | 30 | 60 | 90 |
-| InputChapter | 31 | 61 | 91 |
-| MauiInput | 32 | 62 | 92 |
-| InputPackage | 33 | 63 | 93 |
-| VehicleControl | 34 | 64 | 94 |
-| SignalRChapter | 35 | 65 | 95 |
-| SignalRTransition | 36 | 66 | 96 |
-| SignalRArchitecture | 37 | 67 | 97 |
-| AudienceRace | 38 | 68 | 98 |
-| EpilogueChapter | 39 | 69 | 99 |
-| Podium | 40 | 70 | 100 |
-| Recap | 41 | 71 | 101 |
+| ChosenChampion | 30 | 60 | 90 |
+| GameLoop | 31 | 61 | 91 |
+| InputChapter | 32 | 62 | 92 |
+| MauiInput | 34 | 64 | 94 |
+| InputPackage | 35 | 65 | 95 |
+| VehicleControl | 36 | 66 | 96 |
+| SignalRChapter | 38 | 68 | 98 |
+| SignalRTransition | 39 | 69 | 99 |
+| SignalRArchitecture | 40 | 70 | 100 |
+| AudienceRace | 41 | 71 | 101 |
+| EpilogueChapter | 43 | 73 | 103 |
+| Podium | 42 | 72 | 102 |
+| FutureIdeas | 45 | 75 | 105 |
+| Recap | 46 | 76 | 106 |
 
 ---
 
 # Input cheat sheet
+
+## Optional after-credits lap — `SteeringRaceScene` — page 405
+
+This is deliberately outside the normal talk route. The End remains the final forward-navigation destination. If there is time and the room wants another challenge, use **Presenter → Go to Slide → After Credits · Team Steering (Optional)**, or the mobile options slide picker.
+
+On the first encore entry, a gold bookplate popup announces **ACHIEVEMENT UNLOCKED — You stayed after the credits — Apparently, one questionable decision wasn’t enough.** Pause for the joke; it fades away after 4.5 seconds and never blocks controls. It appears once per app session and resets when creating a new audience session.
+
+> “One more lap? Keep your original champion team — but this time, half of you power the left side and half power the right. Can you coordinate well enough to steer?”
+
+South/Enter **prepares** a separate bonus round. Existing champion voters are assigned stable, balanced left/right groups within each team. Everyone keeps their original browser and team. A one-person team gets both controls. Wait for people to see their side before pressing South/Enter again to **start**.
+
+> “Tap together for speed. Change the balance to steer the red marker into the green band. More left power steers left; more right power steers right. Off course slows you down — it doesn’t erase your progress.”
+
+The screen shows a winding course, progress and each team’s steering target. Movement is simulated by the server at 20 Hz; phone taps feed normalized left/right power. This is independent of the main race, so its podium result remains intact. Assignments persist on reconnect; stale-round taps are ignored.
+
+South/Enter after the finish returns to the closing page. East/Escape stops the bonus and returns immediately. Leaving through the slide menu also stops it. Phones return to the main race/result screen. Practice mode shows the briefing but does not simulate an audience or start a network round. This prototype needs the matching server and phone page; allow a real-device rehearsal to tune the coordination difficulty before using it live.
+
+---
 
 ## Ordinary presentation scenes
 
@@ -828,7 +908,7 @@ Printed page numbers follow `PresentationDeck` story order (cover and optional p
 
 - Primary = advance node
 - Left = previous node
-- Right = firmware → champion walkthrough → Take Control
+- Right = champion walkthrough → Take Control
 
 ### Vehicle control
 
@@ -852,7 +932,7 @@ If the clock is slipping, cut/compress in this order:
 4. **SignalR walkthrough** — spend one sentence on each of the four stages and move to the race.
 5. **Vehicle demo repetitions** — demonstrate the chosen mechanic once clearly.
 6. **Race** — keep it to one quick heat; do not restart.
-7. **Podium** — celebrate winner in 15–20 seconds and move to recap.
+7. **Podium** — celebrate the winner in 15–20 seconds, then cover future ideas before the recap.
 
 Do **not** cut:
 
@@ -897,7 +977,7 @@ If a scene becomes interactive in a special way, add its controls to both **Inpu
 
 Each major beat is now a two-page spread. Headings and explanation occupy the left/right page headers; code samples, diagrams and the champion illustration sit on facing leaves. Voting instructions and QR code occupy the left page, with champion cards and destination numbers stacked on the right. The game-loop diagram and audience race can span both pages. Existing branch numbers refer to the spread, so “TURN TO PAGE 88” still matches its following footer.
 
-Normal navigation plays a 680 ms paper-turn animation; Back reverses it. Wait for the leaf to settle before the next action. Tap anywhere on the left page to turn back on ordinary spreads; the right page continues. Tap anywhere on the cover to start. The voting lifecycle, stepping between loop stations, firmware reveal and local vehicle inputs stay within their current spread and do not animate a page turn.
+Normal navigation plays a 680 ms paper-turn animation; Back reverses it. Wait for the leaf to settle before the next action. Tap anywhere on the left page to turn back on ordinary spreads; the right page continues. Tap anywhere on the cover to start. The voting lifecycle, stepping between loop stations, controller reveals and local vehicle inputs stay within their current spread and do not animate a page turn.
 
 Orbit runs one `BookScene`, which hosts the current scene and captures outgoing and incoming images during navigation so the turning leaf carries the next page’s content. The scene manager lifetime remains unchanged. `PresentationDeck` still defines the content order, and `IPresentationNavigator` owns next/previous/branch navigation.
 

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.SignalR.Client;
+using Adventure.Contracts;
 
 namespace ChooseYourOwnAdventure.Live;
 
@@ -8,6 +9,7 @@ public sealed class AudienceVoteClient : IAsyncDisposable
     private readonly AdventureState _state;
     private readonly LiveVoteState _voteState;
     private readonly LiveRaceState _raceState;
+    public LiveSteeringState Steering { get; } = new();
     private HubConnection? _connection;
     private int _started;
 
@@ -43,6 +45,12 @@ public sealed class AudienceVoteClient : IAsyncDisposable
         {
             if (!_state.IsRehearsing && ReferenceEquals(_connection, connection) && string.Equals(snapshot.SessionId, _options.SessionId, StringComparison.OrdinalIgnoreCase)) _raceState.Update(snapshot);
         });
+        _connection.On<SteeringSnapshot>("SteeringUpdated", snapshot =>
+        {
+            if (!_state.IsRehearsing && ReferenceEquals(_connection, connection)
+                && string.Equals(snapshot.SessionId, _options.SessionId, StringComparison.OrdinalIgnoreCase))
+                Steering.Update(snapshot);
+        });
         _connection.Reconnected += async _ => await JoinSessionAsync();
 
         // Never block the presentation while a network connection is established.
@@ -52,8 +60,12 @@ public sealed class AudienceVoteClient : IAsyncDisposable
 
     public async Task<string> CreateSessionAsync()
     {
+        if (IsConnected) await StopSteeringRaceAsync();
         await PauseAsync();
         var session = _options.CreateSession();
+        Steering.Update(new SteeringSnapshot(session, "", SteeringPhase.Inactive, [], null));
+        _state.ParticipationQr.ResetSession();
+        _state.ResetAfterCreditsAchievement();
         _state.ResetLocalVote();
         _voteState.Update(new VoteSnapshot(session, 0, 0, 0, VotePhase.Ready, null));
         _raceState.Update(new RaceSnapshot(session, 0, 0, 0, 0, 0, 0, RacePhase.Ready, null));
@@ -61,10 +73,21 @@ public sealed class AudienceVoteClient : IAsyncDisposable
         return session;
     }
 
+    public Task PrepareSteeringRaceAsync() => InvokePresenterCommandAsync("PrepareSteeringRace");
+    public Task StartSteeringRaceAsync() => InvokePresenterCommandAsync("StartSteeringRace");
+    public async Task StopSteeringRaceAsync()
+    {
+        await InvokePresenterCommandAsync("StopSteeringRace");
+        var snapshot = Steering.Snapshot;
+        Steering.Update(snapshot with { Phase = SteeringPhase.Inactive });
+    }
+
     public Task OpenVotingAsync() => InvokePresenterCommandAsync("OpenVoting");
     public Task CloseVotingAsync() => InvokePresenterCommandAsync("CloseVoting");
     public Task RevealWinnerAsync() => InvokePresenterCommandAsync("RevealWinner");
     public Task ResetVotingAsync() => InvokePresenterCommandAsync("ResetVoting");
+    public Task OpenBoostVotingAsync() => InvokePresenterCommandAsync("OpenBoostVoting");
+    public Task CloseBoostVotingAsync() => InvokePresenterCommandAsync("CloseBoostVoting");
     public Task StartRaceAsync() => InvokePresenterCommandAsync("StartRace");
     public Task ResetRaceAsync() => InvokePresenterCommandAsync("ResetRace");
 

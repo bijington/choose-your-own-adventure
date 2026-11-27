@@ -13,12 +13,12 @@ public static class PresentationDeck
         PresentationSlideDefinition.Create<AfterPartyScene>(PresentationSlide.AfterParty),
         PresentationSlideDefinition.Create<PrologueChapterScene>(PresentationSlide.PrologueChapter,
             previous: PresentationSlide.FirstDecision),
-        PresentationSlideDefinition.Create<MauiAnimationsScene>(PresentationSlide.MauiAnimations),
         PresentationSlideDefinition.Create<OrbitOverviewScene>(PresentationSlide.OrbitOverview,
             state => state.ResetOrbitOverview()),
         PresentationSlideDefinition.Create<InstallOrbitScene>(PresentationSlide.InstallOrbit),
         PresentationSlideDefinition.Create<GameSceneViewIntroScene>(PresentationSlide.GameSceneView),
         PresentationSlideDefinition.Create<LoadGameSceneIntroScene>(PresentationSlide.LoadGameScene),
+        PresentationSlideDefinition.Create<FamiliarRhythmScene>(PresentationSlide.FamiliarRhythm),
         PresentationSlideDefinition.Create<ChampionChapterScene>(PresentationSlide.ChampionChapter),
         PresentationSlideDefinition.Create<OpeningScene>(
             PresentationSlide.ChooseChampion,
@@ -29,23 +29,30 @@ public static class PresentationDeck
             PresentationSlide.GameLoop,
             state => state.ResetGameLoop()),
         PresentationSlideDefinition.Create<InputChapterScene>(PresentationSlide.InputChapter),
+        PresentationSlideDefinition.Create<InputOverviewScene>(PresentationSlide.InputOverview),
         PresentationSlideDefinition.Create<MauiInputScene>(PresentationSlide.MauiInput),
-        PresentationSlideDefinition.Create<InputPackageScene>(PresentationSlide.InputPackage),
+        PresentationSlideDefinition.Create<InputPackageScene>(PresentationSlide.InputPackage,
+            state => state.ResetControllerWalkthrough()),
         PresentationSlideDefinition.Create<VehicleControlScene>(PresentationSlide.VehicleControl),
+        PresentationSlideDefinition.Create<BoostChoiceScene>(PresentationSlide.BoostChoice),
         PresentationSlideDefinition.Create<SignalRChapterScene>(PresentationSlide.SignalRChapter),
         PresentationSlideDefinition.Create<SignalRTransitionScene>(PresentationSlide.SignalRTransition),
         PresentationSlideDefinition.Create<SignalRArchitectureScene>(PresentationSlide.SignalRArchitecture,
             state => state.ResetSignalRWalkthrough()),
         PresentationSlideDefinition.Create<AudienceRaceScene>(PresentationSlide.AudienceRace),
-        PresentationSlideDefinition.Create<EpilogueChapterScene>(PresentationSlide.EpilogueChapter),
         PresentationSlideDefinition.Create<PodiumScene>(PresentationSlide.Podium),
-        PresentationSlideDefinition.Create<RecapScene>(PresentationSlide.Recap)
+        PresentationSlideDefinition.Create<EpilogueChapterScene>(PresentationSlide.EpilogueChapter),
+        PresentationSlideDefinition.Create<MauiAnimationsScene>(PresentationSlide.MauiAnimations),
+        PresentationSlideDefinition.Create<FutureIdeasScene>(PresentationSlide.FutureIdeas),
+        PresentationSlideDefinition.Create<RecapScene>(PresentationSlide.Recap, next: PresentationSlide.Recap),
+        PresentationSlideDefinition.Create<SteeringRaceScene>(PresentationSlide.AfterCreditsRace,
+            next: PresentationSlide.Recap, previous: PresentationSlide.Recap)
     ];
 
     // Printed page order excludes the cover and the optional page-404 gag.
     private static readonly PresentationSlide[] StoryPages = Slides
         .Select(definition => definition.Slide)
-        .Where(slide => slide is not (PresentationSlide.Title or PresentationSlide.AfterParty))
+        .Where(slide => slide is not (PresentationSlide.Title or PresentationSlide.AfterParty or PresentationSlide.AfterCreditsRace))
         .ToArray();
 
     public static int StoryPageNumber(PresentationSlide slide)

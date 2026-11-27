@@ -35,8 +35,20 @@ public sealed class OrbitOverviewScene : PresentationSceneBase
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.FontColor = Ink;
         canvas.FontSize = Math.Clamp(dimensions.Width * .018f, 17f, 27f);
-        canvas.DrawString(step.Explanation, left.X, left.Y + left.Height * .20f,
-            left.Width, left.Height * .60f, HorizontalAlignment.Left, VerticalAlignment.Top);
+        if (stage == OrbitOverviewStage.Maui)
+        {
+            DrawCodeCard(canvas, new RectF(left.X, left.Y + left.Height * .19f,
+                left.Width, left.Height * .30f), "TERMINAL · create our app",
+                "dotnet new maui -n AdventureGame\ncd AdventureGame");
+            canvas.Font = Microsoft.Maui.Graphics.Font.Default;
+            canvas.FontColor = Ink;
+            canvas.FontSize = Math.Clamp(dimensions.Width * .018f, 17f, 27f);
+            canvas.DrawString(step.Explanation, left.X, left.Y + left.Height * .55f,
+                left.Width, left.Height * .27f, HorizontalAlignment.Left, VerticalAlignment.Top);
+        }
+        else
+            canvas.DrawString(step.Explanation, left.X, left.Y + left.Height * .20f,
+                left.Width, left.Height * .60f, HorizontalAlignment.Left, VerticalAlignment.Top);
 
         canvas.Font = Microsoft.Maui.Graphics.Font.DefaultBold;
         canvas.FontColor = Accent;

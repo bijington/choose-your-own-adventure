@@ -17,27 +17,11 @@ public sealed class GameLoopScene : PresentationSceneBase
     public override void Render(ICanvas canvas, RectF dimensions)
     {
         DrawShell(canvas, dimensions);
-        if (_state.GameLoopStage == GameLoopStage.FirmwareComparison)
-        {
-            DrawTitle(canvas, dimensions, "A FAMILIAR RHYTHM",
-                "Different world. The same read → update → output → repeat shape.");
-            var left = BookLayout.LeftPage(dimensions);
-            var right = BookLayout.RightPage(dimensions);
-            DrawCodeCard(canvas, new RectF(left.X, left.Y, left.Width, left.Height * .86f),
-                "FIRMWARE SUPERLOOP", "while (true)\n{\n    ReadInputs();\n    UpdateState();\n    WriteOutputs();\n    Delay();\n}");
-            DrawCodeCard(canvas, new RectF(right.X, right.Y, right.Width, right.Height * .86f),
-                "GAME LOOP · CONCEPTUALLY", "while (running)\n{\n    Input();\n    Update();\n    Render();\n    Wait();\n}");
-            DrawText(canvas, "Orbit runs the loop. Our GameObjects supply Update and Render.",
-                new RectF(left.X, dimensions.Height * .79f + dimensions.Y, left.Width, dimensions.Height * .08f), 16, true);
-        }
-        else
-        {
-            DrawTitle(canvas, dimensions, "A FRAME IN THE LIFE\nOF OUR CHAMPION",
-                "We can draw our champion. How do we keep their world alive?");
-            DrawStory(canvas, dimensions);
-            DrawLoop(canvas, dimensions);
-            base.Render(canvas, dimensions);
-        }
+        DrawTitle(canvas, dimensions, "A FRAME IN THE LIFE\nOF OUR CHAMPION",
+            "The loop is running. Let’s follow one frame with our champion.");
+        DrawStory(canvas, dimensions);
+        DrawLoop(canvas, dimensions);
+        base.Render(canvas, dimensions);
         DrawPromptAndNext(canvas, dimensions);
         DrawPageNumber(canvas, dimensions, PresentationTheme.GetPageNumber(PresentationSlide.GameLoop, _state.Champion));
     }
@@ -96,9 +80,7 @@ public sealed class GameLoopScene : PresentationSceneBase
 
     private void DrawPromptAndNext(ICanvas canvas, RectF dimensions)
     {
-        DrawPrompt(canvas, dimensions, _state.GameLoopStage == GameLoopStage.Overview
-            ? "SOUTH / ENTER · NEXT STATION    EAST / LEFT · PREVIOUS"
-            : "SOUTH / RB / ENTER / PGDN · WALK A FRAME WITH OUR CHAMPION");
+        DrawPrompt(canvas, dimensions, "SOUTH / ENTER · NEXT STATION    EAST / LEFT · PREVIOUS");
         var right = BookLayout.RightPage(dimensions);
         var bounds = new RectF(right.Right - 220, dimensions.Bottom - 94, 220, 38);
         canvas.FillColor = PresentationTheme.CodePanelHeader;
@@ -106,7 +88,6 @@ public sealed class GameLoopScene : PresentationSceneBase
         canvas.StrokeColor = Accent;
         canvas.StrokeSize = 1.5f;
         canvas.DrawRoundedRectangle(bounds, 12);
-        DrawText(canvas, _state.GameLoopStage == GameLoopStage.Overview
-            ? "RB / PGDN · TAKE CONTROL →" : "RB / PGDN · MEET THE LOOP →", bounds, 12, true, HorizontalAlignment.Center);
+        DrawText(canvas, "RB / PGDN · TAKE CONTROL →", bounds, 12, true, HorizontalAlignment.Center);
     }
 }

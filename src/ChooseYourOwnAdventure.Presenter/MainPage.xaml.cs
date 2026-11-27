@@ -1,3 +1,4 @@
+using Adventure.Contracts;
 using ChooseYourOwnAdventure.Input;
 using ChooseYourOwnAdventure.Live;
 using ChooseYourOwnAdventure.Presentation;
@@ -37,6 +38,7 @@ public partial class MainPage : ContentPage
         LiveVoteState liveVoteState,
         LiveRaceState liveRaceState,
         LiveAudienceOptions liveOptions,
+        QrCodeRenderer participationQr,
         PresenterNotesWindow notes,
         IReadOnlyList<PresentationSlideDefinition> slides)
     {
@@ -44,6 +46,7 @@ public partial class MainPage : ContentPage
         _notes = notes;
         _slides = slides;
         _liveOptions = liveOptions;
+        ParticipationCode.Configure(participationQr, liveOptions);
         liveOptions.SessionId = Preferences.Default.Get("AudienceSessionId", liveOptions.SessionId);
         _isMobile = DeviceInfo.Current.Idiom == DeviceIdiom.Phone || DeviceInfo.Current.Idiom == DeviceIdiom.Tablet;
         adventureState.IsRehearsing = _isMobile && Preferences.Default.Get("MobilePracticeMode", true);
@@ -70,6 +73,31 @@ public partial class MainPage : ContentPage
         _inputRouter.ActionTriggered += OnAdventureAction;
     }
 
+    private void SyncParticipationQr()
+    {
+        if (!_hasStarted || _presentationNavigator.IsTurning)
+        {
+            ParticipationCode.IsVisible = false;
+            EnlargeQrButton.IsVisible = false;
+            return;
+        }
+        var qr = _adventureState.ParticipationQr;
+        qr.Visit(_presentationNavigator.Current);
+        ParticipationCode.IsVisible = qr.IsExpanded;
+        EnlargeQrButton.IsVisible = qr.CanShow && !qr.IsExpanded;
+        if (qr.IsExpanded) ParticipationCode.Refresh(PresenterCueFactory.TitleFor(_presentationNavigator.Current));
+    }
+    private void OnToggleParticipationQr(object? sender, EventArgs e)
+    {
+        _adventureState.ParticipationQr.Toggle();
+        SyncParticipationQr();
+    }
+    private void OnDismissParticipationQr(object? sender, EventArgs e)
+    {
+        _adventureState.ParticipationQr.Dismiss();
+        SyncParticipationQr();
+    }
+
     private void OnAnimationContinueRequested(object? sender, EventArgs e) => _inputRouter.Trigger(AdventureAction.Confirm);
 
     private async void OnPracticeOptionsClicked(object? sender, EventArgs e) => await ShowPracticeOptionsAsync();
@@ -94,6 +122,7 @@ public partial class MainPage : ContentPage
                 await CreateAudienceSessionAsync();
                 break;
             case "Practise without the audience":
+                if (_audienceVoteClient.IsConnected) await _audienceVoteClient.StopSteeringRaceAsync();
                 _adventureState.IsRehearsing = true;
                 _adventureState.ResetLocalVote();
                 if (_isMobile) Preferences.Default.Set("MobilePracticeMode", true);
@@ -125,7 +154,7 @@ public partial class MainPage : ContentPage
                 }
                 break;
             case "Skip the audience race":
-                _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+                _presentationNavigator.GoTo(PresentationSlide.Podium);
                 break;
             case "Go to slide":
                 var title = await DisplayActionSheet("Go to slide", "Cancel", null,
@@ -157,8 +186,13 @@ public partial class MainPage : ContentPage
         _hasStarted = true;
         var animationTimer = Dispatcher.CreateTimer();
         animationTimer.Interval = TimeSpan.FromMilliseconds(100);
+        var wasInBonus = false;
         animationTimer.Tick += (_, _) =>
         {
+            SyncParticipationQr();
+            var inBonus = _presentationNavigator.Current == PresentationSlide.AfterCreditsRace;
+            if (wasInBonus && !inBonus && _audienceVoteClient.IsConnected) _ = _audienceVoteClient.StopSteeringRaceAsync();
+            wasInBonus = inBonus;
             AnimationShowcase.Margin = new Thickness(GameView.Width * .54, GameView.Height * .25,
                 GameView.Width * .065, GameView.Height * .17);
             AnimationShowcase.IsVisible = _presentationNavigator.Current == PresentationSlide.MauiAnimations
@@ -198,6 +232,23 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        if (_presentationNavigator.Current == PresentationSlide.AfterCreditsRace)
+        {
+            _inputRouter.Trigger(position.Value.X < GameView.Width / 2 ? AdventureAction.Cancel : AdventureAction.Confirm);
+            return;
+        }
+        if (_presentationNavigator.Current == PresentationSlide.BoostChoice)
+        {
+            if (position.Value.X < GameView.Width / 2d) _presentationNavigator.Previous();
+            else
+            {
+                _adventureState.HighlightedBoostMode = position.Value.Y < GameView.Height * .48
+                    ? BoostMode.Steady : BoostMode.ChargeAndRelease;
+                _inputRouter.Trigger(AdventureAction.Confirm);
+            }
+            return;
+        }
+
         if (_presentationNavigator.Current == PresentationSlide.FirstDecision)
         {
             if (position.Value.X < GameView.Width / 2d)
@@ -212,7 +263,7 @@ public partial class MainPage : ContentPage
         }
 
         if (_presentationNavigator.Current is PresentationSlide.ChosenChampion
-            or PresentationSlide.SignalRArchitecture or PresentationSlide.OrbitOverview)
+            or PresentationSlide.SignalRArchitecture or PresentationSlide.OrbitOverview or PresentationSlide.InputPackage)
         {
             _inputRouter.Trigger(position.Value.X < GameView.Width / 2d
                 ? AdventureAction.Previous : AdventureAction.Confirm);
@@ -252,7 +303,7 @@ public partial class MainPage : ContentPage
 
             if (isNextArea)
             {
-                _presentationNavigator.GoTo(PresentationSlide.SignalRChapter);
+                _presentationNavigator.GoTo(PresentationSlide.BoostChoice);
             }
             else
             {
@@ -277,16 +328,47 @@ public partial class MainPage : ContentPage
     private async void OnAdventureAction(object? sender, AdventureAction action)
     {
         if (_presentationNavigator.IsTurning) return;
+        SyncParticipationQr();
+        if (_adventureState.ParticipationQr.IsExpanded)
+        {
+            if (action is AdventureAction.Confirm or AdventureAction.Next or AdventureAction.Previous or AdventureAction.Cancel)
+                OnDismissParticipationQr(this, EventArgs.Empty);
+            return;
+        }
+
+        if (_presentationNavigator.Current == PresentationSlide.AfterCreditsRace)
+        {
+            var bonus = _audienceVoteClient.Steering.Snapshot;
+            if (action is AdventureAction.Cancel or AdventureAction.Previous)
+            {
+                if (_audienceVoteClient.IsConnected) await _audienceVoteClient.StopSteeringRaceAsync();
+                _presentationNavigator.GoTo(PresentationSlide.Recap);
+            }
+            else if (action == AdventureAction.Confirm)
+            {
+                if (!_audienceVoteClient.IsConnected)
+                    await DisplayAlert("Bonus race", "This optional race needs a live connection and registered champion teams. Practice mode shows the briefing only.", "OK");
+                else if (bonus.Phase == SteeringPhase.Inactive)
+                {
+                    if (_liveVoteState.Snapshot.Total == 0)
+                        await DisplayAlert("Bonus race", "The audience must choose champion teams before preparing this race.", "OK");
+                    else await _audienceVoteClient.PrepareSteeringRaceAsync();
+                }
+                else if (bonus.Phase == SteeringPhase.Ready) await _audienceVoteClient.StartSteeringRaceAsync();
+                else if (bonus.Phase == SteeringPhase.Finished)
+                {
+                    await _audienceVoteClient.StopSteeringRaceAsync();
+                    _presentationNavigator.GoTo(PresentationSlide.Recap);
+                }
+            }
+            return;
+        }
 
         // Navigation never starts or resets a vote/race. Confirmation owns those commands.
         if (action == AdventureAction.Previous)
         {
-            if (_presentationNavigator.Current == PresentationSlide.GameLoop
-                && _adventureState.GameLoopStage == GameLoopStage.Overview)
-            {
-                _adventureState.ShowFirmwareComparison();
-                return;
-            }
+            if (_presentationNavigator.Current == PresentationSlide.InputPackage
+                && _adventureState.PreviousControllerStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.OrbitOverview
                 && _adventureState.PreviousOrbitOverviewStage()) return;
             if (_presentationNavigator.Current == PresentationSlide.SignalRArchitecture
@@ -313,6 +395,37 @@ public partial class MainPage : ContentPage
 
         switch (_presentationNavigator.Current)
         {
+            case PresentationSlide.BoostChoice:
+                var boostVote = _liveRaceState.Snapshot;
+                if (action is AdventureAction.Up or AdventureAction.Left)
+                    _adventureState.HighlightedBoostMode = BoostMode.Steady;
+                else if (action is AdventureAction.Down or AdventureAction.Right)
+                    _adventureState.HighlightedBoostMode = BoostMode.ChargeAndRelease;
+                else if (action == AdventureAction.Confirm)
+                {
+                    if (boostVote.BoostVotePhase == VotePhase.Closed) _presentationNavigator.Next();
+                    else if (!_audienceVoteClient.IsConnected)
+                        _liveRaceState.Update(boostVote with { Mode = _adventureState.HighlightedBoostMode, BoostVotePhase = VotePhase.Closed });
+                    else if (boostVote.BoostVotePhase == VotePhase.Open) await _audienceVoteClient.CloseBoostVotingAsync();
+                    else await _audienceVoteClient.OpenBoostVotingAsync();
+                }
+                else if (action == AdventureAction.Cancel)
+                {
+                    if (_audienceVoteClient.IsConnected) await _audienceVoteClient.OpenBoostVotingAsync();
+                    else _liveRaceState.Update(boostVote with { BoostVotePhase = VotePhase.Ready });
+                }
+                return;
+
+            case PresentationSlide.InputPackage:
+                if (action == AdventureAction.Confirm)
+                {
+                    if (!_adventureState.AdvanceControllerStage()) _presentationNavigator.Next();
+                }
+                else if (action == AdventureAction.Cancel)
+                {
+                    if (!_adventureState.PreviousControllerStage()) _presentationNavigator.Previous();
+                }
+                return;
             case PresentationSlide.FirstDecision:
                 if (action == AdventureAction.Cancel)
                     _presentationNavigator.GoTo(PresentationSlide.AfterParty);
@@ -366,7 +479,7 @@ public partial class MainPage : ContentPage
             case PresentationSlide.VehicleControl:
                 if (action == AdventureAction.Up)
                 {
-                    _presentationNavigator.GoTo(PresentationSlide.SignalRChapter);
+                    _presentationNavigator.GoTo(PresentationSlide.BoostChoice);
                 }
                 return;
 
@@ -457,14 +570,6 @@ public partial class MainPage : ContentPage
 
     private void HandleGameLoop(AdventureAction action)
     {
-        if (_adventureState.GameLoopStage == GameLoopStage.FirmwareComparison)
-        {
-            if (action is AdventureAction.Confirm or AdventureAction.Right)
-                _adventureState.ShowGameLoopOverview();
-            else if (action is AdventureAction.Cancel or AdventureAction.Left)
-                _presentationNavigator.Previous();
-            return;
-        }
         if (action == AdventureAction.Confirm)
         {
             _adventureState.AdvanceLoopStation();
@@ -473,7 +578,7 @@ public partial class MainPage : ContentPage
         if (action is AdventureAction.Left or AdventureAction.Cancel)
         {
             if (_adventureState.GameLoopStation == LoopStation.Input)
-                _adventureState.ShowFirmwareComparison();
+                _presentationNavigator.Previous();
             else
                 _adventureState.PreviousLoopStation();
             return;
@@ -486,7 +591,7 @@ public partial class MainPage : ContentPage
     {
         if (_adventureState.IsRehearsing)
         {
-            if (action == AdventureAction.Confirm) _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+            if (action == AdventureAction.Confirm) _presentationNavigator.GoTo(PresentationSlide.Podium);
             else if (action == AdventureAction.Cancel) _presentationNavigator.Previous();
             return;
         }
@@ -508,7 +613,7 @@ public partial class MainPage : ContentPage
         }
         else if (race.Phase == RacePhase.Finished)
         {
-            _presentationNavigator.GoTo(PresentationSlide.EpilogueChapter);
+            _presentationNavigator.GoTo(PresentationSlide.Podium);
         }
     }
 

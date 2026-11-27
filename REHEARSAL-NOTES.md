@@ -1,57 +1,606 @@
-# Local rehearsal — 15 November 2026
+# Choose Your Own Adventure — read-aloud rehearsal
 
-## Verified
+Updated 22 November 2026. Matches the current presentation deck and its local reveals. Aim for **30–35 minutes including decisions, demonstrations and audience interaction**. The text is a speaking guide, not a promise of exact runtime: time your first pass and let the demonstrations breathe.
 
-- Solution restore and Mac Catalyst presenter build succeeded. Final presenter and web builds report zero warnings and zero errors.
-- Cascadia font is present and renders as a monospaced font in the Apple graphics canvas.
-- Walked the 17-scene presentation using touch navigation, including voting, loop/firmware beats, control demo, SignalR explanation, audience race, podium and recap.
-- Observed Driver and Charioteer branch instructions and following footers: 28 and 58. Observed Space Pilot's following footer at 88; its instruction uses the same page helper as the other branches.
-- Touch acceleration, chariot momentum and space-pilot thrust/gravity changed the demo state.
-- Corrected clipped headings, the branch instruction, code samples and podium labels. Confirmed the final podium places first in the centre, second left and third right using shared vehicle GameObjects.
-- State checks passed with 600 concurrent participants: votes retained, ties preserved, team-normalized race progress, closed team selection and invalid tap rejection.
-- Live SignalR checks passed with three independent clients: presenter authorization, invalid champion rejection, tie/reopen/reveal, original team retention, reconnect, race finish, join URL and local JavaScript asset.
-- Added a regression for 20+4 tap batches from two teammates: floating-point roundoff must not leave a full progress bar racing indefinitely.
+Read the ordinary paragraphs aloud. **Bracketed cues are actions, not spoken words.** Use slide titles rather than page numbers; champion branches change the printed numbers. The old verification log is preserved in [REHEARSAL-HISTORY.md](REHEARSAL-HISTORY.md). Technical detail and fallback procedures remain in [TALK-GUIDE.md](TALK-GUIDE.md).
 
-Run the repeatable checks using [these instructions](tests/Adventure.Rehearsal/README.md).
+## Before starting — do not read aloud
 
-## Still needs target hardware / deployment
+- For a solo run, enable **Practice mode** through the mobile options button or **Presenter → Practice Options**. Choose a champion on the voting spread; skip the race when you reach it. Read the race instructions aloud anyway. Use the Driver script on the first pass, then rehearse the other movement variants separately.
+- For a live test, choose **New Audience Session** before anybody joins. Select **Use live audience** if practice mode is enabled. The session and QR link change together; everybody must scan the new code. A new session is remembered on this device across restarts.
+- Put the audience window on the presentation display and the notes/script on your own display. Confirm keyboard/controller input and QR readability.
+- **Continue** below means South / Enter or a right-page tap, unless a cue says otherwise. Right shoulder / Page Down advances ordinary slides and staged explanations; on the game-loop walkthrough it leaves the slide. Left shoulder / Page Up navigates back.
+- Wait for the page turn to finish before pressing again. Read only the applicable champion or fallback paragraph.
+- Existing audio under `rehearsal/audio` predates this script. It has not been regenerated and will not follow all the current slides.
 
-- Keyboard forward/back navigation and simultaneous controller throttle/steering/braking. Synthesized Return presses through desktop automation did not advance the app; the walkthrough used touch. Verify a real keyboard and controller before presenting.
-- Physical phones, QR scanning at projector distance, all interactive highlights while holding physical inputs, and actual projector dimensions.
-- Azure-hosted SignalR, realistic concurrent network connections, slow/mobile networks and reconnects. The 600-participant check exercises the in-process store, not network capacity.
-- Deployment URL and matching presenter key. No Azure resource was selected or deployed in this rehearsal. Keep the local defaults until the deployment destination is known.
+## Opening — cover
 
-Existing Mac Catalyst project settings and asynchronous startup ordering were preserved. No commits were created; pre-existing uncommitted work remains in the checkout.
+Hello, I’m Shaun Lawrence, and this is Choose Your Own Adventure.
 
-## Open-book prototype follow-up
+Do you remember those books where you put a finger between the pages because you weren’t completely convinced that opening the mysterious door was a good idea?
 
-The presenter now hosts its content in one `BookScene` with an outgoing bitmap for page turns. The Mac Catalyst build passes with zero warnings/errors. Desktop checks confirmed forward turns, reverse turns using the lower-left corner, facing-page code and illustrations, offline champion branching, loop-marker updates, and touch thrust/gravity after navigation. Existing vote/race state checks still pass. The app was left open on the Orbit overview spread for review.
+Today, we’re bringing a little of that to a .NET MAUI application. You’ll choose our champion, shape the example we explore, and eventually become the input that powers the final challenge.
 
-The turn is a stylised paper fold with the incoming page printed on its reverse, rather than a curved 3D page simulation. Book layouts and transitions have been checked on Mac Catalyst; Android/iOS and projector dimensions still need rehearsal.
+We’ll start with ordinary MAUI, give our champion a world and some movement, and then connect this screen to your phones. The technology won’t just be something we discuss. It will be running the session.
 
+**[Continue → Your First Decision.]**
 
-The transition outline has been removed, and the old stationary page remains under the incoming leaf to avoid duplicated new text. The turn clock starts after image capture. Champion selection now places instructions/QR/status on the left and three destination-labelled cards on the right. Desktop checks confirmed the revised card layout and that tapping the middle card selects the Charioteer/page-58 branch.
+## Your First Decision — the after-party choice
 
-The standalone branch-result scene has been removed. The selection spread fades away losing cards and grows the winner to fill the right page, then continues directly to Add GameObject. Existing destination pages are preserved by retiring page 7. Desktop checks confirmed an offline Charioteer reveal, direct continuation to page 58, returning to the final selection result, and left-page back navigation from the voting spread to Load a Game Scene. Escape now goes back from voting; B/Shift resets the round. Final Mac Catalyst build has zero warnings/errors, and the vote/race rehearsal checks pass.
+Before we do anything technical, you have an important decision to make.
 
+We can begin our adventure… or, given where I am in the schedule, we could try going straight to the after-party.
 
-Added a presenter-controlled first decision after the cover: page 2 begins the talk, while page 404 delivers the after-party-not-found joke and rejoins page 2. No SignalR vote is opened for this introduction. Existing content now carries prologue/chapter/epilogue running headers. Mac Catalyst builds cleanly; desktop checks confirmed the two choice routes, page-404 footer, prologue header and Back routing to the choice. Existing vote/race checks pass. Champion destinations stay 28/58/88.
+**[Pause for a show of hands or a shouted answer. This is not a SignalR vote.]**
 
+**[If taking the joke branch, select the after-party card → page 404.]**
 
-Fixed the vote-to-code flash: OpeningScene now renders only voting content and no longer switches into legacy character/code-reveal modes when the chosen champion changes shared state. After accepting the result, a dedicated right-page ChampionChapterScene shows CHAPTER ONE / MEET YOUR CHAMPION, the selected name and the shared ChampionGameObject on bare parchment. The left leaf stays blank. Chapter destinations are 27/57/87; Add GameObject remains 28/58/88. Desktop checks confirmed Space Pilot confirmation → chapter 87 → code 88, clean outgoing captures and back navigation. Left the app on the chapter reveal. Build: zero warnings/errors; existing rehearsal checks pass.
+After-party not found. Apparently, we have to complete the adventure first. I did try.
 
-Added matching right-page openers for Prologue, Chapter Two, Chapter Three and Epilogue using the shared ChapterOpeningScene layout. Chapter One is now MEET OUR CHAMPION and adds: “A little self-discovery. A few lines of C#. Let’s find out what our champion is made of.” Its introduction and larger artwork fit without overlap. Story page numbers now derive from deck order, excluding the cover and optional page 404; champion offsets still apply from Chapter One. Voting destinations now match chapter 28/58/88, with Add GameObject at 29/59/89.
+**[Continue from page 404, or select the main adventure card → Discovering Orbit.]**
 
-Desktop checks verified all five opener layouts, the new voting destination, normal chapter progression, driving → Chapter Three, and a local SignalR race finish → Epilogue. The app is left on The Journey Home. The temporary web host was stopped after rehearsal. Mac Catalyst build has zero warnings/errors, the existing rehearsal checks pass, and the talk guide has updated chapter/page order.
+## Prologue — Discovering Orbit
 
-Corrected Chapter One’s narrative order: MEET OUR CHAMPION now opens before the vote with its self-discovery text and no selected character. After the final vote, ChosenChampionScene gives a simple right-page “THE AUDIENCE HAS CHOSEN / OUR CHAMPION” summary with the selected name and shared GameObject. It does not repeat a chapter heading. The sequence is chapter → vote → summary → Add GameObject. Offsets begin at the summary; winning cards point to 29/59/89 and code follows at 30/60/90. Verified the chapter-before-vote route and Charioteer summary in the desktop app. Build has zero warnings/errors; existing rehearsal checks pass. Left the app on the chosen-character summary.
+Every adventure needs a world to happen in. Ours happens inside a MAUI app.
 
+That’s worth keeping in mind throughout the talk. We aren’t leaving our application behind. We’re adding another way to make part of it feel alive.
 
-Simplified the champion section: the chosen-character summary now keeps the champion visible on the right and reveals Render()/drawing-primitives examples on the left as a local beat. The next action opens Take Control. Left-page tap/Escape hides code before navigating back to voting. Removed the separate AddGameObjectScene and ChampionRevealScene and updated the guide/page map. Mac Catalyst build: zero warnings/errors. Existing rehearsal checks passed. Desktop visual QA could not complete because the computer-use preview connection expired; this version has not been visually verified.
+**[Continue → Building a Game in MAUI.]**
 
 
-## Presenter notes — 17 November 2026
+## Building a Game in MAUI — four reveals
 
-Added a separate desktop MAUI presenter-notes window, automatically opened after the audience scene starts and reopenable via Presenter → Show Presenter Notes. It follows the existing navigator, local rendering/loop beats and live vote/race state. Notes include guide-derived prose, controls, next action/spread, session clock and live status; only the audience window hosts Orbit. Mac Catalyst uses a registered SceneDelegate plus an explicit partial scene manifest, with SDK preprocessor-symbol support for the non-UseMaui project setup.
+### 1 / 4 — .NET MAUI
 
-The Mac Catalyst build passes with zero warnings/errors. Tests pass for notes' rendering/firmware/tie/finish cues, guide extraction, and existing vote/race concurrency/regressions. Desktop checks confirmed automatic two-window startup, separate audience output, synchronization after advancing the book, Return to presentation focus, and notes close/reopen with the clock/current spread preserved. Native preview used an unchanged copy of the built app in /tmp because the computer-use app resolver cached the original path's older bundle identity. Physical projector/full-screen placement and Windows remain to be rehearsed.
+We begin by creating our app: dotnet new maui, named AdventureGame, then move into that directory. That gives us the application itself: windows, pages, layouts and controls.
+
+MAUI gives our game a home. This presentation is an example: the audience sees a game view inside a page, while the presenter notes use ordinary XAML UI in another window.
+
+We can combine these approaches. We don’t have to choose between an application and a game-like experience.
+
+**[Continue once → MAUI Graphics.]**
+
+### 2 / 4 — MAUI Graphics
+
+Next, we need somewhere to draw our world.
+
+MAUI Graphics gives us a canvas: shapes, text, images and transforms. We could build a game directly using those tools.
+
+But drawing is only one part of it. We also need to organize the world, advance its state over time and arrange when updates and drawing happen.
+
+**[Continue once → Orbit. The logo now appears.]**
+
+### 3 / 4 — Orbit
+
+This is where Orbit comes in.
+
+Orbit is a lightweight game engine built on MAUI Graphics. Scenes organize the world, game objects give its parts behaviour, and the engine runs the update-and-render loop.
+
+We write the changes in Update and show the result in Render. The drawing tools underneath are still MAUI Graphics.
+
+**[Continue once → Your Game.]**
+
+### 4 / 4 — Your Game
+
+Then there’s the part no engine can decide for us: what our game actually does.
+
+Which character appears? How does it respond to input? Does it steer around corners, keep rolling after we let go, or fall because gravity has opinions?
+
+MAUI hosts it. Graphics draws it. Orbit supplies the structure and loop. Our code supplies the rules.
+
+**[Continue → Install & Register Orbit.]**
+
+## Install & Register Orbit
+
+We’ve created our app. Now, inside that project, we add a NuGet package.
+
+Add Bijington.Orbit.Engine, then register it with UseOrbitEngine when building the MAUI application.
+
+We’re still working inside a normal MAUI app. This gives us the engine services we’ll use to host and run a scene.
+
+**[Continue → Give Orbit Somewhere to Render.]**
+
+## Give Orbit Somewhere to Render
+
+Now we put a GameSceneView in our page, just like another MAUI view.
+
+It gives Orbit somewhere to display the current scene. We can place it alongside ordinary UI, fill a page with it, or build a more elaborate presentation around it.
+
+The view is the window into the game world. We still need to decide what world it should show.
+
+**[Continue → Load a Game Scene.]**
+
+## Load a Game Scene
+
+We ask the scene manager to load a scene into that view, then start the loop.
+
+Loading chooses the world. Starting begins the repeating update-and-render work that keeps it alive.
+
+That is the route we’ve built: create the app, add and register the engine, give it a view, load a scene and start. The terminal line builds and runs it on this Mac using the Mac Catalyst target.
+
+Our scene is ready. First, what did starting it actually do?
+
+**[Continue → A Familiar Rhythm.]**
+
+## A Familiar Rhythm — firmware first
+
+If you’ve worked with firmware, this pattern may look familiar.
+
+Read inputs. Update state. Write outputs. Wait, then repeat.
+
+The game loop has a similar rhythm. We collect intent, evolve the world, render what it looks like now, and yield until the next frame.
+
+The snippets are a conceptual comparison. We don’t need to write our own blocking while loop in a MAUI page; Orbit runs the loop for us.
+
+That is what Start begins. Now let’s find a champion to put inside that world.
+
+**[Continue → Meet Our Champion.]**
+
+
+## Chapter One — Meet Our Champion
+
+A little self-discovery. A few lines of C#. Let’s find out what our champion is made of.
+
+But first, you get to decide who we meet.
+
+**[Continue → Choose Your Champion.]**
+
+## Choose Your Champion — live vote
+
+**[The large participation QR appears first. Give people time to scan. Tap / South / Enter / either shoulder closes only the code; the next action opens voting. Use Enlarge QR in Presenter Notes or on participation slides for late arrivals.]**
+
+Scan the QR code and choose your champion.
+
+We have the Driver: speed, precision and questionable braking. The Charioteer: glory, courage and momentum. Or the Space Pilot: exploration, thrusters and, naturally, Orbit.
+
+This choice changes the movement example we’ll explore. Your own vote also chooses your team for the final race, even if another champion wins this opening round.
+
+**[Live: press Continue to open voting. Give people time to scan and vote. In practice: tap the desired champion card to reveal a local winner, then use the practice cue below.]**
+
+I’ll give you a moment. The way those votes reach this screen is part of the story. We’ll come back to it later.
+
+**[Live: Continue closes voting. Wait at least three seconds, then Continue reveals the result. If tied, use the tie paragraph below. After the winner reveal has been visible for at least two seconds, Continue accepts the champion.]**
+
+**[Practice: after the local reveal has been visible for at least two seconds, Continue accepts the champion. Do not read the live closing instructions aloud.]**
+
+### Only if the live vote is tied
+
+Democracy has produced an interesting plot twist. We have a tie. Let’s try one more round.
+
+**[Continue reopens voting; close, wait and reveal again. Do not try to continue to the summary while there is no winner.]**
+
+## Our Champion — summary and consequence
+
+You’ve chosen more than our hero — you’ve chosen the physics we’ll have to live with.
+
+**[Read one variant.]**
+
+**Driver:** You chose precision. We’ll accelerate, steer and find out why knowing when to brake is part of going quickly.
+
+**Charioteer:** You chose momentum. A little encouragement gets us moving; letting go doesn’t immediately make that movement disappear.
+
+**Space Pilot:** You chose gravity. We can apply thrust to rise, but releasing the control doesn’t make the universe stop updating.
+
+Before we deal with those consequences, let’s explore our champion’s backstory. Every champion has an origin story. Ours begins with a dot.
+
+**[Continue → Dot on the same spread.]**
+
+## Our Champion’s Origins — four reveals
+
+### 1 / 4 — Dot
+
+Here are our humble beginnings: a filled ellipse.
+
+We have a canvas, some bounds, a colour and a drawing instruction. It isn’t much of a hero yet, but we can already put something into the world.
+
+**[Continue → Primitives.]**
+
+### 2 / 4 — Primitives
+
+Combine a few circles, rectangles and lines, and we have something recognizable.
+
+The API hasn’t changed. We’re just giving it more instructions. We can build quite a lot this way, but more handmade visual detail means more drawing code.
+
+**[Continue → Image.]**
+
+### 3 / 4 — Image
+
+Now the artwork carries that detail for us.
+
+We load and cache an image, preserve its proportions and draw it into the available space. Our champion looks much richer, while the code that puts them on screen is quite small.
+
+This is still one static picture.
+
+**[Continue → Animated Sprite.]**
+
+### 4 / 4 — Animated Sprite
+
+And now our champion has a little more life.
+
+This uses Orbit’s Sprite with a sequence of celebration frames. We create it once, advance the animation in Update using elapsed time, and draw the current frame in Render.
+
+A sprite doesn’t have to be animated, but this one is. The artwork has evolved from a dot into a moving character, while the canvas-and-bounds rendering contract remains familiar.
+
+We saw Start begin the loop earlier. Now let’s follow what our champion does in one frame.
+
+**[Continue → A Frame in the Life of Our Champion.]**
+
+
+## A Frame in the Life of Our Champion — four stations
+
+### Input
+
+First, input: what does the player want to do?
+
+Accelerate, pull the reins, or apply thrust. At this point we’re describing intent, not drawing anything and not directly moving the character.
+
+**[Continue → Update.]**
+
+### Update
+
+Then Update changes the state using that intent and the elapsed time.
+
+**[Read one variant.]**
+
+**Driver:** Speed changes, and our position advances. The next corner gets closer between button presses.
+
+**Charioteer:** Position advances using the current speed. Momentum keeps the chariot rolling even when no new input arrives.
+
+**Space Pilot:** Thrust or gravity changes velocity, and velocity changes position. When the input stops, the world keeps changing.
+
+That’s a useful distinction: no new event has happened, but the world is still alive.
+
+**[Continue → Render.]**
+
+### Render
+
+Render makes that state visible. It draws the world Update has produced.
+
+This is the drawing contract we just explored. It isn’t responsible for deciding how far the character should move; it shows where the character is now.
+
+**[Continue → Wait.]**
+
+### Wait
+
+The engine yields until the next frame, then repeats.
+
+We’re stepping through this slowly to explain it. In the real game, it runs continuously.
+
+Input affects state. Update evolves state. Render displays state. One frame, then another.
+
+**[Use Right shoulder / Page Down or the lower-right TAKE CONTROL button to leave this slide. Continue alone cycles through the stations.]**
+
+## Chapter Two — Take Control
+
+Our champion has a world, a look and a rhythm. Now let’s give them something to respond to.
+
+**[Continue → Many Ways to Play.]**
+
+## Many Ways to Play — input possibilities
+
+A tap is only one way to express intent. MAUI gives us buttons, touch, mouse and gestures, and supported devices offer other possibilities.
+
+We could tilt to steer, turn to aim, or shake to act. An accelerometer measures acceleration; a gyroscope measures rotation speed. Orientation and compass readings give us other ways to interpret the device.
+
+On the other page are keys, controller buttons and sticks. Orbit.Input gives our game a shared layer for those. Different sources; the same intent.
+
+These sensor ideas depend on the hardware. For now, let’s start with the simplest source: a normal MAUI button.
+
+**[Continue → MAUI Already Has Input.]**
+
+## MAUI Already Has Input
+
+Just as MAUI already gives us animation, it already gives us useful input.
+
+A Button works with touch or a mouse. Clicked or a command can represent an action; Pressed and Released are useful when the action needs to stay active while the control is held.
+
+In this example, pressing sets an intent flag and releasing clears it. The handler doesn’t move or redraw the champion. Update and Render still do that work.
+
+Gestures and pointer events give us other options. For a touch-first game-like feature, ordinary MAUI UI may be exactly what we need.
+
+What if we also want a keyboard or a game controller?
+
+**[Continue → How Does It Move?]**
+
+## Connect a Game Controller — four reveals
+
+### 1 / 4 — Register
+
+Orbit.Input is a separate package for keyboard and game-controller input. We register the support we want when building the app. Our bridge receives the managers through dependency injection.
+
+**[Continue → Discovery.]**
+
+### 2 / 4 — Discover
+
+First, listen for a controller connecting. Then start discovery. The order matters: subscribe before starting the operation that can raise the event.
+
+These are the calls used by this presentation. Discovery is optional; a failure must not prevent touch or keyboard from working.
+
+**[Continue → Connect and subscribe.]**
+
+### 3 / 4 — Get the controller and hook its events
+
+The event gives us the actual controller: e.GameController. We keep that instance, then subscribe to button and analog-value changes.
+
+When replacing a controller, we detach the previous handlers and clear held actions. We also unsubscribe when the bridge is disposed.
+
+**[Continue → Read and map.]**
+
+### 4 / 4 — Read the current input values
+
+Now we have our connected controller. Reading it can be this simple.
+
+South gives us a boolean: pressed or released. That could mean jump.
+
+The shoulder trigger gives us a value between zero and one: how far it is pressed. That could mean throttle.
+
+The stick axis gives us a value from minus one to plus one, with zero at the centre. That could mean steering.
+
+We can listen for changes or read the current state. Our game decides what those values mean, and Update uses that intent to change the world.
+
+**[Continue → Drive Our Champion. Left-page tap/East goes back one controller step.]**
+
+## Drive Our Champion — live demonstration
+
+**[Read and perform only the selected variant. Spend roughly one minute demonstrating, rather than reading all three.]**
+
+### Driver
+
+This is the challenge you chose for us: precision.
+
+**[Hold South / Enter to accelerate. Use the left stick X axis or Left/Right arrows to steer. Use East / Shift / Down to brake.]**
+
+Acceleration changes speed. Steering changes our position across the track. Braking reduces the speed again.
+
+Watch the state and the highlighted code as I change the input. The tyre animation makes the movement easier to read, but the important part is underneath: input changes state, then the next render shows it.
+
+### Charioteer
+
+This is the challenge you chose for us: momentum.
+
+**[Hold South / Enter to pull, release, then use East / Shift / Down to brake.]**
+
+A pull builds speed. When I release the control, the chariot keeps rolling. We don’t need another input event for that to happen; Update keeps advancing the position from the existing velocity.
+
+The wheels and dust help us see it, but the behaviour comes from the state model. A release is not the same thing as a stop.
+
+### Space Pilot
+
+This is the challenge you chose for us: gravity.
+
+**[Hold South / Enter to thrust, release to show falling, then use East / Shift / Down for down-thrust if useful.]**
+
+Thrust changes velocity. Release, and gravity keeps acting on the next update. The exhaust appears while we’re applying thrust, but our position continues changing after that input ends.
+
+We don’t tell the ship a final destination. We change the forces affecting it and let the loop evolve the result.
+
+### Rejoin the main script
+
+Three different movement models, but the same overall pattern: intent, state changes and rendering.
+
+So far, that intent has come from a local control. What if we changed where it came from?
+
+**[Up / W or the lower-right NEXT area → An Adventure Together. On touch, tapping the main demo pulses the action; use the explicit NEXT area to leave.]**
+
+## Chapter Three — An Adventure Together
+
+One controller is useful. An entire room is more interesting.
+
+Let’s connect this world to all of you.
+
+**[Continue → What If the Input Source Changes?]**
+
+## What If the Input Source Changes?
+
+What if, instead of this controller, the input came from all of you?
+
+The game still needs intent. The source of that intent changes, but the downstream state and rendering model can stay familiar.
+
+And the interesting thing is: you have already been using the architecture that makes this possible. You used it when you voted for our champion.
+
+Let’s follow one of those votes from your phone to this screen.
+
+**[Continue → One Vote, Four Steps.]**
+
+## One Vote, Four Steps — first explain SignalR
+
+SignalR is ASP.NET Core’s library for real-time communication between a server and connected clients.
+
+Normally, a browser asks for something and the server replies. With SignalR, the server can also push an update when something changes, without every phone repeatedly asking whether there is news.
+
+Think of the hub as the room’s switchboard. Your phone sends a choice. Our application records it and announces the updated state to the connected clients in this session.
+
+The phones and this MAUI app are clients of the same server. SignalR carries the messages; our application decides what they mean.
+
+### 1 / 4 — Audience browser
+
+Here is the JavaScript on the phone.
+
+It builds a connection to adventureHub, starts it and joins our session. When you choose a champion, it invokes Vote with the session, your participant identity and your choice.
+
+The phone sends “I choose this champion.” It doesn’t calculate the winner or send a new total for everybody else to trust.
+
+**[Continue → Hub.]**
+
+### 2 / 4 — ASP.NET Core hub
+
+On the server, MapHub connects that URL to AdventureHub.
+
+The Vote invocation reaches the public Vote method, with those arguments in the same order. The actual implementation also normalizes and validates the incoming values; the slide keeps the entry point short enough to follow.
+
+Joining a session puts the connection into its session group. That lets us send updates to the people in this adventure.
+
+**[Continue → State and broadcast.]**
+
+### 3 / 4 — Server state and broadcast
+
+The vote store owns the shared state. While voting is open, it records one choice per participant and returns a snapshot. A lock protects those updates when people act at the same time.
+
+Then the hub broadcasts VoteUpdated to the session group, including the phones and this presentation.
+
+The hub routes the message. The store owns the state. The server pushes the result, rather than waiting for the presentation to ask again.
+
+**[Continue → MAUI client and Orbit.]**
+
+### 4 / 4 — MAUI client and Orbit
+
+On this side, the MAUI client listens for VoteUpdated. Notice that the event name matches the broadcast.
+
+The callback updates our local copy of the state. OpeningScene reads that state during the ordinary Orbit loop and draws the totals and the reveal.
+
+SignalR doesn’t draw the scene and doesn’t need to start another game loop. It changes the state the existing loop sees.
+
+Browser sends intent. Server owns shared state. Orbit renders the result.
+
+Our final challenge follows that same route: Boost intent goes in, RaceUpdated state comes out. The browser collects pending taps and sends their count every hundred milliseconds, rather than requiring a separate call for every tap. At ordinary tapping speeds, some batches will still contain only one tap.
+
+**[Continue → Audience Grand Prix.]**
+
+## Audience Grand Prix — the final challenge
+
+This is our final challenge. You chose your champion earlier, and you have been on that team ever since. Now power them through the last stretch.
+
+Before I start, there’s a design bug we should think about.
+
+What happens if one champion has twice as many people? Have we built a race — or a headcount?
+
+**[Pause for an answer. The race stays Ready while you explain.]**
+
+Raw tap totals would reward the biggest team. Our server divides tap strength by team size, so progress depends on average effort per registered teammate. A small party can still win this adventure.
+
+People who voted but aren’t tapping still count, so encourage your teammates.
+
+**[Live: confirm everybody has their team’s boost control. Continue starts the race. Practice: do not expect a live race; read the countdown, pause to imagine the interaction, then use Continue/right page to skip to the epilogue.]**
+
+Ready? Three, two, one — go!
+
+**[Let the audience race. The target is roughly 28 seconds at three taps per second per person, not a fixed timer. Faster teams can finish sooner. Avoid explaining code during the action.]**
+
+**[Optional short commentary; choose one, don’t read the list.]**
+
+Driver team are awake.
+
+Space Pilot appears to have discovered horizontal scaling.
+
+Charioteers, I admire your commitment to eventual consistency.
+
+**[After Finished, name the winning team. In practice, don’t invent a result; say the solo-run paragraph below instead.]**
+
+The phone didn’t move that vehicle directly. It sent intent, the server changed the authoritative race state, and Orbit rendered the result.
+
+You chose the heroes, shaped their journey and powered the final challenge. The room wrote the ending.
+
+**[Live: Continue after Finished → The Journey Home.]**
+
+### Solo-run paragraph only
+
+This is where I’ll celebrate the winning team, then connect the result back to the same intent, state and rendering path. For this rehearsal, I’m skipping the live race and continuing to the ending.
+
+**[Practice: Continue/right page → The Journey Home. A new practice session has no race winner to celebrate.]**
+
+## The Podium
+
+**[Live: acknowledge the actual winner and the other teams. Pause for reaction. Solo: skip the celebration if there is no result.]**
+
+Thank you for playing. The champion vote, the movement demo and that race all came back to the same idea: give intent a route into shared state, and make the result visible.
+
+**[Continue → What Would We Add Next?]**
+
+
+## Epilogue — The Journey Home
+
+Every race has a finish. Every adventure leaves us with something to take home.
+
+**[Continue → MAUI Already Has Some Magic.]**
+
+
+## MAUI Already Has Some Magic — live animations
+
+Let’s take this home. MAUI already gives ordinary applications a little magic.
+
+These are ordinary XAML controls. We can move them, rotate them, scale them and change their opacity. Easing changes the feel of that movement: the same journey can feel mechanical, gentle or a little more dramatic.
+
+**[Point to the bounce, rotating star and heartbeat. Let them play. Tap Play it again if useful.]**
+
+The code on the left animates properties over time. The star doesn’t need a complete game engine just to make an entrance.
+
+This is great for transitions, feedback and playful UI. We can use these effects in everyday applications too.
+
+What other feedback could we add?
+
+**[Tap What next? →, or continue outside the control panel → Future Ideas.]**
+
+
+
+## What Would We Add Next? — feedback ideas
+
+We’ve just made a room full of phones into controllers. If we built the next version, I’d start with a question: when I tap Boost, how do I know the game felt it?
+
+On a controller I can feel the button move. On glass, a short haptic pulse could give me a little of that feeling back on a device that supports it. I’d make it optional, especially when we’re asking people to tap several times a second.
+
+Sound can help with a different moment. Imagine hearing the last beep of the countdown while you’re looking at your champion on the big screen. Or give the finish its own sound so the whole room knows the race is over. I’d play that one when the server confirms the finish, so it matches the result we’re showing.
+
+And if I’ve muted my phone or turned vibration off, the buttons and the race still need to make sense. A quick highlight on Boost and a visible countdown can carry the same information.
+
+**[Allow roughly 60–90 seconds. Pause after the opening question if you invite an answer.]**
+
+**[Continue → The End.]**
+
+
+## The End — credits and resources
+
+Starring… you, the audience. Thank you for playing your part in this adventure.
+
+We started with MAUI: an application, ordinary controls, input and animation.
+
+We added Orbit to organize a world with scenes and game objects, and keep it alive through Update and Render.
+
+Then we used SignalR to let the whole room become an input source. The phones sent intent, the server owned shared state, and our MAUI app rendered the result.
+
+You don’t need to be building a full game to use these ideas. A responsive interaction, a playful visualization or a shared live experience can make an application feel much more alive.
+
+**[If the resources URL is configured and the QR code is visible, read this paragraph.]**
+
+The QR code links to the companion blog post, with resources from the talk. Take a photo or scan it before you head out.
+
+**[If it is not configured, omit that paragraph. Populate TalkSummary:ResourcesUrl before the real talk; don’t direct people to a missing link.]**
+
+I’m Shaun Lawrence. Thank you for choosing this adventure with me.
+
+And yes, AI was used in the making of these slides — but no agents were harmed in the process.
+
+**[Pause. Leave the final spread visible for questions and the QR code.]**
+
+## Optional after-credits encore — do not advance into this automatically
+
+**[Only if time permits: open Presenter → Go to Slide → After Credits · Team Steering (Optional). This does not run when continuing from the closing page.]**
+
+**[Pause for the achievement popup: “You stayed after the credits.” Let it fade before the steering briefing.]**
+
+One more lap? Keep your original champion team — but this time, half of you power the left side and half power the right. Can you coordinate well enough to steer?
+
+**[South/Enter prepares the separate bonus round. Ask everyone to check the original browser for their assigned side. A one-person team gets both controls. Then South/Enter starts.]**
+
+Tap together for speed. Change the balance to steer the red marker into the green band. More left power steers left; more right power steers right. Off course slows you down, but doesn’t erase your progress.
+
+**[Let them coordinate. This is a prototype: rehearse with real phones before deciding to use it live. East/Escape can stop it at any time.]**
+
+The original race winner still keeps their victory. This one was about how well your team could work together.
+
+**[After the finish, South/Enter closes the bonus and restores the summary/resources page. Leave that page visible. Practice mode has briefing only, with no live race.]**
+
+## Emergency cards — read only if needed
+
+### Setup or connectivity trouble
+
+There were going to be goblins. This one appears to live in the conference Wi-Fi.
+
+**[Optional joke only; there is no planned goblin reveal. Allow reconnect/rejoin to recover the latest snapshot. Keep the same browser identity to retain the team. If necessary, enable practice mode, choose locally and skip the race. Don’t promise replay of every missed tap.]**
+
+The network is one possible source of input. We can keep exploring the game locally while it sorts itself out.
+
+### Running short
+
+**[Keep all four building blocks, but use one sentence per reveal. Shorten the movement demonstration and the four SignalR steps. Preserve the vote, final challenge when networking permits, and closing summary. Skip optional jokes and repeated demos.]**
+
+The detail to remember is the same at every stage: input affects state, Update evolves it, and Render makes it visible.

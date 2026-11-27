@@ -19,6 +19,9 @@
             </engine:GameSceneView.GestureRecognizers>
         </engine:GameSceneView>
         <controls:MauiAnimationShowcase x:Name="AnimationShowcase" IsVisible="False" ContinueRequested="OnAnimationContinueRequested" />
+        <Button x:Name="EnlargeQrButton" Text="Enlarge QR" IsVisible="False"
+                HorizontalOptions="Start" VerticalOptions="Start" Margin="12" Padding="12,6"
+                FontSize="13" BackgroundColor="#F1DCA8" TextColor="#342116" Clicked="OnToggleParticipationQr" />
         <Button x:Name="PracticeButton"
                 Text="Practice · options"
                 IsVisible="False"
@@ -30,5 +33,6 @@
                 BackgroundColor="#F1DCA8"
                 TextColor="#342116"
                 Clicked="OnPracticeOptionsClicked" />
+        <controls:ParticipationQrView x:Name="ParticipationCode" IsVisible="False" DismissRequested="OnDismissParticipationQr" />
     </Grid>
 </ContentPage>

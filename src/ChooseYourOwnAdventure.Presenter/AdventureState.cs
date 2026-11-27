@@ -29,12 +29,6 @@ public enum LoopStation
     Wait = 3
 }
 
-public enum GameLoopStage
-{
-    Overview,
-    FirmwareComparison
-}
-
 public enum SignalRStage
 {
     Browser,
@@ -68,12 +62,24 @@ public sealed class AdventureState
         ChooseYourOwnAdventure.Champion.SpacePilot
     ];
 
+    public Presentation.ParticipationQrState ParticipationQr { get; } = new();
+
+    private bool _afterCreditsAchievementUnlocked;
+    public bool TryUnlockAfterCreditsAchievement()
+    {
+        if (_afterCreditsAchievementUnlocked) return false;
+        _afterCreditsAchievementUnlocked = true;
+        return true;
+    }
+    public void ResetAfterCreditsAchievement() => _afterCreditsAchievementUnlocked = false;
+
+    public Live.BoostMode HighlightedBoostMode { get; set; }
+
     public bool IsRehearsing { get; set; }
 
     public OpeningStage OpeningStage { get; private set; } = OpeningStage.Title;
     public Champion? Champion { get; private set; }
     public Champion HighlightedChampion { get; private set; } = ChooseYourOwnAdventure.Champion.RacingDriver;
-    public GameLoopStage GameLoopStage { get; private set; } = GameLoopStage.Overview;
     public LoopStation GameLoopStation { get; private set; } = LoopStation.Input;
     public SignalRStage SignalRStage { get; private set; }
     public OrbitOverviewStage OrbitOverviewStage { get; private set; }
@@ -128,9 +134,23 @@ public sealed class AdventureState
         CodeRevealTransitionProgress = 0f;
     }
 
+    public Presentation.ControllerStage ControllerStage { get; private set; }
+    public void ResetControllerWalkthrough() => ControllerStage = Presentation.ControllerStage.Setup;
+    public bool AdvanceControllerStage()
+    {
+        if (ControllerStage == Presentation.ControllerStage.Actions) return false;
+        ControllerStage++;
+        return true;
+    }
+    public bool PreviousControllerStage()
+    {
+        if (ControllerStage == Presentation.ControllerStage.Setup) return false;
+        ControllerStage--;
+        return true;
+    }
+
     public void ResetGameLoop()
     {
-        GameLoopStage = GameLoopStage.FirmwareComparison;
         GameLoopStation = LoopStation.Input;
     }
 
@@ -179,11 +199,6 @@ public sealed class AdventureState
 
     public void PreviousLoopStation() =>
         GameLoopStation = (LoopStation)(((int)GameLoopStation + 3) % 4);
-
-    public void ShowFirmwareComparison() =>
-        GameLoopStage = GameLoopStage.FirmwareComparison;
-
-    public void ShowGameLoopOverview() => GameLoopStage = GameLoopStage.Overview;
 
     public void ResetSignalRWalkthrough() => SignalRStage = SignalRStage.Browser;
 

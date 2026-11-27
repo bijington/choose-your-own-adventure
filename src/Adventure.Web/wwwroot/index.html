@@ -46,16 +46,44 @@
       </div>
     </section>
 
+    <section id="boostVotePanel" style="display:none">
+      <h1>CHOOSE OUR ROUTE</h1>
+      <p class="sub">The finish lies beyond the mountains. Winding road or ancient launch pads?</p>
+      <div id="boostVoteStatus" class="status">Waiting for the presenter…</div>
+      <div class="grid">
+        <button class="champion" type="button" data-mode="Steady"><span class="name">THE WINDING ROAD</span><span class="tag">Keep moving with every tap.</span><span id="steadyVotes" class="votes">0 votes</span></button>
+        <button class="champion" type="button" data-mode="ChargeAndRelease"><span class="name">ANCIENT LAUNCH PADS</span><span class="tag">Charge together. Automatically leap forward!</span><span id="burstVotes" class="votes">0 votes</span></button>
+      </div>
+      <p class="sub">Same effort to finish. Ties take the winding road. Choose a champion first to vote.</p>
+    </section>
+
     <section id="racePanel">
       <h1>RACE YOUR CHAMPION</h1>
-      <p class="sub">Every tap pushes your original champion closer to the finish line.</p>
+      <p class="sub">Follow the route you chose. Tap for your original champion!</p>
       <div class="team-badge">You are racing for<strong id="teamName">YOUR TEAM</strong></div>
       <button id="boostButton" class="boost" type="button" disabled>BOOST!</button>
       <div id="raceStatus" class="status">Waiting for the presenter to start the race…</div>
+      <div id="chargePanel" style="display:none; margin:20px 0">
+        <strong>LAUNCH ENERGY — automatic jump at 100%</strong>
+        <progress id="chargeMeter" max="1" value="0" style="width:100%;height:28px"></progress>
+        <div id="chargeLabel"></div>
+      </div>
       <div id="tapCount" class="tap-count">0 taps</div>
       <div id="raceResult" class="race-result"></div>
     </section>
 
+    <section id="steeringPanel" style="display:none">
+      <h1>ONE MORE LAP?</h1>
+      <p class="sub">Your champion team is split into LEFT and RIGHT power. Coordinate to stay on course.</p>
+      <div id="steeringRole" class="team-badge">Assigning your side…</div>
+      <div id="steeringStatus" class="status"></div>
+      <div class="grid">
+        <button id="leftPower" class="boost" type="button" disabled>LEFT POWER</button>
+        <button id="rightPower" class="boost" type="button" disabled>RIGHT POWER</button>
+      </div>
+      <p id="steeringCourse" class="sub"></p>
+      <p class="sub">Tap together for speed. More LEFT power steers left; more RIGHT steers right. Off course slows your team down.</p>
+    </section>
     <footer id="session"></footer>
   </main>
   <script src="/js/signalr/dist/browser/signalr.min.js"></script>
@@ -74,6 +102,100 @@
     const participantId = localStorage.getItem('orbit-participant') || crypto.randomUUID();
     localStorage.setItem('orbit-participant', participantId);
     document.getElementById('session').textContent = `Session: ${sessionId}`;
+
+    const boostVotePanel = document.getElementById('boostVotePanel');
+    const modeButtons = [...document.querySelectorAll('button[data-mode]')];
+    let selectedMode = localStorage.getItem(`orbit-mode-${sessionId}`);
+    const endedSteeringRounds = new Set();
+    let latestSteering = null;
+    let assignmentRound = '';
+    let assignedSide = 'None';
+    let pendingLeft = 0, pendingRight = 0, steeringSending = false;
+    const steeringPanel = document.getElementById('steeringPanel');
+    const leftPower = document.getElementById('leftPower');
+    const rightPower = document.getElementById('rightPower');
+    function steeringPhase(snapshot) {
+      return typeof snapshot.phase === 'string' ? snapshot.phase : ['Inactive', 'Ready', 'Racing', 'Finished'][snapshot.phase];
+    }
+    function sideName(value) { return typeof value === 'string' ? value : ['None', 'Left', 'Right', 'Both'][value]; }
+    async function applySteering(snapshot) {
+      if (steeringPhase(snapshot) === 'Inactive') {
+        if (latestSteering?.roundId) endedSteeringRounds.add(latestSteering.roundId);
+        if (snapshot.roundId) endedSteeringRounds.add(snapshot.roundId);
+      } else if (endedSteeringRounds.has(snapshot.roundId)) return;
+      if (latestSteering?.roundId !== snapshot.roundId || steeringPhase(snapshot) !== 'Racing') {
+        pendingLeft = 0; pendingRight = 0;
+      }
+      latestSteering = snapshot;
+      const phase = steeringPhase(snapshot);
+      steeringPanel.style.display = phase === 'Inactive' ? 'none' : 'block';
+      if (phase === 'Inactive') {
+        assignmentRound = ''; assignedSide = 'None';
+        if (latestRace) applyRace(latestRace);
+        return;
+      }
+      votePanel.style.display = 'none'; racePanel.style.display = 'none'; boostVotePanel.style.display = 'none';
+      if (assignmentRound !== snapshot.roundId && connection.state === signalR.HubConnectionState.Connected) {
+        assignmentRound = snapshot.roundId;
+        assignedSide = 'None';
+        try {
+          const side = await connection.invoke('SteeringSide', sessionId, snapshot.roundId, participantId);
+          if (latestSteering.roundId !== snapshot.roundId) return;
+          assignedSide = sideName(side);
+          renderSteering();
+        } catch {
+          assignmentRound = '';
+          document.getElementById('steeringStatus').textContent = 'Unable to confirm your side. Reconnecting…';
+        }
+      }
+      renderSteering();
+    }
+    function renderSteering() {
+      if (!latestSteering) return;
+      const phase = steeringPhase(latestSteering);
+      const racing = phase === 'Racing' && connection.state === signalR.HubConnectionState.Connected;
+      leftPower.style.display = assignedSide === 'Left' || assignedSide === 'Both' ? 'block' : 'none';
+      rightPower.style.display = assignedSide === 'Right' || assignedSide === 'Both' ? 'block' : 'none';
+      leftPower.disabled = rightPower.disabled = !racing;
+      document.getElementById('steeringRole').textContent = assignedSide === 'None'
+        ? 'No race role: you must have joined a champion team before preparation.'
+        : `${labels[selectedChampion] || 'Your original team'} · ${assignedSide === 'Both' ? 'SOLO: both power controls' : assignedSide.toUpperCase() + ' POWER'}`;
+      const vehicle = latestSteering.vehicles.find(x => championName(x.champion) === selectedChampion);
+      document.getElementById('steeringStatus').textContent = phase === 'Ready' ? 'Find your side. Waiting for the presenter to start…'
+        : phase === 'Finished' ? `${labels[championName(latestSteering.winner)] || 'A champion'} wins the bonus race!`
+        : 'GO! Coordinate with the other side of your team!';
+      document.getElementById('steeringCourse').textContent = vehicle
+        ? `${Math.round(vehicle.progress * 100)}% complete · ${Math.abs(vehicle.offset - vehicle.targetOffset) > .5 ? 'OFF COURSE — steer toward the green band!' : 'ON COURSE'}` : '';
+    }
+    leftPower.addEventListener('click', () => { if (!leftPower.disabled) pendingLeft++; });
+    rightPower.addEventListener('click', () => { if (!rightPower.disabled) pendingRight++; });
+    setInterval(async () => {
+      if (steeringSending || !latestSteering || steeringPhase(latestSteering) !== 'Racing'
+          || connection.state !== signalR.HubConnectionState.Connected) return;
+      const roundId = latestSteering.roundId;
+      const left = Math.min(pendingLeft, 20), right = Math.min(pendingRight, 20);
+      if (!left && !right) return;
+      pendingLeft -= left; pendingRight -= right;
+      steeringSending = true;
+      try {
+        if (left) await connection.invoke('SteeringPower', sessionId, roundId, participantId, 1, left);
+        if (right) await connection.invoke('SteeringPower', sessionId, roundId, participantId, 2, right);
+      } catch {
+        // Old-round taps never leak into a reset round.
+        if (latestSteering?.roundId === roundId && steeringPhase(latestSteering) === 'Racing') {
+          pendingLeft += left; pendingRight += right;
+        }
+      } finally { steeringSending = false; }
+    }, 100);
+
+    let flushing = false;
+    let jumpUntil = 0;
+    let latestCharge = 0;
+    function refreshChargeLabel() {
+      document.getElementById('chargeLabel').textContent = Date.now() < jumpUntil
+        ? 'JUMP!' : `${Math.round(latestCharge * 100)}% charged`;
+    }
+    function modeName(mode) { return mode === 1 || mode === 'ChargeAndRelease' ? 'ChargeAndRelease' : 'Steady'; }
 
     let latestSnapshot = null;
     let latestRace = null;
@@ -142,17 +264,47 @@
     }
 
     function applyRace(snapshot) {
+      const previousPhase = latestRace ? racePhaseName(latestRace.phase) : null;
+      const progressKey = { RacingDriver: 'racingDriverProgress', Charioteer: 'charioteerProgress', SpacePilot: 'spacePilotProgress' }[selectedChampion];
+      const previousProgress = latestRace?.[progressKey] || 0;
       latestRace = snapshot;
+      if (latestSteering && steeringPhase(latestSteering) !== 'Inactive') return;
       const phase = racePhaseName(snapshot.phase);
       const winner = championName(snapshot.winner);
 
       if (phase === 'Ready') {
-        // Keep the voting/result screen visible until the presenter actually starts the race.
+        if (previousPhase !== 'Ready') { pendingTaps = 0; taps = 0; jumpUntil = 0; tapCount.textContent = '0 taps'; }
         racePanel.style.display = 'none';
-        votePanel.style.display = 'block';
+        const votePhase = phaseName(snapshot.boostVotePhase);
+        const showModes = votePhase === 'Open' || votePhase === 'Closed';
+        boostVotePanel.style.display = showModes ? 'block' : 'none';
+        votePanel.style.display = showModes ? 'none' : 'block';
+        document.getElementById('steadyVotes').textContent = `${snapshot.steadyVotes || 0} votes`;
+        document.getElementById('burstVotes').textContent = `${snapshot.burstVotes || 0} votes`;
+        modeButtons.forEach(button => {
+          button.disabled = votePhase !== 'Open' || !selectedChampion || connection.state !== signalR.HubConnectionState.Connected;
+          button.classList.toggle('selected', votePhase === 'Open' && button.dataset.mode === selectedMode);
+          button.classList.toggle('winner', votePhase === 'Closed' && button.dataset.mode === modeName(snapshot.mode));
+        });
+        document.getElementById('boostVoteStatus').textContent = votePhase === 'Open'
+          ? 'Choose the route for EVERY team. You can change your vote while open.'
+          : `Chosen: ${modeName(snapshot.mode) === 'Steady' ? 'The winding road' : 'Ancient launch pads'}. Keep this page open for the race.`;
         return;
       }
 
+      boostVotePanel.style.display = 'none';
+      const charged = modeName(snapshot.mode) === 'ChargeAndRelease';
+      document.getElementById('chargePanel').style.display = charged ? 'block' : 'none';
+      const chargeKey = { RacingDriver: 'racingDriverCharge', Charioteer: 'charioteerCharge', SpacePilot: 'spacePilotCharge' }[selectedChampion];
+      const charge = snapshot[chargeKey] || 0;
+      document.getElementById('chargeMeter').value = charge;
+      latestCharge = charge;
+      if (charged && (snapshot[progressKey] || 0) - previousProgress >= .249) {
+        jumpUntil = Date.now() + 750;
+        setTimeout(refreshChargeLabel, 760);
+      }
+      refreshChargeLabel();
+      boostButton.textContent = charged ? 'CHARGE THE PAD!' : 'KEEP GOING!';
       votePanel.style.display = 'none';
       racePanel.style.display = 'block';
       const label = selectedChampion ? labels[selectedChampion] : 'YOUR ORIGINAL CHAMPION';
@@ -160,7 +312,7 @@
 
       if (phase === 'Racing') {
         boostButton.disabled = false;
-        raceStatus.textContent = 'GO! Tap as fast as you can!';
+        raceStatus.textContent = charged ? 'Charge the launch pad together. At 100%, your team jumps!' : 'Follow the winding road — every tap moves your team!';
         raceResult.textContent = '';
       } else {
         boostButton.disabled = true;
@@ -171,12 +323,17 @@
       }
     }
 
+    connection.on('SteeringUpdated', applySteering);
     connection.on('VoteUpdated', applySnapshot);
     connection.on('RaceUpdated', applyRace);
     connection.onreconnecting(() => {
+      assignmentRound = '';
+      leftPower.disabled = rightPower.disabled = true;
+      document.getElementById('steeringStatus').textContent = 'Reconnecting…';
       status.textContent = 'Reconnecting…';
       raceStatus.textContent = 'Reconnecting…';
       boostButton.disabled = true;
+      modeButtons.forEach(button => button.disabled = true);
     });
     connection.onreconnected(async () => {
       await connection.invoke('JoinSession', sessionId);
@@ -195,7 +352,20 @@
       });
     });
 
-    boostButton.addEventListener('click', async () => {
+    modeButtons.forEach(button => button.addEventListener('click', async () => {
+      if (connection.state !== signalR.HubConnectionState.Connected || !latestRace
+          || phaseName(latestRace.boostVotePhase) !== 'Open') return;
+      try {
+        await connection.invoke('VoteBoostMode', sessionId, participantId, button.dataset.mode);
+        selectedMode = button.dataset.mode;
+        localStorage.setItem(`orbit-mode-${sessionId}`, selectedMode);
+        applyRace(latestRace);
+      } catch {
+        document.getElementById('boostVoteStatus').textContent = 'Vote not confirmed. Please try again.';
+      }
+    }));
+
+    boostButton.addEventListener('click' , async () => {
       if (connection.state !== signalR.HubConnectionState.Connected) return;
       if (!latestRace || racePhaseName(latestRace.phase) !== 'Racing') return;
 
@@ -207,16 +377,19 @@
     // Batch frantic tapping into at most ten SignalR calls per second per browser.
     // The local tap count still responds immediately, while the server remains authoritative.
     setInterval(async () => {
-      if (pendingTaps <= 0) return;
+      if (flushing || pendingTaps <= 0) return;
       if (connection.state !== signalR.HubConnectionState.Connected) return;
       if (!latestRace || racePhaseName(latestRace.phase) !== 'Racing') return;
 
       const batch = Math.min(pendingTaps, 20);
       pendingTaps -= batch;
+      flushing = true;
       try {
         await connection.invoke('Boost', sessionId, participantId, batch);
       } catch {
         pendingTaps += batch;
+      } finally {
+        flushing = false;
       }
     }, 100);
 
